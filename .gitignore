@@ -1,0 +1,9 @@
+settings.json
+*.tex
+*.pyc
+*.aux
+*.log
+*.txt
+*.out
+not-zip-safe
+PKG-INFO
