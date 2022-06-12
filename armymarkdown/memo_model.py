@@ -48,7 +48,8 @@ def parse(file_name):
 def parse_lines(file_lines):
     memo_dict = {}
 
-    memo_begin_loc = [i for i, s in enumerate(file_lines) if "SUBJECT" in s][0] + 1
+    memo_begin_loc = [i for i, s in enumerate(file_lines) if "SUBJECT" in s][0]
+    memo_begin_loc += 1
     for line in file_lines[:memo_begin_loc]:
         # parse all the admin info
         if "=" in line:
@@ -62,7 +63,8 @@ def parse_lines(file_lines):
         if dash_location == -1:
             continue
 
-        line_text = line[dash_location + 1 :].strip()
+        begin_line = dash_location + 1
+        line_text = line[begin_line:].strip()
         proper_indent_level = master_list  # level 0
 
         for i in range(dash_location // 4):
