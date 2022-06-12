@@ -14,12 +14,13 @@ class MemoWriter:
         self.lines.append("\\documentclass{armymemo}")
         self._write_admin()
         self._write_body()
-        self.temp_file = os.path.join(os.getcwd(), "assets", "temp_file.tex")
+        self.temp_dir = os.path.join(os.getcwd(), "assets")
+        self.temp_file = os.path.join(self.temp_dir, "temp_file.tex")
         with open(self.temp_file, "w+") as f:
             print("\n".join(self.lines), file=f)
 
     def generate_memo(self):
-        subprocess.run(["lualatex", "-output-directory", "assets", self.temp_file])
+        subprocess.run(["latexmk", "-lualatex", self.temp_file])
 
     def _write_admin(self):
         self.lines.append(f"\\address{{{self.data.unit_name}}}")

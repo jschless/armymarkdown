@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en"><head>    
+    <meta charset="UTF-8">    
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Army Markdown Editor</title>
+    <link rel="stylesheet" type="text/css" 
+    href="{{url_for('static', filename='codemirror/lib/codemirror.css')}}">
+    <script src="{{url_for('static', filename='codemirror/lib/codemirror.js')}}"></script>
+    <link rel="stylesheet" type="text/css" 
+    href="{{url_for('static', filename='codemirror/theme/monokai.css')}}">
+    <script src="{{url_for('static', filename='codemirror/mode/xml/xml.js')}}"></script>
+</head> 
+
+<body>   
+        <div>
+            <form method="POST" action="/process">
+                <textarea name="raw_data" id="editor"></textarea>
+                <button type="submit"></button>
+            </form>
+        </div>
+        <hr/>
+        <div>
+            {{raw_data}}
+        </div>
+
+        <script type="text/javascript">
+            var editor = CodeMirror.fromTextArea(
+                document.getElementById('editor'),
+                {
+                    mode: 'xml',
+                    theme: 'monokai'
+                }
+            )
+        </script>
+              
+</body>
+</html>

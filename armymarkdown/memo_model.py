@@ -40,36 +40,40 @@ key_converter = {
 def parse(file_name):
     # Takes a .Amd file and processes it into a memo_model
     with open(file_name, "r") as f:
-        memo_dict = {}
         file_lines = f.readlines()
 
-        memo_begin_loc = [i for i, s in enumerate(file_lines) if "SUBJECT" in s][0] + 1
+        return parse_lines(file_lines)
 
-        for line in file_lines[:memo_begin_loc]:
-            # parse all the admin info
-            if "=" in line:
-                key, text = line.split("=")
-                memo_dict[key_converter[key]] = text.strip()
 
-        master_list = []
-        indent_level = 0
-        for line in file_lines[memo_begin_loc:]:
-            dash_location = line.find("-")
-            if dash_location == -1:
-                continue
+def parse_lines(file_lines):
+    memo_dict = {}
 
-            line_text = line[dash_location + 1 :].strip()
-            proper_indent_level = master_list  # level 0
+    memo_begin_loc = [i for i, s in enumerate(file_lines) if "SUBJECT" in s][0] + 1
+    for line in file_lines[:memo_begin_loc]:
+        # parse all the admin info
+        if "=" in line:
+            key, text = line.split("=")
+            memo_dict[key_converter[key]] = text.strip()
 
-            for i in range(dash_location // 4):
-                if isinstance(proper_indent_level[-1], list):
-                    proper_indent_level = proper_indent_level[-1]
+    master_list = []
+    indent_level = 0
+    for line in file_lines[memo_begin_loc:]:
+        dash_location = line.find("-")
+        if dash_location == -1:
+            continue
 
-            if dash_location > indent_level:
-                proper_indent_level.append([line_text])
-            elif dash_location <= indent_level:
-                proper_indent_level.append(line_text)
-            indent_level = dash_location
+        line_text = line[dash_location + 1 :].strip()
+        proper_indent_level = master_list  # level 0
 
-        memo_dict["text"] = master_list
-        return MemoModel(**memo_dict)
+        for i in range(dash_location // 4):
+            if isinstance(proper_indent_level[-1], list):
+                proper_indent_level = proper_indent_level[-1]
+
+        if dash_location > indent_level:
+            proper_indent_level.append([line_text])
+        elif dash_location <= indent_level:
+            proper_indent_level.append(line_text)
+        indent_level = dash_location
+
+    memo_dict["text"] = master_list
+    return MemoModel(**memo_dict)
