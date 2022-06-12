@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, request, send_from_directory
+from flask import Flask, render_template, request, send_from_directory
 
 from armymarkdown import memo_model, writer
 
