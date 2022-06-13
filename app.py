@@ -31,7 +31,7 @@ def process():
     mw.generate_memo()
 
     return send_from_directory(
-        "/home/joe/Documents/Programming/armymarkdown/",
+        app.root_path,
         "temp_file.pdf",
         as_attachment=True,
     )
