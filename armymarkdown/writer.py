@@ -9,18 +9,21 @@ class MemoWriter:
         self.data = data
         self.lines = []
 
-    def write(self):
+    def write(self, output_file=None):
+        self.output_file = output_file
 
         self.lines.append("\\documentclass{armymemo}")
         self._write_admin()
         self._write_body()
         self.temp_dir = os.path.join(os.getcwd(), "assets")
         self.temp_file = os.path.join(self.temp_dir, "temp_file.tex")
-        with open(self.temp_file, "w+") as f:
+        if output_file is None:
+            self.output_file = self.temp_file
+        with open(self.output_file, "w+") as f:
             print("\n".join(self.lines), file=f)
 
     def generate_memo(self):
-        subprocess.run(["latexmk", "-lualatex", self.temp_file])
+        subprocess.run(["latexmk", "-lualatex", self.output_file])
 
     def _write_admin(self):
         self.lines.append(f"\\address{{{self.data.unit_name}}}")
