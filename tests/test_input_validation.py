@@ -35,4 +35,16 @@ def test_date_validation():
             == f"The entered date {date} does not conform to pattern ## Month ####"
         )
 
-    assert m._check_date("23 June 2019") == None
+    assert m._check_date("23 June 2019") is None
+
+
+def test_branch_validation():
+    m = memo_model.MemoModel(**test_dict)
+    test_branches = ["En", "Infantri", "Operator"]
+    for branch in test_branches:
+        assert (
+            m._check_branch(branch)
+            == f"{branch} is mispelled or not a valid Army branch"
+        )
+
+    assert m._check_branch("EN") is None

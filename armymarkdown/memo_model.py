@@ -4,6 +4,9 @@ import re
 
 import language_tool_python
 
+from armymarkdown.utils import branch_to_abbrev, abbrev_to_branch
+from armymarkdown.utils import key_converter, inv_key_converter
+
 
 def flatten(x):
     if isinstance(x, list):
@@ -53,33 +56,25 @@ class MemoModel:
                 f"The entered date {date_str} does not conform to pattern ## Month ####"
             )
 
+    def _check_branch(self, branch):
+        if (
+            branch not in abbrev_to_branch.keys()
+            and branch not in branch_to_abbrev.keys()
+        ):
+            return f"{branch} is mispelled or not a valid Army branch"
+
     def _check_admin(self):
         # TODO validate the format of each attribute with REGEX
 
         errors = []
         errors.append(("DATE", self._check_date(self.todays_date)))
+        if self.suspense_date is not None:
+            errors.append(("SUSPENSE_DATE", self._check_date(self.suspense_date)))
 
         return [e for e in errors if e is not None]
 
     def _check_body(self):
         return self.tool.check(" ".join(flatten(self.text)))
-
-
-key_converter = {
-    "ORGANIZATION_NAME": "unit_name",
-    "ORGANIZATION_STREET_ADDRESS": "unit_street_address",
-    "ORGANIZATION_CITY_STATE_ZIP": "unit_city_state_zip",
-    "OFFICE_SYMBOL": "office_symbol",
-    "DATE": "todays_date",
-    "AUTHOR": "author_name",
-    "RANK": "author_rank",
-    "BRANCH": "author_branch",
-    "TITLE": "author_title",
-    "MEMO_TYPE": "memo_type",
-    "SUBJECT": "subject",
-}
-
-inv_key_converter = {v: k for k, v in key_converter.items()}
 
 
 def parse(file_name):
