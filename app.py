@@ -12,12 +12,16 @@ def index():
     return render_template("index.html", memo_text=boilerplate_text)
 
 
-@app.route("/process", methods=["GET", "POST"])
+@app.route("/process", methods=["POST"])
 def process():
-    if request.method == "POST":
-        text = request.form["memo_text"]
+    text = request.form["memo_text"]
 
     m = memo_model.parse_lines(text.split("\n"))
+
+    if request.form["submit_button"] == "Spellcheck":
+        return render_template(
+            "index.html", memo_text=f"### RAN SPELLCHECK ### \n\n\n {text}"
+        )
 
     if isinstance(m, str):
         # rudimentary error handling
