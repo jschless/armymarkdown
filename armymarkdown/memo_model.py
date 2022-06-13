@@ -1,6 +1,17 @@
 from dataclasses import dataclass
 from datetime import date
 
+import language_tool_python
+
+import collections
+
+
+def flatten(x):
+    if isinstance(x, list):
+        return [a for i in x for a in flatten(i)]
+    else:
+        return [x]
+
 
 @dataclass
 class MemoModel:
@@ -28,6 +39,19 @@ class MemoModel:
     enclosures: list = None
     distros: list = None
     cfs: list = None
+
+    def language_check(self):
+        self.tool = language_tool_python.LanguageTool("en-US")
+        errors = self._check_admin()
+        errors += self._check_body()
+        return errors
+
+    def _check_admin(self):
+        # TODO validate the format of each attribute with REGEX
+        return []
+
+    def _check_body(self):
+        return self.tool.check(" ".join(flatten(self.text)))
 
 
 key_converter = {
