@@ -18,8 +18,16 @@ class MemoModel:
     author_branch: str
     author_title: str = None
 
-    memo_type: str = "MEMORANDUM FOR RECORD"
+    memo_type: str = "MEMORANDUM FOR RECORD" 
+    # options: MFR, MEMORANDUM FOR, MEMORANDUM THRU
     todays_date: str = date.today().strftime("%d %B %Y")
+    
+    # optional, less frequently used parameters
+    suspense_date: str = None
+    document_mark: str = None
+    enclosures: list = None 
+    distros: list = None 
+    cfs: list = None
 
 
 key_converter = {
