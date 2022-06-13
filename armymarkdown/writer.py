@@ -37,7 +37,8 @@ class MemoWriter:
         self.lines.append(f"\\memoline{{{self.data.memo_type}}}")
 
         self.lines.append(f"\\subject{{{self.data.subject}}}")
-        self.lines.append(f"\\title{{{self.data.author_title}}}")
+        if self.data.author_title is not None:
+            self.lines.append(f"\\title{{{self.data.author_title}}}")
 
     def _write_body(self):
         self.lines.append("\\begin{document}")
