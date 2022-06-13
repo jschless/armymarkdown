@@ -58,7 +58,10 @@ def parse_lines(file_lines):
         # parse all the admin info
         if "=" in line:
             key, text = line.split("=")
-            memo_dict[key_converter[key.strip()]] = text.strip()
+            try:
+                memo_dict[key_converter[key.strip()]] = text.strip()
+            except KeyError:
+                return f"ERROR: No such keyword as {key.strip()}, please remove or fix {line}"
 
     master_list = []
     indent_level = 0
