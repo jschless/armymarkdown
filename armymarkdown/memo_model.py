@@ -103,7 +103,7 @@ def parse_lines(file_lines):
         indent_level = dash_location
 
     memo_dict["text"] = master_list
-    print(memo_dict)
+
     try:
         return MemoModel(**memo_dict)
     except TypeError:
