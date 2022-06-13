@@ -30,10 +30,9 @@ def test_date_validation():
     m = memo_model.MemoModel(**test_dict)
     test_dates = ["1 June 2023", "03 JUN 2019", "30 May 22", "2 may 2022"]
     for date in test_dates:
-        assert (
-            m._check_date(date)
-            == f"The entered date {date} does not conform to pattern ## Month ####"
-        )
+        answer = f"The entered date {date} does not"
+        answer += " conform to pattern ## Month ####"
+        assert m._check_date(date) == answer
 
     assert m._check_date("23 June 2019") is None
 

@@ -53,7 +53,8 @@ class MemoModel:
         date_pattern = re.compile("\d\d [A-Z][a-z]+ \d\d\d\d")
         if date_pattern.match(date_str) is None:
             return (
-                f"The entered date {date_str} does not conform to pattern ## Month ####"
+                f"The entered date {date_str} does not conform to pattern"
+                " ## Month ####"
             )
 
     def _check_branch(self, branch):
@@ -69,7 +70,9 @@ class MemoModel:
         errors = []
         errors.append(("DATE", self._check_date(self.todays_date)))
         if self.suspense_date is not None:
-            errors.append(("SUSPENSE_DATE", self._check_date(self.suspense_date)))
+            errors.append(
+                ("SUSPENSE_DATE", self._check_date(self.suspense_date))
+            )
 
         return [e for e in errors if e is not None]
 
@@ -93,13 +96,19 @@ def parse_lines(file_lines):
 
     file_lines = list(
         filter(
-            lambda line: len(line.strip()) > 0 and line.strip()[0] != "#", file_lines
+            lambda line: len(line.strip()) > 0 and line.strip()[0] != "#",
+            file_lines,
         )
     )
     try:
-        memo_begin_loc = [i for i, s in enumerate(file_lines) if "SUBJECT" in s][0]
+        memo_begin_loc = [
+            i for i, s in enumerate(file_lines) if "SUBJECT" in s
+        ][0]
     except IndexError:
-        return """ERROR: missing the keyword SUBJECT. Please add SUBJECT=(your subject) above the start of your memo"""
+        return (
+            "ERROR: missing the keyword SUBJECT. "
+            "Please add SUBJECT=(your subject) above the start of your memo"
+        )
 
     memo_begin_loc += 1
     for line in file_lines[:memo_begin_loc]:
@@ -109,7 +118,10 @@ def parse_lines(file_lines):
             try:
                 memo_dict[key_converter[key.strip()]] = text.strip()
             except KeyError:
-                return f"ERROR: No such keyword as {key.strip()}, please remove or fix {line}"
+                return (
+                    f"ERROR: No such keyword as {key.strip()}, "
+                    "please remove or fix {line}"
+                )
 
     master_list = []
     indent_level = 0
@@ -142,4 +154,7 @@ def parse_lines(file_lines):
             if k in missing_keys:
                 missing_keys.remove(k)  # remove optional keys
 
-        return f"Missing the following keys: {','.join([inv_key_converter[k] for k in missing_keys])}"
+        return (
+            f"Missing the following keys: "
+            f"{','.join([inv_key_converter[k] for k in missing_keys])}"
+        )
