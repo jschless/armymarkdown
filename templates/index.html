@@ -9,29 +9,78 @@
     <script src="{{url_for('static', filename='codemirror/lib/codemirror.js')}}"></script>
     <link rel="stylesheet" type="text/css" 
     href="{{url_for('static', filename='codemirror/theme/monokai.css')}}">
-    <script src="{{url_for('static', filename='codemirror/mode/xml/xml.js')}}"></script>
+    <script src="{{url_for('static', filename='codemirror/mode/markdown/markdown.js')}}"></script>
+
+    <style>
+        .box {
+            height:80%;
+        }
+        
+        html, body {
+            margin:0px;
+            height:100%;
+        }
+        
+        form {
+            height: 100%;
+        }
+        
+        .button {
+            font-size: 26px;
+        }
+    </style>
 </head> 
 
 <body>   
-        <div>
+        <div class="box">
             <form method="POST" action="/process">
-                <textarea name="raw_data" id="editor"></textarea>
-                <button type="submit"></button>
+                <textarea name="raw_data" id="editor">
+# Don't change any of the WORDS IN ALL CAPS before the = sign. 
+
+# Change what is to the right of the = sign with your actual info.
+
+ORGANIZATION_NAME = 205th Military Police Battalion
+ORGANIZATION_STREET_ADDRESS = 1234 Charles Road
+ORGANIZATION_CITY_STATE_ZIP = Colorado Springs, CO 80904
+
+# Line's beginning with # are comments, they won't be included in the final product
+
+OFFICE_SYMBOL = ABC-DEF-GH
+AUTHOR = James F. Ryan
+RANK = PVT
+BRANCH = IN
+TITLE = Lost Private
+
+MEMO_TYPE = MEMORANDUM FOR RECORD
+
+SUBJECT = Template for Army markdown
+
+- This memo is a demonstration of Army markdown v. 1.0. It allows you to quickly create memos that will always be perfectly formatted.
+
+- To create a sub item, simply indent the next line 4 space.
+    - A subitem is created by indenting 4 spaces beyond the previous level.
+    - A second subitem within the same item point.
+        - Here is a sub sub item
+
+- Back to the original level.
+
+- Point of contact is the undersigned available at john.f.ryan@army.mil or (123) 223-3215.
+                </textarea>
+                <button type="submit">Get Memo PDF</button>
             </form>
-        </div>
-        <hr/>
-        <div>
-            {{raw_data}}
         </div>
 
         <script type="text/javascript">
             var editor = CodeMirror.fromTextArea(
                 document.getElementById('editor'),
                 {
-                    mode: 'xml',
-                    theme: 'monokai'
+                    mode: 'markdown',
+                    theme: 'monokai',
+                    indentUnit: 4
                 }
             )
+            editor.setSize("100%", "100%");
+
         </script>
               
 </body>
