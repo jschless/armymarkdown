@@ -3,7 +3,6 @@ settings.json
 *.pyc
 *.aux
 *.log
-*.txt
 *.out
 not-zip-safe
 PKG-INFO
