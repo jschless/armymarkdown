@@ -17,13 +17,15 @@ TITLE = Lost Private
 MEMO_TYPE = MEMORANDUM FOR RECORD
 
 SUBJECT = Template for Army markdown
+# The SUBJECT = line marks the end of the admin info. You must begin your memo after this.
 
 - This memo is a demonstration of Army markdown v. 1.0. It allows you to quickly create memos that will always be perfectly formatted.
 
 - To create a sub item, simply indent the next line 4 space.
     - A subitem is created by indenting 4 spaces beyond the previous level.
     - A second subitem within the same item point.
-        - Here is a sub sub item
+        - Here is a sub sub item.
+            - We can try to indent further, but it will not work.
 
 - Back to the original level.
 
