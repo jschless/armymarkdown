@@ -19,9 +19,10 @@ def process():
     m = memo_model.parse_lines(text.split("\n"))
 
     if request.form["submit_button"] == "Spellcheck":
-        return render_template(
-            "index.html", memo_text=f"### RAN SPELLCHECK ### \n\n\n {text}"
-        )
+        errors = m.language_check()
+        error_string = "".join([str(err)[str(err).find("\n") :] for err in errors])
+        print(error_string)
+        return render_template("index.html", memo_text=f"{error_string}\n\n {text}")
 
     if isinstance(m, str):
         # rudimentary error handling
