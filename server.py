@@ -22,7 +22,6 @@ def process():
     if isinstance(m, str):
         # rudimentary error handling
         print(f"handling error {m}")
-        print(f"# {m} \n\n\n {boilerplate_text}")
         return render_template(
             "index.html", memo_text=f"### {m.strip()} ### \n\n\n {text}"
         )

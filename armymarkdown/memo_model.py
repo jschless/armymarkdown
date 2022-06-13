@@ -36,6 +36,8 @@ key_converter = {
     "SUBJECT": "subject",
 }
 
+inv_key_converter = {v: k for k, v in key_converter.items()}
+
 
 def parse(file_name):
     # Takes a .Amd file and processes it into a memo_model
@@ -89,4 +91,12 @@ def parse_lines(file_lines):
         indent_level = dash_location
 
     memo_dict["text"] = master_list
-    return MemoModel(**memo_dict)
+    try:
+        return MemoModel(**memo_dict)
+    except TypeError:
+        missing_keys = set(inv_key_converter.keys()) - set(memo_dict.keys())
+        for k in ["author_title", "todays_date"]:
+            if k in missing_keys:
+                missing_keys.remove(k)  # remove optional keys
+
+        return f"Missing the following keys: {','.join([inv_key_converter[k] for k in missing_keys])}"
