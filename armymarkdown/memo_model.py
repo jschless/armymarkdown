@@ -55,8 +55,7 @@ def parse_lines(file_lines):
     try:
         memo_begin_loc = [i for i, s in enumerate(file_lines) if "SUBJECT" in s][0]
     except IndexError:
-        return """ERROR: missing the keyword SUBJECT.
-    Please add SUBJECT=(your subject) above the start of your memo"""
+        return """ERROR: missing the keyword SUBJECT. Please add SUBJECT=(your subject) above the start of your memo"""
 
     memo_begin_loc += 1
     for line in file_lines[:memo_begin_loc]:
