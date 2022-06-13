@@ -18,15 +18,15 @@ class MemoModel:
     author_branch: str
     author_title: str = None
 
-    memo_type: str = "MEMORANDUM FOR RECORD" 
+    memo_type: str = "MEMORANDUM FOR RECORD"
     # options: MFR, MEMORANDUM FOR, MEMORANDUM THRU
     todays_date: str = date.today().strftime("%d %B %Y")
-    
+
     # optional, less frequently used parameters
     suspense_date: str = None
     document_mark: str = None
-    enclosures: list = None 
-    distros: list = None 
+    enclosures: list = None
+    distros: list = None
     cfs: list = None
 
 
@@ -52,16 +52,20 @@ def parse(file_name):
     with open(file_name, "r") as f:
         file_lines = f.readlines()
 
-        return parse_lines(file_lines)
+    return parse_lines(file_lines)
 
 
 def parse_lines(file_lines):
+    # processes a text block into a latex memo_model
     memo_dict = {}
 
     # remove comments and empty lines
-    file_lines = [
-        line for line in file_lines if len(line.strip()) > 0 and line.strip()[0] != "#"
-    ]
+
+    file_lines = list(
+        filter(
+            lambda line: len(line.strip()) > 0 and line.strip()[0] != "#", file_lines
+        )
+    )
     try:
         memo_begin_loc = [i for i, s in enumerate(file_lines) if "SUBJECT" in s][0]
     except IndexError:
@@ -99,6 +103,7 @@ def parse_lines(file_lines):
         indent_level = dash_location
 
     memo_dict["text"] = master_list
+    print(memo_dict)
     try:
         return MemoModel(**memo_dict)
     except TypeError:
