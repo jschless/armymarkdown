@@ -48,13 +48,17 @@ def parse(file_name):
 def parse_lines(file_lines):
     memo_dict = {}
 
+    # remove comments and empty lines
+    file_lines = [
+        line for line in file_lines if len(line.strip()) > 0 and line.strip()[0] != "#"
+    ]
     memo_begin_loc = [i for i, s in enumerate(file_lines) if "SUBJECT" in s][0]
     memo_begin_loc += 1
     for line in file_lines[:memo_begin_loc]:
         # parse all the admin info
         if "=" in line:
             key, text = line.split("=")
-            memo_dict[key_converter[key]] = text.strip()
+            memo_dict[key_converter[key.strip()]] = text.strip()
 
     master_list = []
     indent_level = 0
