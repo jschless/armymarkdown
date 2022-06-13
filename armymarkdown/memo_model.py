@@ -1,9 +1,8 @@
 from dataclasses import dataclass
 from datetime import date
+import re
 
 import language_tool_python
-
-import collections
 
 
 def flatten(x):
@@ -42,13 +41,25 @@ class MemoModel:
 
     def language_check(self):
         self.tool = language_tool_python.LanguageTool("en-US")
-        errors = self._check_admin()
-        errors += self._check_body()
-        return errors
+        admin_errors = self._check_admin()
+        body_errors = self._check_body()
+        return admin_errors, body_errors
+
+    def _check_date(self, date_str):
+        # form 08 May 2022
+        date_pattern = re.compile("\d\d [A-Z][a-z]+ \d\d\d\d")
+        if date_pattern.match(date_str) is None:
+            return (
+                f"The entered date {date_str} does not conform to pattern ## Month ####"
+            )
 
     def _check_admin(self):
         # TODO validate the format of each attribute with REGEX
-        return []
+
+        errors = []
+        errors.append(("DATE", self._check_date(self.todays_date)))
+
+        return [e for e in errors if e is not None]
 
     def _check_body(self):
         return self.tool.check(" ".join(flatten(self.text)))
