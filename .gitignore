@@ -9,3 +9,4 @@ not-zip-safe
 PKG-INFO
 *.fls
 *.fdb_latexmk
+amd/
