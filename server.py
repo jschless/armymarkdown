@@ -4,18 +4,29 @@ from armymarkdown import memo_model, writer
 
 app = Flask(__name__)
 
+boilerplate_text = open("./memo_template.Amd", "r").read()
+
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("index.html", memo_text=boilerplate_text)
 
 
 @app.route("/process", methods=["GET", "POST"])
 def process():
     if request.method == "POST":
-        text = request.form["raw_data"]
+        text = request.form["memo_text"]
 
     m = memo_model.parse_lines(text.split("\n"))
+
+    if isinstance(m, str):
+        # rudimentary error handling
+        print(f"handling error {m}")
+        print(f"# {m} \n\n\n {boilerplate_text}")
+        return render_template(
+            "index.html", memo_text=f"### {m.strip()} ### \n\n\n {text}"
+        )
+
     mw = writer.MemoWriter(m)
     mw.write()
     mw.generate_memo()
