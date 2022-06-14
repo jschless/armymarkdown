@@ -17,6 +17,7 @@ TITLE = Lost Private
 MEMO_TYPE = MEMORANDUM FOR RECORD
 
 SUBJECT = Template for Army markdown
+
 # The SUBJECT = line marks the end of the admin info. You must begin your memo after this.
 
 - This memo is a demonstration of Army markdown v. 1.0. It allows you to quickly create memos that will always be perfectly formatted.
