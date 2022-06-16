@@ -1,62 +1,119 @@
 <!DOCTYPE html>
-<html lang="en"><head>    
-    <meta charset="UTF-8">    
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"> 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Army Markdown Editor</title>
-    <link rel="stylesheet" type="text/css" 
-    href="{{url_for('static', filename='codemirror/lib/codemirror.css')}}">
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{{url_for('static', filename='codemirror/lib/codemirror.css')}}"
+    />
     <script src="{{url_for('static', filename='codemirror/lib/codemirror.js')}}"></script>
-    <link rel="stylesheet" type="text/css" 
-    href="{{url_for('static', filename='codemirror/theme/monokai.css')}}">
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{{url_for('static', filename='codemirror/theme/monokai.css')}}"
+    />
     <script src="{{url_for('static', filename='codemirror/mode/markdown/markdown.js')}}"></script>
 
     <style>
-        .box {
-            height:80%;
-        }
-        
-        html, body {
-            margin:0px;
-            height:100%;
-        }
-        
-        form {
-            height: 100%;
-        }
-        
-        .button {
-            font-size: 26px;
-        }
-    </style>
-</head> 
+      .box {
+        height: 80%;
+      }
 
-<body>   
-        <div class="box">
-            <form method="POST" action="/process">
-                <textarea name="memo_text" id="editor">
+      html,
+      body {
+        margin: 0px;
+        height: 100%;
+      }
+
+      form {
+        height: 100%;
+      }
+
+      .button {
+        font-size: 26px;
+      }
+    </style>
+  </head>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  <script>
+    $(".my-form").on("submit", function () {
+      alert("Form submitted!");
+      return false;
+    });
+  </script>
+  <body>
+    <div class="box">
+      <!-- <form id="theform" class=".my-form" method="POST" action="/process"> -->
+        <textarea name="memo_text" id="editor">
 
 {{memo_text}}
 
-                </textarea>
-                <button type="submit" name="submit_button" value="PDF">Get Memo PDF</button>
-                <button type="submit" name="submit_button" value="Spellcheck">Check Spelling and Grammar</button>
-            </form>
-        </div>
+        </textarea>
+        <button id="start-bg-job">Get Memo PDF Backgrounded</button>
+        <!-- <button type="submit" name="submit_button" value="PDF">
+          Get Memo PDF
+        </button>
+        <button type="submit" name="submit_button" value="Spellcheck">
+          Check Spelling and Grammar -->
+        </button>
+      <!-- </form> -->
+    </div>
 
-        <script type="text/javascript">
-            var editor = CodeMirror.fromTextArea(
-                document.getElementById('editor'),
-                {
-                    mode: 'markdown',
-                    theme: 'monokai',
-                    indentUnit: 4,
-                    lineWrapping: true
-                }
-            )
-            editor.setSize("100%", "100%");
+    <div id="progress"></div>
+    <form method="POST" id="download">
+        <input type="hidden" name="param1" value="value1">
+    </form>
+    <script>
+        var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
+            mode: "markdown",
+            theme: "monokai",
+            indentUnit: 4,
+            lineWrapping: true,
+          });
+          editor.setSize("100%", "100%");
 
-        </script>
-              
-</body>
+      function start_long_task() {
+        // send ajax POST request to start background job
+        $.ajax({
+          type: "POST",
+          url: "/process",
+          data: {memo_text: editor.getValue()},
+          success: function (data, status, request) {
+            status_url = request.getResponseHeader("Location");
+            console.log("received status url", status_url);
+            update_progress(status_url);
+          },
+          error: function () {
+            alert("Unexpected error");
+          },
+        });
+      }
+      function update_progress(status_url) {
+        // send GET request to status URL
+        $.get(status_url, function (data) {
+          if (data["state"] == "SUCCESS") {
+            return get_pdf(data["pdf_file"]);
+          } else {
+            // rerun in 2 seconds
+            setTimeout(function () {
+              update_progress(status_url);
+            }, 2000);
+          }
+        });
+      }
+
+      function get_pdf(pdf_name) {
+        $('#download').attr('action', 'results/' + pdf_name);
+        $("#download").submit();
+      }
+
+      $(function () {
+        $("#start-bg-job").click(start_long_task);
+      });
+    </script>
+  </body>
 </html>
