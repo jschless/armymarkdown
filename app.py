@@ -136,6 +136,8 @@ def create_memo(lines):
     file_path = os.path.join(app.root_path, temp_name)
 
     mw.write(output_file=file_path)
+
+    print(f"Reading file path\n {open(file_path, 'r').read()}")
     mw.generate_memo()
     return temp_name
 
