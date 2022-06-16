@@ -68,8 +68,8 @@ def process():
 
 @app.route("/status/<task_id>", methods=["POST", "GET"])
 def taskstatus(task_id):
-    print(f"get request for taskstatus, statis is {task.state}")
     task = create_memo.AsyncResult(task_id)
+    print(f"get request for taskstatus, statis is {task.state}")
     if task.state == "PENDING":
         # job did not start yet
         response = {"state": task.state, "status": "Pending..."}
