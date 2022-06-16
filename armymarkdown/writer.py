@@ -25,6 +25,7 @@ class MemoWriter:
         print(f"wrote to {self.output_file}")
 
     def generate_memo(self):
+        print("generating memo and cwd is", os.getcwd())
         subprocess.run(["latexmk", "-lualatex", self.output_file])
 
     def _write_admin(self):
