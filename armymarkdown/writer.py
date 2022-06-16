@@ -26,7 +26,14 @@ class MemoWriter:
 
     def generate_memo(self):
         print("generating memo and cwd is", os.getcwd())
-        subprocess.run(["latexmk", "-lualatex", self.output_file])
+        subprocess.run(
+            [
+                "latexmk",
+                "-lualatex",
+                '-output_directory="/app/"',
+                self.output_file,
+            ]
+        )
 
     def _write_admin(self):
         self.lines.append(f"\\address{{{self.data.unit_name}}}")
