@@ -94,15 +94,21 @@
       }
       function update_progress(status_url) {
         // send GET request to status URL
+        var count = 0;
         $.get(status_url, function (data) {
           if (data["state"] == "SUCCESS") {
             return get_pdf(data["pdf_file"]);
           } else {
+            count += 1;
+
             // rerun in 2 seconds
-            setTimeout(function () {
-              update_progress(status_url);
-            }, 2000);
-          }
+            if (count < 50){
+                setTimeout(function () {
+                    update_progress(status_url);
+                }, 2000);
+        
+            }
+        }
         });
       }
 
