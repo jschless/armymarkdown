@@ -56,7 +56,7 @@ def process():
     #     return render_template(
     #         "index.html", memo_text=f"### {m.strip()} ### \n\n\n {text}"
     #     )
-    # print(text.split("\n"))
+    print("submitting task to celery")
     task = create_memo.delay(text.split("\n"))
 
     return (
@@ -68,6 +68,7 @@ def process():
 
 @app.route("/status/<task_id>", methods=["POST", "GET"])
 def taskstatus(task_id):
+    print(f"get request for taskstatus, statis is {task.state}")
     task = create_memo.AsyncResult(task_id)
     if task.state == "PENDING":
         # job did not start yet
@@ -76,6 +77,7 @@ def taskstatus(task_id):
         file_name = task.result[:-4] + ".pdf"
         response = {"state": "SUCCESS", "pdf_file": file_name}
         task.forget()  # cleanup redis once done
+        print(f"task successful, pdf is stored at {file_name}")
         return jsonify(response)
     else:
         # something went wrong in the background job
@@ -97,7 +99,7 @@ def results(pdf_name):
         ".out",
         ".tex",
     ]
-
+    print("Removing unnecessary files and serving pdf")
     file_path = os.path.join(app.root_path, pdf_name)
 
     for end in file_endings:
