@@ -24,6 +24,10 @@ celery = Celery(
     backend=os.environ["REDIS_URL"],
 )
 
+celery.conf.update(
+    BROKER_URL=os.environ["REDIS_URL"],
+    CELERY_RESULT_BACKEND=os.environ["REDIS_URL"],
+)
 boilerplate_text = open("./memo_template.Amd", "r").read()
 
 
@@ -70,6 +74,7 @@ def process():
 def taskstatus(task_id):
     task = create_memo.AsyncResult(task_id)
     print(f"get request for taskstatus, statis is {task.state}")
+    print("redis url", os.environ["REDIS_URL"])
     if task.state == "PENDING":
         # job did not start yet
         response = {"state": task.state, "status": "Pending..."}
