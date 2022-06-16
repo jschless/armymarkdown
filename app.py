@@ -112,16 +112,16 @@ def results(pdf_name):
 
     file_handle = open(file_path, "r")
 
-    @after_this_request
-    def remove_file(response):
-        try:
-            os.remove(file_path)
-            file_handle.close()
-        except Exception as error:
-            app.logger.error(
-                "Error removing or closing downloaded file handle", error
-            )
-        return response
+    # @after_this_request
+    # def remove_file(response):
+    #     try:
+    #         os.remove(file_path)
+    #         file_handle.close()
+    #     except Exception as error:
+    #         app.logger.error(
+    #             "Error removing or closing downloaded file handle", error
+    #         )
+    #     return response
 
     return send_file(file_path)
 
