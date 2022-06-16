@@ -69,13 +69,13 @@ def process():
 @app.route("/status/<task_id>", methods=["POST", "GET"])
 def taskstatus(task_id):
     task = create_memo.AsyncResult(task_id)
-    print(task.state)
     if task.state == "PENDING":
         # job did not start yet
         response = {"state": task.state, "status": "Pending..."}
     elif task.state == "SUCCESS":
         file_name = task.result[:-4] + ".pdf"
         response = {"state": "SUCCESS", "pdf_file": file_name}
+        task.forget()  # cleanup redis once done
         return jsonify(response)
     else:
         # something went wrong in the background job
