@@ -24,10 +24,10 @@ celery = Celery(
     backend=os.environ["REDIS_URL"],
 )
 
-celery.conf.update(
-    BROKER_URL=os.environ["REDIS_URL"],
-    CELERY_RESULT_BACKEND=os.environ["REDIS_URL"],
-)
+# celery.conf.update(
+#     broker_url=os.environ["REDIS_URL"],
+#     result_backemd=os.environ["REDIS_URL"],
+# )
 boilerplate_text = open("./memo_template.Amd", "r").read()
 
 
@@ -133,7 +133,9 @@ def create_memo(lines):
     mw = writer.MemoWriter(m)
 
     temp_name = "temp" + "".join(random.choices("0123456789", k=8)) + ".tex"
-    mw.write(output_file=temp_name)
+    file_path = os.path.join(app.root_path, temp_name)
+
+    mw.write(output_file=file_path)
     mw.generate_memo()
     return temp_name
 
