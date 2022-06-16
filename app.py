@@ -107,8 +107,8 @@ def results(pdf_name):
     print("Removing unnecessary files and serving pdf")
     file_path = os.path.join(app.root_path, pdf_name)
 
-    for end in file_endings:
-        os.remove(file_path[:-4] + end)
+    # for end in file_endings:
+    #     os.remove(file_path[:-4] + end)
 
     file_handle = open(file_path, "r")
 
