@@ -3,9 +3,9 @@ import os
 
 from flask import (
     Flask,
+    after_this_request,
     render_template,
     request,
-    send_from_directory,
     url_for,
     jsonify,
     send_file,
@@ -16,16 +16,13 @@ from celery import Celery
 from armymarkdown import memo_model, writer
 
 app = Flask(__name__)
-app.config["CELERY_BROKER_URL"] = "redis://localhost:6379/0"
-app.config["CELERY_RESULT_BACKEND"] = "redis://localhost:6379/0"
+
 
 celery = Celery(
     app.name,
-    broker="redis://localhost:6379/0",
-    backend="redis://localhost:6379/0",
+    broker=os.environ["REDIS_URL"],
+    backend=os.environ["REDIS_URL"],
 )
-#                 app.config["CELERY_BROKER_URL"])
-# celery.conf.update(app.config)
 
 boilerplate_text = open("./memo_template.Amd", "r").read()
 
@@ -38,7 +35,6 @@ def index():
 @app.route("/process", methods=["POST"])
 def process():
     text = request.form["memo_text"]
-    print(text)
     # m = memo_model.parse_lines(text.split("\n"))
 
     # if request.form["submit_button"] == "Spellcheck":
@@ -62,19 +58,11 @@ def process():
     #     )
     # print(text.split("\n"))
     task = create_memo.delay(text.split("\n"))
-    # mw = writer.MemoWriter(m)
-    # mw.write()
-    # mw.generate_memo()
+
     return (
         "Hi, we're waiting for your PDF to be created.",
         200,
         {"Location": url_for("taskstatus", task_id=task.id)},
-    )
-
-    return send_from_directory(
-        app.root_path,
-        "temp_file.pdf",
-        as_attachment=True,
     )
 
 
@@ -87,20 +75,7 @@ def taskstatus(task_id):
         response = {"state": task.state, "status": "Pending..."}
     elif task.state == "SUCCESS":
         file_name = task.result[:-4] + ".pdf"
-        # move to static folder
-        # os.rename(
-        #     os.path.join(app.root_path, file_name),
-        #     os.path.join(app.root_path, "static", file_name),
-        # )
         response = {"state": "SUCCESS", "pdf_file": file_name}
-        print("compilation successful, serving test", file_name)
-        return jsonify(response)
-        return redirect(url_for("results", pdf_name=file_name))
-        send_file(
-            os.path.join(app.root_path, "static", file_name),
-            as_attachment=True,
-        )
-
         return jsonify(response)
     else:
         # something went wrong in the background job
@@ -113,8 +88,35 @@ def taskstatus(task_id):
 
 @app.route("/results/<pdf_name>", methods=["GET", "POST"])
 def results(pdf_name):
-    print(os.path.join(app.root_path, "static", pdf_name))
-    return send_file(os.path.join(app.root_path, pdf_name))
+    # https://stackoverflow.com/questions/24612366/delete-an-uploaded-file-after-downloading-it-from-flask
+    file_endings = [
+        ".aux",
+        ".fdb_latexmk",
+        ".fls",
+        ".log",
+        ".out",
+        ".tex",
+    ]
+
+    file_path = os.path.join(app.root_path, pdf_name)
+
+    for end in file_endings:
+        os.remove(file_path[:-4] + end)
+
+    file_handle = open(file_path, "r")
+
+    @after_this_request
+    def remove_file(response):
+        try:
+            os.remove(file_path)
+            file_handle.close()
+        except Exception as error:
+            app.logger.error(
+                "Error removing or closing downloaded file handle", error
+            )
+        return response
+
+    return send_file(file_path)
 
 
 @celery.task
@@ -125,9 +127,7 @@ def create_memo(lines):
 
     temp_name = "temp" + "".join(random.choices("0123456789", k=8)) + ".tex"
     mw.write(output_file=temp_name)
-    print("writing to latex")
     mw.generate_memo()
-    print("memo generated")
     return temp_name
 
 
