@@ -146,7 +146,9 @@ def create_memo(lines):
     )
 
     print(f"does path exist? {os.path.exists(file_path[-4:]  + '.pdf')}")
-    print(f"does path exist for tex file {file_path}? {os.path.exists(file_path}")
+    print(
+        f"does path exist for tex file {file_path}? {os.path.exists(file_path)}"
+    )
     print(f"CWD: {os.getcwd()}")
     return temp_name
 
