@@ -30,7 +30,6 @@ class MemoWriter:
             [
                 "latexmk",
                 "-lualatex",
-                '-output_directory="/app/"',
                 self.output_file,
             ]
         )
