@@ -110,7 +110,7 @@ def results(pdf_name):
     # for end in file_endings:
     #     os.remove(file_path[:-4] + end)
 
-    file_handle = open(file_path, "r")
+    # file_handle = open(file_path, "r")
 
     # @after_this_request
     # def remove_file(response):
@@ -122,7 +122,7 @@ def results(pdf_name):
     #             "Error removing or closing downloaded file handle", error
     #         )
     #     return response
-
+    print("does path exist?", os.path.exists(app.root_path, pdf_name))
     return send_file(file_path)
 
 
