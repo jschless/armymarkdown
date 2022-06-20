@@ -12,16 +12,28 @@ from flask import (
     redirect,
 )
 from celery import Celery
-
+import boto3
 from armymarkdown import memo_model, writer
 
 app = Flask(__name__)
+
+os.environ["AWS_ACCESS_KEY_ID"] = "AKIAX7LGG34YJYGNPXNQ"
+os.environ[
+    "AWS_SECRET_ACCESS_KEY"
+] = "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"
+os.environ["REDIS_URL"] = "redis://localhost:6379/0"
 
 
 celery = Celery(
     app.name,
     broker=os.environ["REDIS_URL"],
     backend=os.environ["REDIS_URL"],
+)
+
+s3 = boto3.client(
+    "s3",
+    aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
+    aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
 )
 
 # celery.conf.update(
@@ -81,7 +93,7 @@ def taskstatus(task_id):
     elif task.state == "SUCCESS":
         file_name = task.result[:-4] + ".pdf"
         response = {"state": "SUCCESS", "pdf_file": file_name}
-        task.forget()  # cleanup redis once done
+        # task.forget()  # cleanup redis once done
         print(f"task successful, pdf is stored at {file_name}")
         return jsonify(response)
     else:
@@ -125,7 +137,26 @@ def results(pdf_name):
     print(
         f"does path exist? {os.path.exists(os.path.join(app.root_path, pdf_name))}"
     )
+
+    return redirect(get_aws_link(pdf_name), code=302)
     return send_file(file_path)
+
+
+def get_aws_link(file_name):
+    return f"https://armymarkdown.s3.us-east-2.amazonaws.com/{file_name}"
+
+
+def upload_file_to_s3(file, aws_path, acl="public-read"):
+    """
+    Docs: http://boto3.readthedocs.io/en/latest/guide/s3.html
+    """
+    print("Uploading to S3")
+    try:
+        s3.upload_file(file, "armymarkdown", aws_path)
+    except Exception as e:
+        print("Something Happened: ", e)
+        return e
+    return file
 
 
 @celery.task
@@ -150,6 +181,9 @@ def create_memo(lines):
         f"does path exist for tex file {file_path}? {os.path.exists(file_path)}"
     )
     print(f"CWD: {os.getcwd()}")
+    print("Uploading to AWS")
+    upload_file_to_s3(file_path[:-4] + ".pdf", temp_name[:-4] + ".pdf")
+
     return temp_name
 
 
