@@ -122,7 +122,7 @@ def results(pdf_name):
     #             "Error removing or closing downloaded file handle", error
     #         )
     #     return response
-    print("does path exist?", os.path.exists(app.root_path, pdf_name))
+    print(f"does path exist? {os.path.exists(app.root_path, pdf_name)}")
     return send_file(file_path)
 
 
