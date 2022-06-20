@@ -141,6 +141,12 @@ def create_memo(lines):
 
     print(f"Reading file path\n {open(file_path, 'r').read()}")
     mw.generate_memo()
+    print(
+        f"Reading file path again after memo generation\n {open(file_path, 'r').read()}"
+    )
+
+    print(f"does path exist? {os.path.exists(file_path[-4:]  + '.pdf')}")
+
     return temp_name
 
 
