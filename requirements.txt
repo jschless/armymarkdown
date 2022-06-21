@@ -1,9 +1,11 @@
 amqp==5.1.1
--e git+https://github.com/jschless/armymarkdown.git@c6b70e4cf349a36c4d238266b51d16c09fadea91#egg=armymarkdown
+-e git+https://github.com/jschless/armymarkdown.git@c2fe9f15fa13adbc34d190aa9f0ae2cceaebb7d0#egg=armymarkdown
 async-timeout==4.0.2
 attrs==21.4.0
 billiard==3.6.4.0
 black==22.3.0
+boto3==1.24.13
+botocore==1.27.13
 cached-property==1.5.2
 celery==5.2.7
 certifi==2022.5.18.1
@@ -21,6 +23,7 @@ importlib-metadata==4.2.0
 iniconfig==1.1.1
 itsdangerous==2.1.2
 Jinja2==3.1.2
+jmespath==1.0.1
 kombu==5.2.4
 language-tool-python==2.7.1
 MarkupSafe==2.1.1
@@ -36,9 +39,11 @@ pycodestyle==2.8.0
 pyflakes==2.4.0
 pyparsing==3.0.9
 pytest==7.1.2
+python-dateutil==2.8.2
 pytz==2022.1
 redis==4.3.3
 requests==2.28.0
+s3transfer==0.6.0
 six==1.16.0
 tomli==2.0.1
 tqdm==4.64.0
