@@ -17,12 +17,6 @@ from armymarkdown import memo_model, writer
 
 app = Flask(__name__)
 
-os.environ["AWS_ACCESS_KEY_ID"] = "AKIAX7LGG34YJYGNPXNQ"
-os.environ[
-    "AWS_SECRET_ACCESS_KEY"
-] = "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"
-os.environ["REDIS_URL"] = "redis://localhost:6379/0"
-
 
 celery = Celery(
     app.name,
@@ -93,8 +87,8 @@ def taskstatus(task_id):
     elif task.state == "SUCCESS":
         file_name = task.result[:-4] + ".pdf"
         response = {"state": "SUCCESS", "pdf_file": file_name}
-        # task.forget()  # cleanup redis once done
-        print(f"task successful, pdf is stored at {file_name}")
+        task.forget()  # cleanup redis once done
+        # print(f"task successful, pdf is stored at {file_name}")
         return jsonify(response)
     else:
         # something went wrong in the background job
@@ -116,7 +110,6 @@ def results(pdf_name):
         ".out",
         ".tex",
     ]
-    print("Removing unnecessary files and serving pdf")
     file_path = os.path.join(app.root_path, pdf_name)
 
     # for end in file_endings:
@@ -134,9 +127,6 @@ def results(pdf_name):
     #             "Error removing or closing downloaded file handle", error
     #         )
     #     return response
-    print(
-        f"does path exist? {os.path.exists(os.path.join(app.root_path, pdf_name))}"
-    )
 
     return redirect(get_aws_link(pdf_name), code=302)
     return send_file(file_path)
@@ -150,7 +140,6 @@ def upload_file_to_s3(file, aws_path, acl="public-read"):
     """
     Docs: http://boto3.readthedocs.io/en/latest/guide/s3.html
     """
-    print("Uploading to S3")
     try:
         s3.upload_file(file, "armymarkdown", aws_path)
     except Exception as e:
@@ -170,18 +159,7 @@ def create_memo(lines):
 
     mw.write(output_file=file_path)
 
-    print(f"Reading file path\n {open(file_path, 'r').read()}")
     mw.generate_memo()
-    print(
-        f"Reading file path again after memo generation\n {open(file_path, 'r').read()}"
-    )
-
-    print(f"does path exist? {os.path.exists(file_path[-4:]  + '.pdf')}")
-    print(
-        f"does path exist for tex file {file_path}? {os.path.exists(file_path)}"
-    )
-    print(f"CWD: {os.getcwd()}")
-    print("Uploading to AWS")
     upload_file_to_s3(file_path[:-4] + ".pdf", temp_name[:-4] + ".pdf")
 
     return temp_name
