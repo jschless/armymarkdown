@@ -30,10 +30,6 @@ s3 = boto3.client(
     aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
 )
 
-# celery.conf.update(
-#     broker_url=os.environ["REDIS_URL"],
-#     result_backemd=os.environ["REDIS_URL"],
-# )
 boilerplate_text = open("./memo_template.Amd", "r").read()
 
 
@@ -112,24 +108,14 @@ def results(pdf_name):
     ]
     file_path = os.path.join(app.root_path, pdf_name)
 
-    # for end in file_endings:
-    #     os.remove(file_path[:-4] + end)
-
-    # file_handle = open(file_path, "r")
-
-    # @after_this_request
-    # def remove_file(response):
-    #     try:
-    #         os.remove(file_path)
-    #         file_handle.close()
-    #     except Exception as error:
-    #         app.logger.error(
-    #             "Error removing or closing downloaded file handle", error
-    #         )
-    #     return response
+    for end in file_endings:
+        if os.path.exists(file_path[:-4] + end):
+            os.remove(file_path[:-4] + end)
 
     return redirect(get_aws_link(pdf_name), code=302)
-    return send_file(file_path)
+
+
+g
 
 
 def get_aws_link(file_name):
