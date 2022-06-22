@@ -1,5 +1,6 @@
 import random
 import os
+import sys
 
 from flask import (
     Flask,
@@ -11,6 +12,7 @@ from flask import (
 )
 from celery import Celery
 import boto3
+from botocore.exceptions import ClientError
 from armymarkdown import memo_model, writer
 
 app = Flask(__name__)
@@ -21,6 +23,7 @@ if "REDIS_URL" not in os.environ:
 
     for key, val in config.values():
         os.environ[key] = val
+        print(key, val)
 
 celery = Celery(
     app.name,
@@ -120,19 +123,38 @@ def results(pdf_name):
 
 
 def get_aws_link(file_name):
-    return f"https://armymarkdown.s3.us-east-2.amazonaws.com/{file_name}"
+    # https://boto3.amazonaws.com/v1/documentation/api/latest/guide/s3-presigned-urls.html
+
+    try:
+        response = s3.generate_presigned_url(
+            "get_object",
+            Params={"Bucket": "armymarkdown", "Key": file_name},
+            ExpiresIn=3600,
+        )
+    except ClientError as e:
+        print(e)
+        return None
+    return response
+    # return f"https://armymarkdown.s3.us-east-2.amazonaws.com/{file_name}"
 
 
 def upload_file_to_s3(file, aws_path, acl="public-read"):
     """
     Docs: http://boto3.readthedocs.io/en/latest/guide/s3.html
     """
+    ret_val = None
     try:
         s3.upload_file(file, "armymarkdown", aws_path)
+        ret_val = file
     except Exception as e:
         print("Something Happened: ", e)
-        return e
-    return file
+        ret_val = e
+    finally:
+        # delete file after uploads
+        print(f"trying to delete {file}")
+        if os.path.exists(file):
+            os.remove(file)
+        return ret_val
 
 
 @celery.task

@@ -91,6 +91,8 @@
             alert("Unexpected error");
           },
         });
+        editor.setValue("Waiting for your memo pdf to be generated! Please be patient!");
+
       }
       function update_progress(status_url) {
         // send GET request to status URL
@@ -99,13 +101,17 @@
           if (data["state"] == "SUCCESS") {
             return get_pdf(data["pdf_file"]);
           } else {
+              let rerun_freq = 2000;
             count += 1;
-
+            let text = "Waiting for your memo pdf to be generated! Please be patient!"
+            text += `It has been ${count*rerun_freq/1000} seconds`;
+            console.log(count*rerun_freq/1000);
+            editor.setValue(text);
             // rerun in 2 seconds
             if (count < 50){
                 setTimeout(function () {
                     update_progress(status_url);
-                }, 2000);
+                }, rerun_freq);
         
             }
         }
