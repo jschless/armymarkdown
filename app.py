@@ -3,12 +3,10 @@ import os
 
 from flask import (
     Flask,
-    after_this_request,
     render_template,
     request,
     url_for,
     jsonify,
-    send_file,
     redirect,
 )
 from celery import Celery
@@ -119,9 +117,6 @@ def results(pdf_name):
             os.remove(file_path[:-4] + end)
 
     return redirect(get_aws_link(pdf_name), code=302)
-
-
-g
 
 
 def get_aws_link(file_name):
