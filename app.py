@@ -17,6 +17,12 @@ from armymarkdown import memo_model, writer
 
 app = Flask(__name__)
 
+if "REDIS_URL" not in os.environ:
+    # set os.environ from local_config
+    from local_config import config
+
+    for key, val in config.values():
+        os.environ[key] = val
 
 celery = Celery(
     app.name,
