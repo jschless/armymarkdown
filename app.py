@@ -1,6 +1,5 @@
 import random
 import os
-import sys
 
 from flask import (
     Flask,
@@ -23,7 +22,6 @@ if "REDIS_URL" not in os.environ:
 
     for key, val in config.values():
         os.environ[key] = val
-        print(key, val)
 
 celery = Celery(
     app.name,
@@ -72,7 +70,6 @@ def process():
     #     return render_template(
     #         "index.html", memo_text=f"### {m.strip()} ### \n\n\n {text}"
     #     )
-    print("submitting task to celery")
     task = create_memo.delay(text.split("\n"))
 
     return (
@@ -85,8 +82,6 @@ def process():
 @app.route("/status/<task_id>", methods=["POST", "GET"])
 def taskstatus(task_id):
     task = create_memo.AsyncResult(task_id)
-    print(f"get request for taskstatus, statis is {task.state}")
-    print("redis url", os.environ["REDIS_URL"])
     if task.state == "PENDING":
         # job did not start yet
         response = {"state": task.state, "status": "Pending..."}
@@ -154,7 +149,6 @@ def upload_file_to_s3(file, aws_path, acl="public-read"):
         ret_val = e
     finally:
         # delete file after uploads
-        print(f"trying to delete {file}")
         if os.path.exists(file):
             os.remove(file)
         return ret_val

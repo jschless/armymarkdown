@@ -29,6 +29,7 @@ class MemoWriter:
         subprocess.run(
             [
                 "latexmk",
+                "-quiet",
                 "-lualatex",
                 self.output_file,
             ]
