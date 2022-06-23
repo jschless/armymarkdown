@@ -95,11 +95,30 @@ def parse_lines(file_lines):
     # remove comments and empty lines
 
     file_lines = list(
-        filter(
+        filter(  # remove comments and blank lines
             lambda line: len(line.strip()) > 0 and line.strip()[0] != "#",
             file_lines,
         )
     )
+
+    def add_latex_escape_chars(s):
+        special_chars = {
+            "~": "\\textasciitilde ",
+            "^": "\\textasciicircum",
+            "\\": "\\textbackslash",
+        }
+        normal_chars = ["&", "%", "$", "#", "_", "{", "}"]
+
+        for c, r in special_chars.items():
+            s = s.replace(c, r)
+
+        for c in normal_chars:
+            s = s.replace(c, f"\\{c}")
+
+        return s
+
+    file_lines = [add_latex_escape_chars(s) for s in file_lines]
+
     try:
         memo_begin_loc = [
             i for i, s in enumerate(file_lines) if "SUBJECT" in s
@@ -110,7 +129,7 @@ def parse_lines(file_lines):
             "Please add SUBJECT=(your subject) above the start of your memo"
         )
 
-    memo_begin_loc += 1
+    memo_begin_loc += 1  # advance to next line after SUBJECT
     for line in file_lines[:memo_begin_loc]:
         # parse all the admin info
         if "=" in line:
