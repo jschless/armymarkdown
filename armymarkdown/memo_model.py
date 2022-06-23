@@ -88,6 +88,23 @@ def parse(file_name):
     return parse_lines(file_lines)
 
 
+def add_latex_escape_chars(s):
+    special_chars = {
+        "~": "\\textasciitilde ",
+        "^": "\\textasciicircum",
+        "\\": "\\textbackslash",
+    }
+    normal_chars = ["&", "%", "$", "#", "_", "{", "}"]
+
+    for c, r in special_chars.items():
+        s = s.replace(c, r)
+
+    for c in normal_chars:
+        s = s.replace(c, f"\\{c}")
+
+    return s
+
+
 def parse_lines(file_lines):
     # processes a text block into a latex memo_model
     memo_dict = {}
@@ -100,24 +117,6 @@ def parse_lines(file_lines):
             file_lines,
         )
     )
-
-    def add_latex_escape_chars(s):
-        special_chars = {
-            "~": "\\textasciitilde ",
-            "^": "\\textasciicircum",
-            "\\": "\\textbackslash",
-        }
-        normal_chars = ["&", "%", "$", "#", "_", "{", "}"]
-
-        for c, r in special_chars.items():
-            s = s.replace(c, r)
-
-        for c in normal_chars:
-            s = s.replace(c, f"\\{c}")
-
-        return s
-
-    file_lines = [add_latex_escape_chars(s) for s in file_lines]
 
     try:
         memo_begin_loc = [
@@ -135,7 +134,9 @@ def parse_lines(file_lines):
         if "=" in line:
             key, text = line.split("=")
             try:
-                memo_dict[key_converter[key.strip()]] = text.strip()
+                memo_dict[key_converter[key.strip()]] = add_latex_escape_chars(
+                    text.strip()
+                )
             except KeyError:
                 return (
                     f"ERROR: No such keyword as {key.strip()}, "
@@ -150,7 +151,7 @@ def parse_lines(file_lines):
             continue
 
         begin_line = dash_location + 1
-        line_text = line[begin_line:].strip()
+        line_text = add_latex_escape_chars(line[begin_line:].strip())
         proper_indent_level = master_list  # level 0
 
         for i in range(dash_location // 4):
