@@ -142,7 +142,15 @@ def upload_file_to_s3(file, aws_path, acl="public-read"):
     """
     ret_val = None
     try:
-        s3.upload_file(file, "armymarkdown", aws_path)
+        s3.upload_file(
+            file,
+            "armymarkdown",
+            aws_path,
+            ExtraArgs={
+                "ContentType": "application/pdf",
+                "ContentDisposition": "attachment",
+            },
+        )
         ret_val = file
     except Exception as e:
         print("Something Happened: ", e)
