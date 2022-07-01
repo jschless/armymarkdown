@@ -1,6 +1,5 @@
 import random
 import os
-
 from flask import (
     Flask,
     render_template,
@@ -20,7 +19,7 @@ if "REDIS_URL" not in os.environ:
     # set os.environ from local_config
     from local_config import config
 
-    for key, val in config.values():
+    for key, val in config.items():
         os.environ[key] = val
 
 celery = Celery(
@@ -49,7 +48,6 @@ def index():
 @app.route("/process", methods=["POST"])
 def process():
     text = request.form["memo_text"]
-    # m = memo_model.parse_lines(text.split("\n"))
 
     # if request.form["submit_button"] == "Spellcheck":
     #     admin_errors, body_errors = m.language_check()
