@@ -35,12 +35,10 @@ class MemoWriter:
     def _write_for_lines(self) -> list:
         ans = []
         if self.data.memo_type == "MEMORANDUM FOR RECORD":
-            ans.append(f"\\memoline{{MEMORANDUM FOR RECORD}}")
+            ans.append("\\memoline{{MEMORANDUM FOR RECORD}}")
         else:
             prefix = (
-                "MEMORANDUM FOR"
-                if len(self.data.thru_unit_name) == 0
-                else "FOR"
+                "MEMORANDUM FOR" if self.data.thru_unit_name is None else "FOR"
             )
 
             for name, add, csz in zip(
@@ -70,6 +68,30 @@ class MemoWriter:
             ans.append(f"\\multimemothru{{{name}, {add}, {csz}}}")
         return ans
 
+    def _add_opt_strings(self):
+        ans = []
+        for name, val in [
+            ("authority", self.data.authority),
+            ("title", self.data.author_title),
+            ("documentmark", self.data.document_mark),
+        ]:
+            if val is not None:
+                ans.append(f"\\{name}{{{val}}}")
+
+        return ans
+
+    def _add_opt_lists(self):
+        ans = []
+        for name, val in [
+            ("encl", self.data.enclosures),
+            ("distro", self.data.distros),
+            ("cf", self.data.cfs),
+        ]:
+            if val is not None:
+                for v in val:
+                    ans.append(f"\\add{name}{{{v}}}")
+        return ans
+
     def _write_admin(self):
         self.lines.append(f"\\address{{{self.data.unit_name}}}")
         self.lines.append(f"\\address{{{self.data.unit_street_address}}}")
@@ -82,15 +104,17 @@ class MemoWriter:
 
         self.lines.append(f"\\officesymbol{{{self.data.office_symbol}}}")
         self.lines.append(f"\\signaturedate{{{self.data.todays_date}}}")
+        self.lines.append(f"\\subject{{{self.data.subject}}}")
 
         if self.data.memo_type == "MEMORANDUM THRU":
             self.lines += self._write_thru_lines()
 
         self.lines += self._write_for_lines()
 
-        self.lines.append(f"\\subject{{{self.data.subject}}}")
-        if self.data.author_title is not None:
-            self.lines.append(f"\\title{{{self.data.author_title}}}")
+        # OPTIONAL LINES
+        self.lines += self._add_opt_lists()
+
+        self.lines += self._add_opt_strings()
 
     def _write_body(self):
         self.lines.append("\\begin{document}")

@@ -41,6 +41,12 @@ key_converter = {
     "THRU_ORGANIZATION_NAME": "thru_unit_name",
     "THRU_ORGANIZATION_STREET_ADDRESS": "thru_unit_street_address",
     "THRU_ORGANIZATION_CITY_STATE_ZIP": "thru_unit_city_state_zip",
+    "ENCLOSURE": "enclosures",
+    "DISTRO": "distros",
+    "CF": "cfs",
+    "DOCUMENT_MARK": "document_mark",
+    "SUSPENSE": "suspense_date",
+    "AUTHORITY": "authority",
 }
 
 inv_key_converter = {v: k for k, v in key_converter.items()}
