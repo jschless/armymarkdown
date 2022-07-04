@@ -52,7 +52,7 @@ class MemoModel:
     enclosures: list = None
     distros: list = None
     cfs: list = None
-    document_mark: str = None
+    authority: str = None
 
     def language_check(self):
         return self._check_admin()
