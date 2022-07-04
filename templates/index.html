@@ -82,7 +82,7 @@
       function poll_spellcheck(status_url) {
         $.get(status_url, function (data) {
           if (data["state"] == "SUCCESS") {
-            editor.value(data["text"]);
+            editor.value(data["result"]);
           } else {
             setTimeout(function () {
               poll_spellcheck(status_url);
@@ -96,7 +96,7 @@
         // send GET request to status URL
         $.get(status_url, function (data) {
           if (data["state"] == "SUCCESS") {
-            return get_pdf(data["pdf_file"]);
+            return get_pdf(data["result"]);
           } else {
             let rerun_freq = 2000;
             count += 1;
