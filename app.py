@@ -45,19 +45,28 @@ def index():
     return render_template("index.html", memo_text=boilerplate_text)
 
 
-@app.route("/spellcheck", methods=["POST"])
-def spellcheck():
-    task = spellcheck_memo.delay(request.form["memo_text"])
-    return (
-        "Running Spellcheck",
-        200,
-        {"Location": url_for("spellcheck_taskstatus", task_id=task.id)},
-    )
+def check_memo(text):
+    m = memo_model.parse_lines(text.split("\n"))
+
+    if isinstance(m, str):
+        # rudimentary error handling
+        return m.strip()
+
+    errors = m.language_check()
+    if len(errors) > 0:
+        return "\n".join([f"Error with {k}: {v}" for k, v in errors])
+
+    return None
 
 
 @app.route("/process", methods=["POST"])
 def process():
-    task = create_memo.delay(request.form["memo_text"])
+    text = request.form["memo_text"]
+    memo_errors = check_memo(text)
+    if memo_errors is not None:
+        return memo_errors, 400
+
+    task = create_memo.delay(text)
 
     return (
         "Hi, we're waiting for your PDF to be created.",
@@ -81,12 +90,6 @@ def process_task(task, result_func):
             "status": str(task.info),  # this is the exception raised
         }
     return response
-
-
-@app.route("/spellstatus/<task_id>", methods=["POST", "GET"])
-def spellcheck_taskstatus(task_id):
-    task = spellcheck_memo.AsyncResult(task_id)
-    return jsonify(process_task(task, lambda x: x))
 
 
 @app.route("/status/<task_id>", methods=["POST", "GET"])
@@ -171,24 +174,6 @@ def create_memo(text):
     upload_file_to_s3(file_path[:-4] + ".pdf", temp_name[:-4] + ".pdf")
 
     return temp_name
-
-
-@celery.task(name="spellcheck")
-def spellcheck_memo(text):
-    m = memo_model.parse_lines(text.split("\n"))
-
-    if isinstance(m, str):
-        # rudimentary error handling
-        return f"### {m.strip()} ### \n\n\n {text}"
-
-    admin_errors, body_errors = m.language_check()
-    error_string = "\n".join([f"Error with {k}: {v}" for k, v in admin_errors])
-    error_string += "\n"
-    error_string += "".join(
-        [str(err)[str(err).find("\n") :] for err in body_errors]
-    )
-
-    return f"{error_string}\n\n {text}"
 
 
 def main():
