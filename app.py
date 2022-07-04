@@ -66,15 +66,13 @@ def process():
     )
 
 
-@app.route("/spellstatus/<task_id>", methods=["POST", "GET"])
-def spellcheck_taskstatus(task_id):
-    task = spellcheck_memo.AsyncResult(task_id)
+def process_task(task, result_func):
     if task.state == "PENDING":
         # job did not start yet
         response = {"state": task.state, "status": "Pending..."}
     elif task.state == "SUCCESS":
-        text = task.result
-        response = {"state": task.state, "text": text}
+        result = task.result
+        response = {"state": task.state, "result": result_func(result)}
         task.forget()
     else:
         # something went wrong in the background job
@@ -82,28 +80,19 @@ def spellcheck_taskstatus(task_id):
             "state": task.state,
             "status": str(task.info),  # this is the exception raised
         }
-    return jsonify(response)
+    return response
+
+
+@app.route("/spellstatus/<task_id>", methods=["POST", "GET"])
+def spellcheck_taskstatus(task_id):
+    task = spellcheck_memo.AsyncResult(task_id)
+    return jsonify(process_task(task, lambda x: x))
 
 
 @app.route("/status/<task_id>", methods=["POST", "GET"])
 def taskstatus(task_id):
     task = create_memo.AsyncResult(task_id)
-    if task.state == "PENDING":
-        # job did not start yet
-        response = {"state": task.state, "status": "Pending..."}
-    elif task.state == "SUCCESS":
-        file_name = task.result[:-4] + ".pdf"
-        response = {"state": "SUCCESS", "pdf_file": file_name}
-        task.forget()  # cleanup redis once done
-        # print(f"task successful, pdf is stored at {file_name}")
-        return jsonify(response)
-    else:
-        # something went wrong in the background job
-        response = {
-            "state": task.state,
-            "status": str(task.info),  # this is the exception raised
-        }
-    return jsonify(response)
+    return jsonify(process_task(task, lambda res: res[:-4] + ".pdf"))
 
 
 @app.route("/results/<pdf_name>", methods=["GET", "POST"])
