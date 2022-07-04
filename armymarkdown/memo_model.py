@@ -2,8 +2,6 @@ from dataclasses import dataclass
 from datetime import date
 import re
 
-import language_tool_python
-
 from armymarkdown.utils import branch_to_abbrev, abbrev_to_branch
 from armymarkdown.utils import key_converter, inv_key_converter
 
@@ -43,10 +41,7 @@ class MemoModel:
     cfs: list = None
 
     def language_check(self):
-        self.tool = language_tool_python.LanguageTool("en-US")
-        admin_errors = self._check_admin()
-        body_errors = self._check_body()
-        return admin_errors, body_errors
+        return self._check_admin()
 
     def _check_date(self, date_str):
         # form 08 May 2022
@@ -74,10 +69,10 @@ class MemoModel:
                 ("SUSPENSE_DATE", self._check_date(self.suspense_date))
             )
 
-        return [e for e in errors if e is not None]
+        return [e for e in errors if e[1] is not None]
 
     def _check_body(self):
-        return self.tool.check(" ".join(flatten(self.text)))
+        return []
 
 
 def parse(file_name):
