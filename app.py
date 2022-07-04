@@ -45,36 +45,44 @@ def index():
     return render_template("index.html", memo_text=boilerplate_text)
 
 
+@app.route("/spellcheck", methods=["POST"])
+def spellcheck():
+    task = spellcheck_memo.delay(request.form["memo_text"])
+    return (
+        "Running Spellcheck",
+        200,
+        {"Location": url_for("spellcheck_taskstatus", task_id=task.id)},
+    )
+
+
 @app.route("/process", methods=["POST"])
 def process():
-    text = request.form["memo_text"]
-
-    # if request.form["submit_button"] == "Spellcheck":
-    #     admin_errors, body_errors = m.language_check()
-    #     error_string = "\n".join(
-    #         [f"Error with {k}: {v}" for k, v in admin_errors]
-    #     )
-    #     error_string += "\n"
-    #     error_string += "".join(
-    #         [str(err)[str(err).find("\n") :] for err in body_errors]
-    #     )
-    #     return render_template(
-    #         "index.html", memo_text=f"{error_string}\n\n {text}"
-    #     )
-
-    # if isinstance(m, str):
-    #     # rudimentary error handling
-    #     print(f"handling error {m}")
-    #     return render_template(
-    #         "index.html", memo_text=f"### {m.strip()} ### \n\n\n {text}"
-    #     )
-    task = create_memo.delay(text.split("\n"))
+    task = create_memo.delay(request.form["memo_text"])
 
     return (
         "Hi, we're waiting for your PDF to be created.",
         200,
         {"Location": url_for("taskstatus", task_id=task.id)},
     )
+
+
+@app.route("/spellstatus/<task_id>", methods=["POST", "GET"])
+def spellcheck_taskstatus(task_id):
+    task = spellcheck_memo.AsyncResult(task_id)
+    if task.state == "PENDING":
+        # job did not start yet
+        response = {"state": task.state, "status": "Pending..."}
+    elif task.state == "SUCCESS":
+        text = task.result
+        response = {"state": task.state, "text": text}
+        task.forget()
+    else:
+        # something went wrong in the background job
+        response = {
+            "state": task.state,
+            "status": str(task.info),  # this is the exception raised
+        }
+    return jsonify(response)
 
 
 @app.route("/status/<task_id>", methods=["POST", "GET"])
@@ -160,10 +168,9 @@ def upload_file_to_s3(file, aws_path, acl="public-read"):
         return ret_val
 
 
-@celery.task
-def create_memo(lines):
-    print("Creating memo")
-    m = memo_model.parse_lines(lines)
+@celery.task(name="create_memo")
+def create_memo(text):
+    m = memo_model.parse_lines(text.split("\n"))
     mw = writer.MemoWriter(m)
 
     temp_name = "temp" + "".join(random.choices("0123456789", k=8)) + ".tex"
@@ -175,6 +182,24 @@ def create_memo(lines):
     upload_file_to_s3(file_path[:-4] + ".pdf", temp_name[:-4] + ".pdf")
 
     return temp_name
+
+
+@celery.task(name="spellcheck")
+def spellcheck_memo(text):
+    m = memo_model.parse_lines(text.split("\n"))
+
+    if isinstance(m, str):
+        # rudimentary error handling
+        return f"### {m.strip()} ### \n\n\n {text}"
+
+    admin_errors, body_errors = m.language_check()
+    error_string = "\n".join([f"Error with {k}: {v}" for k, v in admin_errors])
+    error_string += "\n"
+    error_string += "".join(
+        [str(err)[str(err).find("\n") :] for err in body_errors]
+    )
+
+    return f"{error_string}\n\n {text}"
 
 
 def main():
