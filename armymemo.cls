@@ -265,43 +265,48 @@
 \newcounter{am@memothru@count}
 \newcommand{\multimemothru}[1]{\stepcounter{am@memothru@count}\listadd{\am@list@memothru}{#1}}
 \newcommand{\am@do@memothru}[1]{\noindent{}\hangindent=0.25in{}#1\\}
-
 \newcounter{am@memofor@count}
 \newcommand{\multimemofor}[1]{\stepcounter{am@memofor@count}\listadd{\am@list@memofor}{#1}}
 \newcommand{\am@do@memofor}[1]{\noindent{}\hangindent=0.25in{}#1\\}
 
-
 \newcommand{\am@memoline}{%
   % if there is nothing specified, add "memorandum for record"
   \ifnumcomp{\value{am@memoline@count}}{=}{0}{%
-    \ifnumcomp{\value{am@memothru@count}}{=}{0}{\mfr}{}}{}
+    \ifnumcomp{\value{am@memothru@count}}{=}{0}{
+      \ifnumcomp{\value{am@memofor@count}}{=}{0}{
+        \mfr
+      }{}
+    }{}
+  }{}
   % otherwise, skip a space and begin
   \vspace{\baselineskip}
   % if there are multimemothru lines:
-
   \ifnumcomp{\value{am@memothru@count}}{>}{0}{%
     \vspace{\baselineskip}
     MEMORANDUM THRU\\
     \vspace{\baselineskip}
     % loop through the thru lines with hanging indent
-    \forlistloop{\am@do@memothru}{\am@list@memothru}    
-    }{}
+    \forlistloop{\am@do@memothru}{\am@list@memothru}}
+  {}
   \ifnumcomp{\value{am@memofor@count}}{>}{0}{
     \ifnumcomp{\value{am@memothru@count}}{>}{0}{%
       \vspace{\baselineskip}
-      FOR\\
+      FOR\\ % if there is a thru, it should just be for, not memorandum for
       \vspace{\baselineskip}
     }{%
       \vspace{\baselineskip}
-      MEMORANDUM FOR\\
+      MEMORANDUM FOR\\ % if there is no thru
       \vspace{\baselineskip}
     }
     \forlistloop{\am@do@memofor}{\am@list@memofor}}
-  {
+  {}
+  \ifnumcomp{\value{am@memoline@count}}{>}{0}{
     % after dealing with special cases, add the other lines from \addmemoline or \memoline
     % these lines must begin with any labels such as "MEMORANDUM FOR" or "MEMORANDUM THRU" or "FOR"
+    % allow for possibility of no multi lines.
     \forlistloop{\am@domemoline}{\am@list@memolines}
   }
+  {}
 }
 
 
@@ -339,7 +344,7 @@
       \end{enumerate}
       \vspace{\baselineskip}
     }{}%
-    \ifnumcomp{\value{am@encl@count}}{>}{2}{%
+    \ifnumcomp{\value{am@encl@count}}{>}{1}{%
       \noindent\theam@encl@count{} Encls%
       \begin{enumerate}[topsep=0pt,itemsep=0pt,parsep=0pt,leftmargin=16pt,itemindent=0pt,align=left,label={\arabic*.}]
         \forlistloop{\am@do@encl}{\am@list@encls}
