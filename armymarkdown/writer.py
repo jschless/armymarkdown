@@ -71,6 +71,12 @@ class MemoWriter:
             self.data.thru_unit_street_address,
             self.data.thru_unit_city_state_zip,
         ):
+            if len(self.data.thru_unit_name) == 1:
+                ans.append(
+                    f"\\addmemoline{{MEMORANDUM THRU {name}, {add}, {csz} }}"
+                )
+                return ans
+
             ans.append(f"\\multimemothru{{{name}, {add}, {csz}}}")
         return ans
 
