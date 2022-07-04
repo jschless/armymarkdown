@@ -35,6 +35,44 @@ key_converter = {
     "TITLE": "author_title",
     "MEMO_TYPE": "memo_type",
     "SUBJECT": "subject",
+    "FOR_ORGANIZATION_NAME": "for_unit_name",
+    "FOR_ORGANIZATION_STREET_ADDRESS": "for_unit_street_address",
+    "FOR_ORGANIZATION_CITY_STATE_ZIP": "for_unit_city_state_zip",
+    "THRU_ORGANIZATION_NAME": "thru_unit_name",
+    "THRU_ORGANIZATION_STREET_ADDRESS": "thru_unit_street_address",
+    "THRU_ORGANIZATION_CITY_STATE_ZIP": "thru_unit_city_state_zip",
 }
 
 inv_key_converter = {v: k for k, v in key_converter.items()}
+
+optional_keys = set(
+    [
+        "for_unit_name",
+        "for_unit_street_address",
+        "for_unit_city_state_zip",
+        "thru_unit_name",
+        "thru_unit_street_address",
+        "thru_unit_city_state_zip",
+        "suspense_date",
+        "document_mark",
+        "enclosures",
+        "distros",
+        "cfs",
+        "document_mark",
+        "todays_date",
+    ]
+)
+
+list_keys = set(
+    [
+        "for_unit_name",
+        "for_unit_street_address",
+        "for_unit_city_state_zip",
+        "thru_unit_name",
+        "thru_unit_street_address",
+        "thru_unit_city_state_zip",
+        "enclosures",
+        "distros",
+        "cfs",
+    ]
+)
