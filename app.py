@@ -37,12 +37,18 @@ s3 = boto3.client(
     ),
 )
 
-boilerplate_text = open("./memo_template.Amd", "r").read()
-
 
 @app.route("/")
-def index():
-    return render_template("index.html", memo_text=boilerplate_text)
+@app.route("/<example_file>")
+def index(example_file="./tutorial.Amd"):
+    text = ""
+    if example_file not in os.listdir("./examples"):
+        example_file = "./tutorial.Amd"
+
+    example_file = os.path.join("./examples", example_file)
+    text = open(example_file, "r").read()
+
+    return render_template("index.html", memo_text=text)
 
 
 def check_memo(text):
