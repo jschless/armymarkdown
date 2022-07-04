@@ -24,29 +24,84 @@
       .button {
         font-size: 26px;
       }
+      .exampledrawer {
+        height: 100%; /* Full-height: remove this if you want "auto" height */
+        width: 160px; /* Set the width of the sidebar */
+        position: fixed; /* Fixed Sidebar (stay in place on scroll) */
+        z-index: 1; /* Stay on top */
+        top: 0; /* Stay at the top */
+        left: 0;
+        background-color: #111; /* Black */
+        overflow-x: hidden; /* Disable horizontal scroll */
+        padding-top: 20px;
+      }
 
-      .CodeMirror {
-        height: 90%;
+      .exampledrawer h2 {
+        color: #f1f1f1;
+        text-align: center;
+      }
+
+      .exampledrawer a {
+        padding: 6px 8px 6px 16px;
+        text-decoration: none;
+        font-size: 18px;
+        color: #818181;
+        display: block;
+      }
+
+      /* When you mouse over the navigation links, change their color */
+      .exampledrawer a:hover {
+        color: #f1f1f1;
+      }
+
+      .main {
+        margin-left: 160px; /* Same as the width of the sidebar */
+        padding: 0px 10px;
+      }
+
+      /* On smaller screens, where height is less than 450px, change the style of the sidebar (less padding and a smaller font size) */
+      @media screen and (max-height: 450px) {
+        .exampledrawer {
+          padding-top: 15px;
+        }
+        .exampledrawer a {
+          font-size: 18px;
+        }
       }
     </style>
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css"
     />
+    <link
+      rel="shortcut icon"
+      href="{{ url_for('static', filename='favicon.ico') }}"
+    />
     <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
   </head>
 
   <body>
-    <div class="box">
-      <textarea name="memo_text" id="editor">{{memo_text}}</textarea>
-      <button id="start-bg-job">Create Memo PDF</button>
+    <div class="exampledrawer">
+      <h2>Examples</h2>
+      <a href="{{url_for('index', example_file='tutorial.Amd')}}">Tutorial</a>
+      <a href="{{url_for('index', example_file='basic_mfr.Amd')}}"
+        >Memorandum for Record</a
+      >
+      <a href="#">Memorandum For</a>
     </div>
 
-    <form method="POST" id="download">
-      <!-- Hidden form for submitting -->
-      <input type="hidden" name="param1" value="value1" />
-    </form>
+    <div class="main">
+      <div class="box">
+        <textarea name="memo_text" id="editor">{{memo_text}}</textarea>
+        <button id="start-bg-job">Create Memo PDF</button>
+      </div>
+
+      <form method="POST" id="download">
+        <!-- Hidden form for submitting -->
+        <input type="hidden" name="param1" value="value1" />
+      </form>
+    </div>
 
     <script>
       let editor = new SimpleMDE({
