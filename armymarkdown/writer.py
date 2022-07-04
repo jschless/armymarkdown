@@ -32,37 +32,27 @@ class MemoWriter:
             ]
         )
 
-    def _write_memo_line(self):
+    def _write_for_lines(self) -> list:
+        ans = []
         if self.data.memo_type == "MEMORANDUM FOR RECORD":
-            return "MEMORANDUM FOR RECORD"
-        elif self.data.memo_type == "MEMORANDUM FOR":
-            assert (  # must have the same number of units
-                len(self.data.for_unit_city_state_zip)
-                == len(self.data.for_unit_name)
-                == len(self.data.for_unit_street_address)
+            ans.append(f"\\memoline{{MEMORANDUM FOR RECORD}}")
+        else:
+            prefix = (
+                "MEMORANDUM FOR"
+                if len(self.data.thru_unit_name) == 0
+                else "FOR"
             )
-            if len(self.data.for_unit_city_state_zip) == 1:
-                ans = "MEMORANDUM FOR "
-                ans += self.data.for_unit_name[0]
-                ans += ", " + self.data.for_unit_street_address[0]
-                ans += ", " + self.data.for_unit_city_state_zip[0]
-                return ans
-            else:
-                raise NotImplementedError("Need to do multiple fors")
 
-                for name, add, csz in zip(
-                    self.data.for_unit_name,
-                    self.data.for_unit_street_address,
-                    self.data.for_unit_city_state_zip,
-                ):
-                    ans += f"{name}, {add}, {csz}\\\\"
-                return ans
-        elif self.data.memo_type == "MEMORANDUM THRU":
-            ans = "FOR "
-            ans += self.data.for_unit_name[0]
-            ans += ", " + self.data.for_unit_street_address[0]
-            ans += ", " + self.data.for_unit_city_state_zip[0]
-            return ans
+            for name, add, csz in zip(
+                self.data.for_unit_name,
+                self.data.for_unit_street_address,
+                self.data.for_unit_city_state_zip,
+            ):
+                if len(self.data.for_unit_name) == 1:
+                    ans.append(f"\\memoline{{{prefix} {name}, {add}, {csz}}}")
+                    return ans
+                ans.append(f"\\multimemofor{{{name}, {add}, {csz}}}")
+        return ans
 
     def _write_thru_lines(self) -> list:
         ans = []
@@ -95,7 +85,8 @@ class MemoWriter:
 
         if self.data.memo_type == "MEMORANDUM THRU":
             self.lines += self._write_thru_lines()
-        self.lines.append(f"\\memoline{{{self._write_memo_line()}}}")
+
+        self.lines += self._write_for_lines()
 
         self.lines.append(f"\\subject{{{self.data.subject}}}")
         if self.data.author_title is not None:
