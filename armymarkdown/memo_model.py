@@ -3,7 +3,12 @@ from datetime import date
 import re
 
 from armymarkdown.utils import branch_to_abbrev, abbrev_to_branch
-from armymarkdown.utils import key_converter, inv_key_converter
+from armymarkdown.utils import (
+    key_converter,
+    inv_key_converter,
+    list_keys,
+    optional_keys,
+)
 
 
 def flatten(x):
@@ -34,11 +39,20 @@ class MemoModel:
     todays_date: str = date.today().strftime("%d %B %Y")
 
     # optional, less frequently used parameters
+    for_unit_name: list = None
+    for_unit_street_address: list = None
+    for_unit_city_state_zip: list = None
+
+    thru_unit_name: list = None
+    thru_unit_street_address: list = None
+    thru_unit_city_state_zip: list = None
+
     suspense_date: str = None
     document_mark: str = None
     enclosures: list = None
     distros: list = None
     cfs: list = None
+    document_mark: str = None
 
     def language_check(self):
         return self._check_admin()
@@ -128,15 +142,21 @@ def parse_lines(file_lines):
         # parse all the admin info
         if "=" in line:
             key, text = line.split("=")
-            try:
-                memo_dict[key_converter[key.strip()]] = add_latex_escape_chars(
-                    text.strip()
-                )
-            except KeyError:
+
+            if key.strip() not in key_converter:
                 return (
                     f"ERROR: No such keyword as {key.strip()}, "
                     "please remove or fix {line}"
                 )
+                return
+
+            processed_text = add_latex_escape_chars(text.strip())
+            if key_converter[key.strip()] in list_keys:
+                temp = memo_dict.get(key_converter[key.strip()], [])
+                temp.append(processed_text)
+                memo_dict[key_converter[key.strip()]] = temp
+            else:
+                memo_dict[key_converter[key.strip()]] = processed_text
 
     master_list = []
     indent_level = 0
@@ -163,9 +183,10 @@ def parse_lines(file_lines):
 
     try:
         return MemoModel(**memo_dict)
-    except TypeError:
+    except TypeError as e:
+        print(e)
         missing_keys = set(inv_key_converter.keys()) - set(memo_dict.keys())
-        for k in ["author_title", "todays_date"]:
+        for k in optional_keys:
             if k in missing_keys:
                 missing_keys.remove(k)  # remove optional keys
 
