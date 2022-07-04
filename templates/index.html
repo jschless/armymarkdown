@@ -39,17 +39,10 @@
 
   <body>
     <div class="box">
-      <textarea name="memo_text" id="editor">
-{{memo_text}}
-        </textarea
-      >
+      <textarea name="memo_text" id="editor">{{memo_text}}</textarea>
       <button id="start-bg-job">Create Memo PDF</button>
-      <button type="submit" name="submit_button" value="Spellcheck">
-        Check Spelling and Grammar
-      </button>
+      <button id="start-spellcheck">Check Spelling and Grammar</button>
     </div>
-
-    <div id="progress"></div>
 
     <form method="POST" id="download">
       <!-- Hidden form for submitting -->
@@ -63,20 +56,38 @@
         toolbar: false,
       });
 
-      function start_long_task() {
-        // send ajax POST request to start background job
+      function button_press(endpoint, polling_function) {
         $.ajax({
           type: "POST",
-          url: "/process",
+          url: endpoint,
           data: { memo_text: editor.value() },
           success: function (data, status, request) {
             status_url = request.getResponseHeader("Location");
-            console.log("received status url", status_url);
-            update_progress(status_url);
+            polling_function(status_url);
           },
           error: function () {
             alert("Unexpected error");
           },
+        });
+      }
+
+      function generate_memo() {
+        button_press("/process", update_progress);
+      }
+
+      function start_spellcheck() {
+        button_press("/spellcheck", poll_spellcheck);
+      }
+
+      function poll_spellcheck(status_url) {
+        $.get(status_url, function (data) {
+          if (data["state"] == "SUCCESS") {
+            editor.value(data["text"]);
+          } else {
+            setTimeout(function () {
+              poll_spellcheck(status_url);
+            }, 1000);
+          }
         });
       }
 
@@ -110,7 +121,11 @@
       }
 
       $(function () {
-        $("#start-bg-job").click(start_long_task);
+        $("#start-bg-job").click(generate_memo);
+      });
+
+      $(function () {
+        $("#start-spellcheck").click(start_spellcheck);
       });
     </script>
   </body>

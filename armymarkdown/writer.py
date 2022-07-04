@@ -22,10 +22,7 @@ class MemoWriter:
         with open(self.output_file, "w+") as f:
             print("\n".join(self.lines), file=f)
 
-        print(f"wrote to {self.output_file}")
-
     def generate_memo(self):
-        print("generating memo and cwd is", os.getcwd())
         subprocess.run(
             [
                 "latexmk",
