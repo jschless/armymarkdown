@@ -7,70 +7,85 @@
     <title>Army Markdown Editor</title>
 
     <style>
-      .box {
-        height: 80%;
-      }
-
-      html,
-      body {
-        margin: 0px;
-        height: 100%;
-      }
-
-      form {
-        height: 100%;
-      }
-
-      .button {
-        font-size: 26px;
-      }
-
-      h1 {
-        text-align: center;
-      }
-
-      .exampledrawer {
-        height: 100%; /* Full-height: remove this if you want "auto" height */
-        width: 160px; /* Set the width of the sidebar */
-        position: fixed; /* Fixed Sidebar (stay in place on scroll) */
-        z-index: 1; /* Stay on top */
-        top: 0; /* Stay at the top */
-        left: 0;
-        background-color: #111; /* Black */
-        overflow-x: hidden; /* Disable horizontal scroll */
-        padding-top: 20px;
-      }
-
-      .exampledrawer h2 {
-        color: #f1f1f1;
-        text-align: center;
-      }
-
-      .exampledrawer a {
-        padding: 6px 8px 6px 16px;
-        text-decoration: none;
-        font-size: 18px;
-        color: #818181;
-        display: block;
-      }
-
-      /* When you mouse over the navigation links, change their color */
-      .exampledrawer a:hover {
-        color: #f1f1f1;
-      }
-
-      .main {
-        margin-left: 160px; /* Same as the width of the sidebar */
-        padding: 0px 10px;
-      }
-
-      /* On smaller screens, where height is less than 450px, change the style of the sidebar (less padding and a smaller font size) */
-      @media screen and (max-height: 450px) {
-        .exampledrawer {
-          padding-top: 15px;
+        .box {
+          height: 80%;
         }
+
+        html,
+        body {
+          margin: 0px;
+          height: 100%;
+        }
+
+        form {
+          height: 100%;
+        }
+
+        .button {
+          font-size: 26px;
+        }
+
+        h1 {
+          text-align: center;
+        }
+
+        .exampledrawer {
+          height: 100%; /* Full-height: remove this if you want "auto" height */
+          width: 160px; /* Set the width of the sidebar */
+          position: fixed; /* Fixed Sidebar (stay in place on scroll) */
+          z-index: 1; /* Stay on top */
+          top: 0; /* Stay at the top */
+          left: 0;
+          background-color: #111; /* Black */
+          overflow-x: hidden; /* Disable horizontal scroll */
+          padding-top: 20px;
+        }
+
+        .exampledrawer h2 {
+          color: #f1f1f1;
+          text-align: center;
+        }
+
         .exampledrawer a {
+          padding: 6px 8px 6px 16px;
+          text-decoration: none;
           font-size: 18px;
+          color: #818181;
+          display: block;
+        }
+
+        .exampledrawer a.active {
+          color: #f1f1f1;
+          font-weight: bold;
+
+        }
+
+        /* When you mouse over the navigation links, change their color */
+        .exampledrawer a:hover {
+          color: #f1f1f1;
+          font-weight: bold;
+        }
+
+        ul {
+          list-style-type: none;
+          margin: 0;
+          padding: 0;
+
+        }
+
+        .main {
+          margin-left: 160px; /* Same as the width of the sidebar */
+          padding: 0px 10px;
+        }
+
+        /* On smaller screens, where height is less than 450px, change the style of the sidebar (less padding and a smaller font size) */
+        @media screen and (max-height: 450px) {
+          .exampledrawer {
+            padding-top: 15px;
+          }
+          .exampledrawer a {
+            font-size: 18px;
+          }
         }
       }
     </style>
@@ -89,22 +104,50 @@
   <body>
     <div class="exampledrawer">
       <h2>Examples</h2>
-      <a href="{{url_for('index', example_file='tutorial.Amd')}}">Tutorial</a>
-      <a href="{{url_for('index', example_file='basic_mfr.Amd')}}"
-        >Memorandum For Record</a
-      >
-      <a href="{{url_for('index', example_file='memo_for.Amd')}}"
-        >Memorandum For</a
-      >
-      <a href="{{url_for('index', example_file='memo_multi_for.Amd')}}"
-        >Memorandum For Multiple</a
-      >
-      <a href="{{url_for('index', example_file='memo_thru.Amd')}}"
-        >Memorandum Thru</a
-      >
-      <a href="{{url_for('index', example_file='memo_extra_features.Amd')}}"
-        >Adding Enclosures, Distros, Suspense Dates
-      </a>
+      <ul>
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            href="{{url_for('index', example_file='tutorial.Amd')}}"
+            >Tutorial</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            href="{{url_for('index', example_file='basic_mfr.Amd')}}"
+            >Memorandum For Record</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            href="{{url_for('index', example_file='memo_for.Amd')}}"
+            >Memorandum For</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            href="{{url_for('index', example_file='memo_multi_for.Amd')}}"
+            >Memorandum For Multiple</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            href="{{url_for('index', example_file='memo_thru.Amd')}}"
+            >Memorandum Thru</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            href="{{url_for('index', example_file='memo_extra_features.Amd')}}"
+            >Adding Enclosures, Distros, Suspense Dates
+          </a>
+        </li>
+      </ul>
     </div>
 
     <div class="main">
@@ -178,6 +221,8 @@
       $(function () {
         $("#start-bg-job").click(generate_memo);
       });
+
+      $("a[href*='" + location.pathname + "']").addClass("active");
     </script>
   </body>
 </html>
