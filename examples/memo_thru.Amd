@@ -1,0 +1,35 @@
+ORGANIZATION_NAME = 4th Engineer Battalion
+ORGANIZATION_STREET_ADDRESS = 588 Wetzel Road
+ORGANIZATION_CITY_STATE_ZIP = Colorado Springs, CO 80904
+
+OFFICE_SYMBOL=ABC-DEF-GH
+AUTHOR = James K. Polk
+RANK = 1LT
+BRANCH = EN
+TITLE = Maintenance Platoon Leader
+
+MEMO_TYPE = MEMORANDUM THRU
+
+THRU_ORGANIZATION_NAME = U.S. Army Command and General Staff College (ATZL)
+THRU_ORGANIZATION_STREET_ADDRESS = 100 Stimson Avenue
+THRU_ORGANIZATION_CITY_STATE_ZIP = Ft Leavenworth, KS 66027-1352
+
+THRU_ORGANIZATION_NAME = U.S. Army Command and General Staff College (ATZL)
+THRU_ORGANIZATION_STREET_ADDRESS = 101 Stimson Avenue
+THRU_ORGANIZATION_CITY_STATE_ZIP = Ft Leavenworth, KS 66027-1352
+
+FOR_ORGANIZATION_NAME = U.S. Army Command and General Staff College (ATZL)
+FOR_ORGANIZATION_STREET_ADDRESS = 102 Stimson Avenue
+FOR_ORGANIZATION_CITY_STATE_ZIP = Ft Leavenworth, KS 66027-1352
+
+SUBJECT = Demonstrating a memo for someone else (and other features)
+
+- This shows the memorandum for style.
+
+- This item contains sub items.
+
+  - Thing one.
+  - Thing two.
+    - Here is a sub sub item
+
+- Point of contact is the undersigned.
