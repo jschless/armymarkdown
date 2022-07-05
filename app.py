@@ -39,6 +39,10 @@ s3 = boto3.client(
 
 
 @app.route("/")
+def home():
+    return redirect(url_for("index", example_file="tutorial.Amd"))
+
+
 @app.route("/<example_file>")
 def index(example_file="./tutorial.Amd"):
     text = ""
