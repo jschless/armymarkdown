@@ -28,6 +28,10 @@ celery = Celery(
     backend=os.environ["REDIS_URL"],
 )
 
+celery.conf.broker_pool_limit = 0
+celery.conf.redis_max_connections = 20  # free heroku tier limit
+
+
 s3 = boto3.client(
     "s3",
     aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
@@ -187,7 +191,7 @@ def create_memo(text):
 
 
 def main():
-    app.run(debug=True, threaded=True)
+    app.run(debug=True)
 
 
 if __name__ == "__main__":
