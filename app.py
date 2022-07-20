@@ -144,8 +144,8 @@ def get_aws_link(file_name):
     except ClientError as e:
         print(e)
         return None
-    return response
-    # return f"https://armymarkdown.s3.us-east-2.amazonaws.com/{file_name}"
+    # return response
+    return f"https://armymarkdown.s3.us-east-2.amazonaws.com/{file_name}"
 
 
 def upload_file_to_s3(file, aws_path, acl="public-read"):
