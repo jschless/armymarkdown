@@ -82,7 +82,7 @@
 
          #editor {
            position: absolute; /* Added */
-           top: 75px;
+           top: 50px;
            right: 0;
            bottom: 30px;
            left: 0;
@@ -170,11 +170,6 @@
       <h1>Army Markdown Editor: Memos Made Easy</h1>
       <div id="editor">{{memo_text}}</div>
       <button id="start-bg-job">Create Memo PDF</button>
-
-      <form method="POST" id="download">
-        <!-- Hidden form for submitting -->
-        <input type="hidden" name="param1" value="value1" />
-      </form>
     </div>
 
     <script>
@@ -212,7 +207,7 @@
         // send GET request to status URL
         $.get(status_url, function (data) {
           if (data["state"] == "SUCCESS") {
-            return get_pdf(data["result"]);
+            window.open(data["presigned_url"], "_blank");
           } else {
             let rerun_freq = 2000;
             count += 1;
@@ -229,11 +224,6 @@
             }
           }
         });
-      }
-
-      function get_pdf(pdf_name) {
-        $("#download").attr("action", "results/" + pdf_name);
-        $("#download").submit();
       }
 
       $(function () {
