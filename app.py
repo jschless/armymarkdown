@@ -179,7 +179,11 @@ def create_memo(text):
     m = memo_model.parse_lines(text.split("\n"))
     mw = writer.MemoWriter(m)
 
-    temp_name = "temp" + "".join(random.choices("0123456789", k=8)) + ".tex"
+    temp_name = (
+        m.subject.replace(" ", "_").lower()[:10]
+        + "".join(random.choices("0123456789", k=4))
+        + ".tex"
+    )
     file_path = os.path.join(app.root_path, temp_name)
 
     mw.write(output_file=file_path)
