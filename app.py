@@ -95,7 +95,11 @@ def process_task(task, result_func):
         response = {"state": task.state, "status": "Pending..."}
     elif task.state == "SUCCESS":
         result = task.result
-        response = {"state": task.state, "result": result_func(result)}
+        response = {
+            "state": task.state,
+            "result": result_func(result),
+            "presigned_url": get_aws_link(result_func(result)),
+        }
         task.forget()
     else:
         # something went wrong in the background job
@@ -114,7 +118,6 @@ def taskstatus(task_id):
 
 @app.route("/results/<pdf_name>", methods=["GET", "POST"])
 def results(pdf_name):
-    # https://stackoverflow.com/questions/24612366/delete-an-uploaded-file-after-downloading-it-from-flask
     file_endings = [
         ".aux",
         ".fdb_latexmk",
@@ -144,8 +147,7 @@ def get_aws_link(file_name):
     except ClientError as e:
         print(e)
         return None
-    # return response
-    return f"https://armymarkdown.s3.us-east-2.amazonaws.com/{file_name}"
+    return response
 
 
 def upload_file_to_s3(file, aws_path, acl="public-read"):
