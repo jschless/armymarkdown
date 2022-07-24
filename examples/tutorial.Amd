@@ -1,10 +1,10 @@
-### Don't change any of the WORDS IN ALL CAPS before the = sign. Change what is right of the = sign with your actual info.
+# Don't change any of the WORDS IN ALL CAPS before the = sign. Change what is right of the = sign with your actual info.
 
 ORGANIZATION_NAME = 205th Military Police Battalion
 ORGANIZATION_STREET_ADDRESS = 1234 Charles Road
 ORGANIZATION_CITY_STATE_ZIP = Colorado Springs, CO 80904
 
-### Line's beginning with # are comments, they won't be included in the final product.
+# Line's beginning with # are comments, they won't be included in the final product.
 
 OFFICE_SYMBOL = ABC-DEF-GH
 AUTHOR = James F. Ryan
@@ -16,7 +16,7 @@ MEMO_TYPE = MEMORANDUM FOR RECORD
 
 SUBJECT = Template for Army markdown
 
-### The SUBJECT = line marks the end of the admin info. You must begin your memo after this.
+# The SUBJECT = line marks the end of the admin info. You must begin your memo after this.
 
 - This memo is a demonstration of Army markdown v. 1.0. It allows you to quickly create memos that will always be perfectly formatted.
 
