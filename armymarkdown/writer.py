@@ -74,6 +74,7 @@ class MemoWriter:
             ("authority", self.data.authority),
             ("title", self.data.author_title),
             ("documentmark", self.data.document_mark),
+            ("suspensedate", self.data.suspense_date),
         ]:
             if val is not None:
                 ans.append(f"\\{name}{{{val}}}")
