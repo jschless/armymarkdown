@@ -182,7 +182,7 @@ def create_memo(text):
     mw = writer.MemoWriter(m)
 
     temp_name = (
-        m.subject.replace(" ", "_").lower()[:10]
+        m.subject.replace(" ", "_").lower()[:15]
         + "".join(random.choices("0123456789", k=4))
         + ".tex"
     )
