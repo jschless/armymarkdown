@@ -191,7 +191,10 @@ def create_memo(text):
     mw.write(output_file=file_path)
 
     mw.generate_memo()
-    upload_file_to_s3(file_path[:-4] + ".pdf", temp_name[:-4] + ".pdf")
+    if os.path.exists(file_path[:-4] + ".pdf"):
+        upload_file_to_s3(file_path[:-4] + ".pdf", temp_name[:-4] + ".pdf")
+    else:
+        raise Exception(f"PDF at path {file_path[:-4] + ".pdf"} was not created")
 
     return temp_name
 
