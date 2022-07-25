@@ -84,9 +84,9 @@
            position: absolute; /* Added */
            top: 50px;
            right: 0;
-           bottom: 30px;
+           bottom: 60px;
            left: 0;
-           height: 100%;
+           height: 85%;
       }
 
       #start-bg-job {
@@ -182,11 +182,12 @@
     <script>
       let editor = ace.edit("editor");
       editor.setOptions({
-        theme: "ace/theme/monokai",
+        theme: "ace/theme/github",
         mode: "ace/mode/armymarkdown",
         tabSize: 4,
         showPrintMargin: false,
         showLineNumbers: false,
+        showGutter: false,
       });
       editor.resize();
 
