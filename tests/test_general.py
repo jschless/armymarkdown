@@ -30,7 +30,7 @@ def test_memo_model_creation():
 
 
 def test_latex_file():
-    m = memo_model.parse("./template.Amd")
+    m = memo_model.parse("./tests/template.Amd")
     mw = writer.MemoWriter(m)
     mw.write(output_file="./tests/test_tex_output_basic.tex")
 
