@@ -152,9 +152,11 @@ def parse_lines(file_lines):
 
             processed_text = add_latex_escape_chars(text.strip())
             if key_converter[key.strip()] in list_keys:
-                temp = memo_dict.get(key_converter[key.strip()], [])
-                temp.append(processed_text)
-                memo_dict[key_converter[key.strip()]] = temp
+                memo_dict[key_converter[key.strip()]] = [
+                    *memo_dict.get(key_converter[key.strip()], []),
+                    processed_text,
+                ]
+
             else:
                 memo_dict[key_converter[key.strip()]] = processed_text
 
