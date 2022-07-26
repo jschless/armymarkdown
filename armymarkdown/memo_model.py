@@ -161,25 +161,30 @@ def parse_lines(file_lines):
                 memo_dict[key_converter[key.strip()]] = processed_text
 
     master_list = []
-    indent_level = 0
+    cur_indent = 0
+    indent_levels = set()
     for line in file_lines[memo_begin_loc:]:
-        dash_location = line.find("-")
-        if dash_location == -1:
-            continue
+        dash_loc = line.find("-")
+        if dash_loc == -1:
+            continue  # not a valid line
 
-        begin_line = dash_location + 1
+        begin_line = dash_loc + 1
+        indent_levels.add(dash_loc)
+
         line_text = add_latex_escape_chars(line[begin_line:].strip())
-        proper_indent_level = master_list  # level 0
+        proper_indent_level = master_list  # start at level 0
 
-        for i in range(dash_location // 4):
+        for i in list(
+            filter(lambda x: x < dash_loc, sorted(list(indent_levels)))
+        ):
             if isinstance(proper_indent_level[-1], list):
                 proper_indent_level = proper_indent_level[-1]
 
-        if dash_location > indent_level:
+        if dash_loc > cur_indent:
             proper_indent_level.append([line_text])
-        elif dash_location <= indent_level:
+        elif dash_loc <= cur_indent:
             proper_indent_level.append(line_text)
-        indent_level = dash_location
+        cur_indent = dash_loc
 
     memo_dict["text"] = master_list
 
