@@ -175,8 +175,8 @@
 
 % AR 25-50 allows for hyphenation (just not across pages, which LaTeX won't do
 % anyway) we just want less hyphenation than more
-% \hyphenpenalty=5000
-\RequirePackage[none]{hyphenat}
+\hyphenpenalty=5000
+% \RequirePackage[none]{hyphenat}
 % https://tex.stackexchange.com/a/134318
 % https://tex.stackexchange.com/a/249335
 % https://tex.stackexchange.com/a/134342
@@ -428,4 +428,3 @@
   \vspace{\baselineskip}
   \noindent\am@subject\\
 }
-
