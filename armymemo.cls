@@ -2,7 +2,7 @@
 
 % George Allen base64(Z2xhbGxlbjAx) AT base64(Z21haWwuY29t)
 
-\ProvidesClass{armymemo}[2019/03/10 0.2.1 Army Memorandum Class]
+\ProvidesClass{armymemo}[2019/03/10 0.2.1 Army Memorandum Class] 
 \NeedsTeXFormat{LaTeX2e}
 
 \LoadClass[
