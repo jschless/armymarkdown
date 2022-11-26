@@ -21,6 +21,7 @@ class MemoWriter:
             self.output_file = self.temp_file
         with open(self.output_file, "w+") as f:
             print("\n".join(self.lines), file=f)
+            print("\n".join(self.lines))
 
     def generate_memo(self):
         subprocess.run(
