@@ -1,4 +1,4 @@
-% Army memo class
+% Army memo class. Something broke for no reason. Re-commit to try to motivate Heroku to work.
 
 % George Allen base64(Z2xhbGxlbjAx) AT base64(Z21haWwuY29t)
 
@@ -428,4 +428,3 @@
   \vspace{\baselineskip}
   \noindent\am@subject\\
 }
-
