@@ -189,7 +189,7 @@ def create_memo(text):
     file_path = os.path.join(app.root_path, temp_name)
 
     mw.write(output_file=file_path)
-
+ 
     mw.generate_memo()
     if os.path.exists(file_path[:-4] + ".pdf"):
         upload_file_to_s3(file_path[:-4] + ".pdf", temp_name[:-4] + ".pdf")
