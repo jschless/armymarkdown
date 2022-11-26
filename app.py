@@ -124,7 +124,7 @@ def results(pdf_name):
         ".fls",
         ".log",
         ".out",
-        ".tex",
+        # ".tex",
     ]
     file_path = os.path.join(app.root_path, pdf_name)
 
