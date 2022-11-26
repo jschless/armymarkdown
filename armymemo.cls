@@ -1,10 +1,10 @@
-% Army memo class
+% Army memo class. Something broke for no reason. Re-commit to try to motivate Heroku to work.
 
-% George Allen base64(Z2xhbGxlbjAx) AT base64(Z21haWwuY29t) 
+% George Allen base64(Z2xhbGxlbjAx) AT base64(Z21haWwuY29t)
 
-\ProvidesClass{armymemo}[2019/03/10 0.2.1 Army Memorandum Class] 
+\ProvidesClass{armymemo}[2019/03/10 0.2.1 Army Memorandum Class]
 \NeedsTeXFormat{LaTeX2e}
- 
+
 \LoadClass[
   12pt,
   oneside,
@@ -189,8 +189,7 @@
 
 
 
-%\setlist{topsep=0pt,itemsep=0pt,parsep=\baselineskip,partopsep=0pt}
-\setlist{topsep=0pt,itemsep=0pt,parsep=\baselineskip,partopsep=0pt, leftmargin=0pt}
+\setlist{topsep=0pt,itemsep=0pt,parsep=\baselineskip,partopsep=0pt}
 %% from https://github.com/jschaf/army-memos/blob/master/src/memorandum-for-record.tex
 \renewcommand{\theenumi}{\arabic{enumi}}\renewcommand{\labelenumi}{\theenumi.}
 \renewcommand{\theenumii}{\alph{enumii}}\renewcommand{\labelenumii}{\theenumii.}
@@ -198,10 +197,11 @@
 \renewcommand{\theenumiv}{\alph{enumiv}}\renewcommand{\labelenumiv}{(\theenumiv)}
 % these \setlist provide the layout for each indentation level
 % the after={} on level[1] prevents orphaned signature-blocks without the preceding final paragraph.
-\setlist[1]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=16pt,align=left}
+\setlist[1]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=16pt,align=left,
+  after={\nopagebreak\@nobreaktrue}}
 \setlist[2]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=0.5in,align=left}
-\setlist[3]{leftmargin=0pt,itemindent=1in,align=left}
-\setlist[4]{leftmargin=0pt,itemindent=1in,align=left}
+\setlist[3]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=0.75in,align=left}
+\setlist[4]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=0.75in,align=left}
 %% TODO - change to an option - uncomment to go deeper
 % \renewcommand{\theenumv}{\arabic{enumv}}\renewcommand{\labelenumv}{(\theenumv)}
 % \renewcommand{\theenumvi}{\alph{enumivi}}\renewcommand{\labelenumvi}{(\theenumvi)}
@@ -428,4 +428,3 @@
   \vspace{\baselineskip}
   \noindent\am@subject\\
 }
- 
