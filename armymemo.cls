@@ -198,10 +198,10 @@
 \renewcommand{\theenumiv}{\alph{enumiv}}\renewcommand{\labelenumiv}{(\theenumiv)}
 % these \setlist provide the layout for each indentation level
 % the after={} on level[1] prevents orphaned signature-blocks without the preceding final paragraph.
-\setlist[1]{labelwidth=12pt,labelsep=4pt,leftmargin=.5in,itemindent=.5in,align=left}
+\setlist[1]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=16pt,align=left}
 \setlist[2]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=0.5in,align=left}
-\setlist[3]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=0.75in,align=left}
-\setlist[4]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=0.75in,align=left}
+\setlist[3]{leftmargin=0pt,itemindent=1in,align=left}
+\setlist[4]{leftmargin=0pt,itemindent=1in,align=left}
 %% TODO - change to an option - uncomment to go deeper
 % \renewcommand{\theenumv}{\arabic{enumv}}\renewcommand{\labelenumv}{(\theenumv)}
 % \renewcommand{\theenumvi}{\alph{enumivi}}\renewcommand{\labelenumvi}{(\theenumvi)}
