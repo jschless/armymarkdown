@@ -189,6 +189,7 @@
 
 
 
+%\setlist{topsep=0pt,itemsep=0pt,parsep=\baselineskip,partopsep=0pt}
 \setlist{topsep=0pt,itemsep=0pt,parsep=\baselineskip,partopsep=0pt}
 %% from https://github.com/jschaf/army-memos/blob/master/src/memorandum-for-record.tex
 \renewcommand{\theenumi}{\arabic{enumi}}\renewcommand{\labelenumi}{\theenumi.}
@@ -197,7 +198,7 @@
 \renewcommand{\theenumiv}{\alph{enumiv}}\renewcommand{\labelenumiv}{(\theenumiv)}
 % these \setlist provide the layout for each indentation level
 % the after={} on level[1] prevents orphaned signature-blocks without the preceding final paragraph.
-\setlist[1]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=.25in,align=left,
+\setlist[1]{labelwidth=12pt,labelsep=4pt,leftmargin=4pt,itemindent=.25in,align=left,
   after={\nopagebreak\@nobreaktrue}}
 \setlist[2]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=0.5in,align=left}
 \setlist[3]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=0.75in,align=left}
