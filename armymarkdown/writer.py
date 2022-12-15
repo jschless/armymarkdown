@@ -23,10 +23,11 @@ class MemoWriter:
             print("\n".join(self.lines), file=f)
 
     def generate_memo(self):
-        subprocess.run(
-            [
+        subprocess.run( # latexmk -pdf -pvc -lualatex example.tex
+            [ 
                 "latexmk",
-                "-verbose",
+                "-pdf", 
+                "-pvc"
                 "-lualatex",
                 self.output_file,
             ]
