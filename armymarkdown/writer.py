@@ -19,6 +19,7 @@ class MemoWriter:
         self.temp_file = os.path.join(self.temp_dir, "temp_file.tex")
         if output_file is None:
             self.output_file = self.temp_file
+        print("\n".join(self.lines))
         with open(self.output_file, "w+") as f:
             print("\n".join(self.lines), file=f)
 
