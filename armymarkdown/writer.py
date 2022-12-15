@@ -29,7 +29,7 @@ class MemoWriter:
                 "latexmk",
 #                 "-pdf", 
 #                 "-pvc"
-                "-xelatex",
+                "-lualatex",
                 self.output_file,
             ]
         )
