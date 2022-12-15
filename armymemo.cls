@@ -1,33 +1,3 @@
-Skip to content
-Search or jump to…
-Pull requests
-Issues
-Codespaces
-Marketplace
-Explore
- 
-@jschless 
-glallen01
-/
-army-memorandum-class
-Public
-Code
-Issues
-11
-Pull requests
-3
-Actions
-Security
-Insights
-army-memorandum-class/armymemo.cls
-@jschless
-jschless multifor and enclosure bug fix
-Latest commit 4938ca9 on Jul 4
- History
- 3 contributors
-@glallen01@nstickney@jschless
-431 lines (379 sloc)  15.9 KB
-
 % Army memo class
 
 % George Allen base64(Z2xhbGxlbjAx) AT base64(Z21haWwuY29t)
@@ -458,19 +428,3 @@ Latest commit 4938ca9 on Jul 4
   \vspace{\baselineskip}
   \noindent\am@subject\\
 }
-
-Footer
-© 2022 GitHub, Inc.
-Footer navigation
-Terms
-Privacy
-Security
-Status
-Docs
-Contact GitHub
-Pricing
-API
-Training
-Blog
-About
-army-memorandum-class/armymemo.cls at master · glallen01/army-memorandum-class
