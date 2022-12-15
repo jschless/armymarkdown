@@ -208,6 +208,9 @@
 % \setlist[5]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=1.00in,align=left}
 % \setlist[6]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=1.25in,align=left}
 
+\AddToHook{env/enumerate/before}{\ClearHookNext{para/begin}}
+
+
 % define superscripts for use in unit addresses, etc.
 % these may need to be followed by an '\ '
 \newcommand{\st}{\textsuperscript{st}}
