@@ -26,14 +26,14 @@ class MemoWriter:
     def generate_memo(self):
         subprocess.run( # latexmk -pdf -pvc -lualatex example.tex
             [ 
-                  "xelatex",
-            "--shell-escape",
-            "-synctex=1",
-            "-interaction=nonstopmode",
-#                   "latexmk",
+#                   "xelatex",
+#             "--shell-escape",
+#             "-synctex=1",
+#             "-interaction=nonstopmode",
+                  "latexmk",
 # #                 "-pdf", 
 # #                 "-pvc"
-#                 "-lualatex",
+                "-lualatex",
                 self.output_file,
             ]
         )
