@@ -25,7 +25,7 @@ class MemoWriter:
 
     def generate_memo(self):
         subprocess.run( # latexmk -pdf -pvc -lualatex example.tex
-#             [ 
+            [ 
                   "xelatex",
             "--shell-escape",
             "-synctex=1",
