@@ -197,7 +197,7 @@
 \renewcommand{\theenumiv}{\alph{enumiv}}\renewcommand{\labelenumiv}{(\theenumiv)}
 % these \setlist provide the layout for each indentation level
 % the after={} on level[1] prevents orphaned signature-blocks without the preceding final paragraph.
-\setlist[1]{leftmargin=0pt, labelindent=0.25in, labelsep=4pt, itemindent=0pt}
+\setlist[1]{leftmargin=0pt, labelindent=0.25in, labelsep=4pt, itemindent=12pt}
 %\setlist[1]{labelwidth=12pt,labelsep=4p,
 %leftmargin=0pt,itemindent=.25in, labelindent=.5in, after={\nopagebreak\@nobreaktrue}}
 %\setlist[1]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=0.25in,align=left}
