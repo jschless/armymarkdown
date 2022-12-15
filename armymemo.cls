@@ -1,6 +1,36 @@
-% Army memo class. Something broke for no reason. Re-commit to try to motivate Heroku to work.
+Skip to content
+Search or jump to…
+Pull requests
+Issues
+Codespaces
+Marketplace
+Explore
+ 
+@jschless 
+glallen01
+/
+army-memorandum-class
+Public
+Code
+Issues
+11
+Pull requests
+3
+Actions
+Security
+Insights
+army-memorandum-class/armymemo.cls
+@jschless
+jschless multifor and enclosure bug fix
+Latest commit 4938ca9 on Jul 4
+ History
+ 3 contributors
+@glallen01@nstickney@jschless
+431 lines (379 sloc)  15.9 KB
 
-% George Allen base64(Z2xhbGxlbjAx) AT base64(Z21haWwuY29t) 
+% Army memo class
+
+% George Allen base64(Z2xhbGxlbjAx) AT base64(Z21haWwuY29t)
 
 \ProvidesClass{armymemo}[2019/03/10 0.2.1 Army Memorandum Class]
 \NeedsTeXFormat{LaTeX2e}
@@ -197,11 +227,8 @@
 \renewcommand{\theenumiv}{\alph{enumiv}}\renewcommand{\labelenumiv}{(\theenumiv)}
 % these \setlist provide the layout for each indentation level
 % the after={} on level[1] prevents orphaned signature-blocks without the preceding final paragraph.
-\setlist[1]{leftmargin=0.25in, itemindent=14pt}
-%\setlist[1]{leftmargin=0pt, labelindent=0.25in, labelsep=4pt}
-%\setlist[1]{labelwidth=12pt,labelsep=4p,
-%leftmargin=0pt,itemindent=.25in, labelindent=.5in, after={\nopagebreak\@nobreaktrue}}
-%\setlist[1]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=0.25in,align=left}
+\setlist[1]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=16pt,align=left,
+  after={\nopagebreak\@nobreaktrue}}
 \setlist[2]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=0.5in,align=left}
 \setlist[3]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=0.75in,align=left}
 \setlist[4]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=0.75in,align=left}
@@ -431,3 +458,19 @@
   \vspace{\baselineskip}
   \noindent\am@subject\\
 }
+
+Footer
+© 2022 GitHub, Inc.
+Footer navigation
+Terms
+Privacy
+Security
+Status
+Docs
+Contact GitHub
+Pricing
+API
+Training
+Blog
+About
+army-memorandum-class/armymemo.cls at master · glallen01/army-memorandum-class
