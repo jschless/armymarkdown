@@ -30,10 +30,10 @@ class MemoWriter:
 #             "--shell-escape",
 #             "-synctex=1",
 #             "-interaction=nonstopmode",
-                  "latexmk",
+#                   "latexmk",
 # #                 "-pdf", 
 # #                 "-pvc"
-                "-lualatex",
+                "lualatex",
                 self.output_file,
             ]
         )
