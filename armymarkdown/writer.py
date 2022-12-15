@@ -26,9 +26,9 @@ class MemoWriter:
         subprocess.run( # latexmk -pdf -pvc -lualatex example.tex
             [ 
                 "latexmk",
-                "-pdf", 
-                "-pvc"
-                "-lualatex",
+#                 "-pdf", 
+#                 "-pvc"
+                "-xelatex",
                 self.output_file,
             ]
         )
