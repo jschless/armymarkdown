@@ -189,7 +189,7 @@
 
 
 
-\setlist{topsep=0pt,itemsep=0pt,parsep=\baselineskip,partopsep=0pt}
+%\setlist{topsep=0pt,itemsep=0pt,parsep=\baselineskip,partopsep=0pt}
 %% from https://github.com/jschaf/army-memos/blob/master/src/memorandum-for-record.tex
 \renewcommand{\theenumi}{\arabic{enumi}}\renewcommand{\labelenumi}{\theenumi.}
 \renewcommand{\theenumii}{\alph{enumii}}\renewcommand{\labelenumii}{\theenumii.}
@@ -200,10 +200,10 @@
 %\setlist[1]{leftmargin=0pt, labelindent=0.25in, labelsep=4pt, itemindent=.25in}
 %\setlist[1]{labelwidth=12pt,labelsep=4p,
 %leftmargin=0pt,itemindent=.25in, labelindent=.5in, after={\nopagebreak\@nobreaktrue}}
-\setlist[1]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=0.25in,align=left}
-\setlist[2]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=0.5in,align=left}
-\setlist[3]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=0.75in,align=left}
-\setlist[4]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=0.75in,align=left}
+%\setlist[1]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=0.25in,align=left}
+%\setlist[2]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=0.5in,align=left}
+%\setlist[3]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=0.75in,align=left}
+%\setlist[4]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=0.75in,align=left}
 %% TODO - change to an option - uncomment to go deeper
 % \renewcommand{\theenumv}{\arabic{enumv}}\renewcommand{\labelenumv}{(\theenumv)}
 % \renewcommand{\theenumvi}{\alph{enumivi}}\renewcommand{\labelenumvi}{(\theenumvi)}
