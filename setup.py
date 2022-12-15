@@ -1,5 +1,5 @@
 from setuptools import setup
- 
+
 setup(
     name="armymarkdown",
     version="0.1",
