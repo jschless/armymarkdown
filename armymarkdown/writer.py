@@ -1,5 +1,5 @@
 import subprocess
-import os
+import os 
 
 from . import memo_model
 
