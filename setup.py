@@ -1,7 +1,7 @@
 from setuptools import setup
 
-setup(
-    name="armymarkdown",
+setup( 
+    name="armymarkdown", 
     version="0.1",
     description="A module to create Army memos from markdown files",
     url="http://ictshore.com/",
@@ -11,3 +11,5 @@ setup(
     packages=["armymarkdown"],
     zip_safe=False,
 )
+ 
+ 
