@@ -4,6 +4,10 @@ settings.json
 *.aux
 *.log
 *.out
+*.pdf
+*.gz
+*.xdv
+*.rdb
 not-zip-safe
 PKG-INFO
 *.fls
