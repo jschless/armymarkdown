@@ -1,236 +1,214 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Army Markdown Editor</title>
 
-    <style>
-        .box {
-          height: 80%;
-        }
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Army Markdown Editor</title>
 
-        html,
-        body {
-          margin: 0px;
-          height: 100%;
-        }
+  <style>
+    .box {
+      height: 80%;
+    }
 
-        form {
-          height: 100%;
-        }
+    html,
+    body {
+      /* margin: 0px; */
+      height: 100%;
+    }
 
-        .button {
-          font-size: 26px;
-        }
+    form {
+      height: 100%;
+    }
 
-        h1 {
-          text-align: center;
-        }
+    .button {
+      font-size: 26px;
+    }
 
-        .exampledrawer {
-          height: 100%; /* Full-height: remove this if you want "auto" height */
-          width: 160px; /* Set the width of the sidebar */
-          position: fixed; /* Fixed Sidebar (stay in place on scroll) */
-          z-index: 1; /* Stay on top */
-          top: 0; /* Stay at the top */
-          left: 0;
-          background-color: #111; /* Black */
-          overflow-x: hidden; /* Disable horizontal scroll */
-          padding-top: 20px;
-        }
+    h1 {
+      text-align: center;
+    }
 
-        .exampledrawer h2 {
-          color: #f1f1f1;
-          text-align: center;
-        }
+    .exampledrawer {
+      height: 100%;
+      /* Full-height: remove this if you want "auto" height */
+      width: 160px;
+      /* Set the width of the sidebar */
+      position: fixed;
+      /* Fixed Sidebar (stay in place on scroll) */
+      z-index: 1;
+      /* Stay on top */
+      top: 0;
+      /* Stay at the top */
+      left: 0;
+      background-color: #111;
+      /* Black */
+      overflow-x: hidden;
+      /* Disable horizontal scroll */
+      padding-top: 20px;
+    }
 
-        .exampledrawer a {
-          padding: 6px 8px 6px 16px;
-          text-decoration: none;
-          font-size: 18px;
-          color: #818181;
-          display: block;
-        }
+    .exampledrawer h2 {
+      color: #f1f1f1;
+      text-align: center;
+    }
 
-        .exampledrawer a.active {
-          color: #f1f1f1;
-          font-weight: bold;
+    .exampledrawer a {
+      padding: 6px 8px 6px 16px;
+      text-decoration: none;
+      font-size: 18px;
+      color: #818181;
+      display: block;
+    }
 
-        }
+    .exampledrawer a.active {
+      color: #f1f1f1;
+      font-weight: bold;
 
-        /* When you mouse over the navigation links, change their color */
-        .exampledrawer a:hover {
-          color: #f1f1f1;
-          font-weight: bold;
-        }
+    }
 
-        ul {
-          list-style-type: none;
-          margin: 0;
-          padding: 0;
+    /* When you mouse over the navigation links, change their color */
+    .exampledrawer a:hover {
+      color: #f1f1f1;
+      font-weight: bold;
+    }
 
-        }
+    ul {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
 
-        .main {
-          margin-left: 160px; /* Same as the width of the sidebar */
-          padding: 0px 10px;
-        }
+    }
 
-        /* On smaller screens, where height is less than 450px, change the style of the sidebar (less padding and a smaller font size) */
-        @media screen and (max-height: 450px) {
-          .exampledrawer {
-            padding-top: 15px;
-          }
-          .exampledrawer a {
-            font-size: 18px;
-          }
-        }
-      
-        .ace_editor, .ace_editor *{
-          font-family:monospace !important;
-          font-size: 14px !important;
-          direction:ltr !important;
-          text-align: left !important;
-        }
-          
+    .main {
+      position: relative;
+      margin-left: 160px;
+      /* Same as the width of the sidebar */
+      padding: 0px 10px;
+      height: 100%;
+    }
+
+    #editor {
+      height: 80%;
+      width: 100%;
+    }
+
+    /* On smaller screens, where height is less than 450px, change the style of the sidebar (less padding and a smaller font size) */
+    @media screen and (max-height: 450px) {
+      .exampledrawer {
+        padding-top: 15px;
       }
-    </style>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css"
-    />
-    <link
-      rel="shortcut icon"
-      href="{{ url_for('static', filename='favicon.ico') }}"
-    />
-    <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-  </head>
 
-  <body>
-    <div class="exampledrawer">
-      <h2>Examples</h2>
-      <ul>
-        <li class="nav-item">
-          <a
-            class="nav-link"
-            href="{{url_for('index', example_file='tutorial.Amd')}}"
-            >Tutorial</a
-          >
-        </li>
-        <li class="nav-item">
-          <a
-            class="nav-link"
-            href="{{url_for('index', example_file='basic_mfr.Amd')}}"
-            >Memorandum For Record</a
-          >
-        </li>
-        <li class="nav-item">
-          <a
-            class="nav-link"
-            href="{{url_for('index', example_file='memo_for.Amd')}}"
-            >Memorandum For</a
-          >
-        </li>
-        <li class="nav-item">
-          <a
-            class="nav-link"
-            href="{{url_for('index', example_file='memo_multi_for.Amd')}}"
-            >Memorandum For Multiple</a
-          >
-        </li>
-        <li class="nav-item">
-          <a
-            class="nav-link"
-            href="{{url_for('index', example_file='memo_thru.Amd')}}"
-            >Memorandum Thru</a
-          >
-        </li>
-        <li class="nav-item">
-          <a
-            class="nav-link"
-            href="{{url_for('index', example_file='memo_extra_features.Amd')}}"
-            >Adding Enclosures, Distros, Suspense Dates
-          </a>
-        </li>
-      </ul>
-    </div>
+      .exampledrawer a {
+        font-size: 18px;
+      }
+    }
 
-    <div class="main">
-      <h1>Army Markdown Editor: Memos Made Easy</h1>
-      <div class="box">
-        <textarea name="memo_text" id="editor" spellcheck="true">{{memo_text}}</textarea>
-        <button id="start-bg-job">Create Memo PDF</button>
-      </div>
+    .ace_editor,
+    .ace_editor * {
+      font-family: monospace !important;
+      font-size: 14px !important;
+      direction: ltr !important;
+      text-align: left !important;
+    }
 
-      <form method="POST" id="download">
-        <!-- Hidden form for submitting -->
-        <input type="hidden" name="param1" value="value1" />
-      </form>
-    </div>
+    }
+  </style>
+  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" />
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+</head>
 
-    <script>
-      let editor = new SimpleMDE({
-        autofocus: true,
-        tabSize: 4,
-        toolbar: false,
+<body>
+  <div class="exampledrawer">
+    <h2>Examples</h2>
+    <ul>
+      <li class="nav-item">
+        <a class="nav-link" href="{{url_for('index', example_file='tutorial.Amd')}}">Tutorial</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{url_for('index', example_file='basic_mfr.Amd')}}">Memorandum For Record</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{url_for('index', example_file='memo_for.Amd')}}">Memorandum For</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{url_for('index', example_file='memo_multi_for.Amd')}}">Memorandum For Multiple</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{url_for('index', example_file='memo_thru.Amd')}}">Memorandum Thru</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{url_for('index', example_file='memo_extra_features.Amd')}}">Adding Enclosures,
+          Distros, Suspense Dates
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{url_for('index', example_file='long_memo.Amd')}}">Long Memorandum (Figure 2-2 from
+          AR 25-50)
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="main">
+    <h1>Army Markdown Editor: Memos Made Easy</h1>
+    <textarea id="editor" spellcheck="true">{{memo_text}}</textarea>
+    <button id="start-bg-job">Create Memo PDF</button>
+  </div>
+
+  <script>
+    function button_press(endpoint, polling_function) {
+      $.ajax({
+        type: "POST",
+        url: endpoint,
+        data: { memo_text: $("#editor").val() },
+        success: function (data, status, request) {
+          status_url = request.getResponseHeader("Location");
+          polling_function(status_url);
+        },
+        error: function (XMLHttpRequest, text, e) {
+          alert("ERROR WHEN PARSING INPUT\n\n" + XMLHttpRequest.responseText);
+        },
       });
+    }
 
-      function button_press(endpoint, polling_function) {
-        $.ajax({
-          type: "POST",
-          url: endpoint,
-          data: { memo_text: editor.value() },
-          success: function (data, status, request) {
-            status_url = request.getResponseHeader("Location");
-            polling_function(status_url);
-          },
-          error: function (XMLHttpRequest, text, e) {
-            alert("ERROR WHEN PARSING INPUT\n\n" + XMLHttpRequest.responseText);
-          },
-        });
-      }
+    function generate_memo() {
+      button_press("/process", update_progress);
+    }
 
-      function generate_memo() {
-        button_press("/process", update_progress);
-      }
-
-      let count = 0;
-      function update_progress(status_url) {
-        // send GET request to status URL
-        $.get(status_url, function (data) {
-          if (data["state"] == "SUCCESS") {
-            return get_pdf(data["result"]);
-          } else {
-            let rerun_freq = 2000;
-            count += 1;
-            // rerun in 2 seconds
-            if (count < 50) {
-              editor.value(
-                "Waiting for your memo pdf to be generated! Please be patient! It's only been " +
-                  count * 2 +
-                  " seconds."
-              );
-              setTimeout(function () {
-                update_progress(status_url);
-              }, rerun_freq);
-            }
+    let count = 0;
+    function update_progress(status_url) {
+      // send GET request to status URL
+      $.get(status_url, function (data) {
+        if (data["state"] == "SUCCESS") {
+          location.href = data["presigned_url"];
+          return;
+          // window.open(data["presigned_url"], "_blank"); // opens a popup
+        } else {
+          let rerun_freq = 2000;
+          count += 1;
+          // rerun in 2 seconds
+          if (count < 50) {
+            $("#editor").val(
+              "Waiting for your memo pdf to be generated! Please be patient! It's only been " +
+              count * 2 +
+              " seconds."
+            );
+            setTimeout(function () {
+              update_progress(status_url);
+            }, rerun_freq);
           }
-        });
-      }
-
-      function get_pdf(pdf_name) {
-        $("#download").attr("action", "results/" + pdf_name);
-        $("#download").submit();
-      }
-
-      $(function () {
-        $("#start-bg-job").click(generate_memo);
+        }
       });
+    }
 
-      $("a[href*='" + location.pathname + "']").addClass("active");
-    </script>
-  </body>
+    $(function () {
+      $("#start-bg-job").click(generate_memo);
+    });
+
+    $("a[href*='" + location.pathname + "']").addClass("active");
+  </script>
+</body>
+
 </html>

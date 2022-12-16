@@ -1,5 +1,5 @@
 import subprocess
-import os
+import os 
 
 from . import memo_model
 
@@ -19,18 +19,12 @@ class MemoWriter:
         self.temp_file = os.path.join(self.temp_dir, "temp_file.tex")
         if output_file is None:
             self.output_file = self.temp_file
+        print("\n".join(self.lines))
         with open(self.output_file, "w+") as f:
             print("\n".join(self.lines), file=f)
 
     def generate_memo(self):
-        subprocess.run(
-            [
-                "latexmk",
-                "-quiet",
-                "-lualatex",
-                self.output_file,
-            ]
-        )
+        subprocess.run([ "latexmk", "-lualatex", self.output_file])
 
     def _write_for_lines(self) -> list:
         ans = []
@@ -74,6 +68,7 @@ class MemoWriter:
             ("authority", self.data.authority),
             ("title", self.data.author_title),
             ("documentmark", self.data.document_mark),
+            ("suspensedate", self.data.suspense_date),
         ]:
             if val is not None:
                 ans.append(f"\\{name}{{{val}}}")

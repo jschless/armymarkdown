@@ -1,10 +1,10 @@
-### Don't change any of the WORDS IN ALL CAPS before the = sign. Change what is right of the = sign with your actual info.
+# Don't change any of the WORDS_IN_ALL_CAPS before the = sign. Replace what is right of the = sign with your actual info.
 
 ORGANIZATION_NAME = 205th Military Police Battalion
 ORGANIZATION_STREET_ADDRESS = 1234 Charles Road
 ORGANIZATION_CITY_STATE_ZIP = Colorado Springs, CO 80904
 
-### Line's beginning with # are comments, they won't be included in the final product.
+# Lines beginning with # are comments, they won't be included in the final product.
 
 OFFICE_SYMBOL = ABC-DEF-GH
 AUTHOR = James F. Ryan
@@ -14,20 +14,21 @@ TITLE = Lost Private
 
 MEMO_TYPE = MEMORANDUM FOR RECORD
 
-SUBJECT = Template for Army markdown
+SUBJECT = Army Markdown Tutorial
 
-### The SUBJECT = line marks the end of the admin info. You must begin your memo after this.
+# The SUBJECT = line marks the end of the admin info. You must begin the memo now!
 
-- This memo is a demonstration of Army markdown v. 1.0. It allows you to quickly create memos that will always be perfectly formatted.
+- This memo is a demonstration of Army markdown, a new way to quickly create memos that will ALWAYS be perfectly formatted IAW with AR 25-50.
 
-- Don't worry about numbering, armymarkdown automatically takes care of that.
+- Don't worry about numbering or lettering. Simply begin each line with a "-". Armymarkdown automatically takes care of everything else.
 
-- To create a sub item, simply indent the next line 4 spaces (or hit tab in the browser).
-    - A subitem is created by indenting 4 spaces beyond the previous level.
-    - A second subitem within the same item point.
-        - Here is a sub sub item.
-            - We can try to indent further, but it will not work.
+- To create an indented section, simply indent the next line 4 spaces (or hit tab in the browser).
+    - This indented section will begin with (a).
+        - We can indent even further.
+            - We can try to indent further, but it will only change from numbers to letters.
 
-- Back to the original indentation level.
+- Now, returning to the original indentation level.
 
-- Point of contact is the undersigned available at john.f.ryan@army.mil or (123) 223-3215.
+- Press the "Create Memo PDF" button when you're done!
+
+- The point of contact for this memorandum is the undersigned available at john.f.ryan@army.mil or (123) 223-3215.
