@@ -28,6 +28,10 @@ celery = Celery(
     backend=os.environ["REDIS_URL"],
 )
 
+celery.conf.broker_pool_limit = 0
+celery.conf.redis_max_connections = 20  # free heroku tier limit
+
+
 s3 = boto3.client(
     "s3",
     aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
@@ -91,7 +95,11 @@ def process_task(task, result_func):
         response = {"state": task.state, "status": "Pending..."}
     elif task.state == "SUCCESS":
         result = task.result
-        response = {"state": task.state, "result": result_func(result)}
+        response = {
+            "state": task.state,
+            "result": result_func(result),
+            "presigned_url": get_aws_link(result_func(result)),
+        }
         task.forget()
     else:
         # something went wrong in the background job
@@ -110,7 +118,6 @@ def taskstatus(task_id):
 
 @app.route("/results/<pdf_name>", methods=["GET", "POST"])
 def results(pdf_name):
-    # https://stackoverflow.com/questions/24612366/delete-an-uploaded-file-after-downloading-it-from-flask
     file_endings = [
         ".aux",
         ".fdb_latexmk",
@@ -141,7 +148,6 @@ def get_aws_link(file_name):
         print(e)
         return None
     return response
-    # return f"https://armymarkdown.s3.us-east-2.amazonaws.com/{file_name}"
 
 
 def upload_file_to_s3(file, aws_path, acl="public-read"):
@@ -175,19 +181,26 @@ def create_memo(text):
     m = memo_model.parse_lines(text.split("\n"))
     mw = writer.MemoWriter(m)
 
-    temp_name = "temp" + "".join(random.choices("0123456789", k=8)) + ".tex"
+    temp_name = (
+        m.subject.replace(" ", "_").lower()[:15]
+        + "".join(random.choices("0123456789", k=4))
+        + ".tex"
+    )
     file_path = os.path.join(app.root_path, temp_name)
 
     mw.write(output_file=file_path)
-
+ 
     mw.generate_memo()
-    upload_file_to_s3(file_path[:-4] + ".pdf", temp_name[:-4] + ".pdf")
+    if os.path.exists(file_path[:-4] + ".pdf"):
+        upload_file_to_s3(file_path[:-4] + ".pdf", temp_name[:-4] + ".pdf")
+    else:
+        raise Exception(f"PDF at path {file_path[:-4]}.pdf was not created")
 
     return temp_name
 
 
 def main():
-    app.run(debug=True, threaded=True)
+    app.run(debug=True)
 
 
 if __name__ == "__main__":
