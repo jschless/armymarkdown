@@ -24,19 +24,7 @@ class MemoWriter:
             print("\n".join(self.lines), file=f)
 
     def generate_memo(self):
-        subprocess.run( # latexmk -pdf -pvc -lualatex example.tex
-            [ 
-#                   "xelatex",
-#             "--shell-escape",
-#             "-synctex=1",
-#             "-interaction=nonstopmode",
-                  "latexmk",
-# #                 "-pdf", 
-# #                 "-pvc"
-                "-lualatex",
-                self.output_file,
-            ]
-        )
+        subprocess.run([ "latexmk", "-lualatex", self.output_file])
 
     def _write_for_lines(self) -> list:
         ans = []
