@@ -1,6 +1,6 @@
-% Army memo class. Something broke for no reason. Re-commit to try to motivate Heroku to work.
+% Army memo class
 
-% George Allen base64(Z2xhbGxlbjAx) AT base64(Z21haWwuY29t) 
+% George Allen base64(Z2xhbGxlbjAx) AT base64(Z21haWwuY29t)
 
 \ProvidesClass{armymemo}[2019/03/10 0.2.1 Army Memorandum Class]
 \NeedsTeXFormat{LaTeX2e}
@@ -207,6 +207,9 @@
 % \renewcommand{\theenumvi}{\alph{enumivi}}\renewcommand{\labelenumvi}{(\theenumvi)}
 % \setlist[5]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=1.00in,align=left}
 % \setlist[6]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=1.25in,align=left}
+
+\AddToHook{env/enumerate/before}{\ClearHookNext{para/begin}}
+
 
 % define superscripts for use in unit addresses, etc.
 % these may need to be followed by an '\ '
