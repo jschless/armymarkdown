@@ -1,5 +1,5 @@
 import subprocess
-import os 
+import os
 
 from . import memo_model
 
@@ -19,21 +19,18 @@ class MemoWriter:
         self.temp_file = os.path.join(self.temp_dir, "temp_file.tex")
         if output_file is None:
             self.output_file = self.temp_file
-        print("\n".join(self.lines))
         with open(self.output_file, "w+") as f:
             print("\n".join(self.lines), file=f)
 
     def generate_memo(self):
-        subprocess.run([ "latexmk", "-lualatex", self.output_file])
+        subprocess.run(["latexmk", "-quiet", "-lualatex", self.output_file])
 
     def _write_for_lines(self) -> list:
         ans = []
         if self.data.memo_type == "MEMORANDUM FOR RECORD":
             ans.append("\\memoline{{MEMORANDUM FOR RECORD}}")
         else:
-            prefix = (
-                "MEMORANDUM FOR" if self.data.thru_unit_name is None else "FOR"
-            )
+            prefix = "MEMORANDUM FOR" if self.data.thru_unit_name is None else "FOR"
 
             for name, add, csz in zip(
                 self.data.for_unit_name,
@@ -54,9 +51,7 @@ class MemoWriter:
             self.data.thru_unit_city_state_zip,
         ):
             if len(self.data.thru_unit_name) == 1:
-                ans.append(
-                    f"\\addmemoline{{MEMORANDUM THRU {name}, {add}, {csz} }}"
-                )
+                ans.append(f"\\addmemoline{{MEMORANDUM THRU {name}, {add}, {csz} }}")
                 return ans
 
             ans.append(f"\\multimemothru{{{name}, {add}, {csz}}}")
@@ -125,4 +120,7 @@ class MemoWriter:
                 self._iterate_lols(i)
                 self.lines.append("\\end{enumerate}")
             else:
-                self.lines.append("\\item " + i)
+                if "tabular" in i:
+                    self.lines += ["", "", i]
+                else:
+                    self.lines.append("\\item " + i)

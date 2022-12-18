@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 from datetime import date
 import re
+import pandas as pd
+from io import StringIO
+from tabulate import tabulate
 
 from armymarkdown.utils import branch_to_abbrev, abbrev_to_branch
 from armymarkdown.utils import (
@@ -79,9 +82,7 @@ class MemoModel:
         errors = []
         errors.append(("DATE", self._check_date(self.todays_date)))
         if self.suspense_date is not None:
-            errors.append(
-                ("SUSPENSE_DATE", self._check_date(self.suspense_date))
-            )
+            errors.append(("SUSPENSE_DATE", self._check_date(self.suspense_date)))
 
         return [e for e in errors if e[1] is not None]
 
@@ -114,6 +115,26 @@ def add_latex_escape_chars(s):
     return s
 
 
+def process_table(line_list):
+    # print(line_list, flush=True)
+    table_str = "\n".join(line_list)
+    try:
+        table = (
+            pd.read_table(
+                StringIO(table_str),
+                sep="|",
+                header=0,
+                index_col=1,
+                skipinitialspace=True,
+            )
+            .dropna(axis=1, how="all")
+            .iloc[1:]
+        )
+        return tabulate(table, table.columns, tablefmt="latex_booktabs")
+    except Exception as e:
+        return ""
+
+
 def parse_lines(file_lines):
     # processes a text block into a latex memo_model
     memo_dict = {}
@@ -128,9 +149,7 @@ def parse_lines(file_lines):
     )
 
     try:
-        memo_begin_loc = [
-            i for i, s in enumerate(file_lines) if "SUBJECT" in s
-        ][0]
+        memo_begin_loc = [i for i, s in enumerate(file_lines) if "SUBJECT" in s][0]
     except IndexError:
         return (
             "ERROR: missing the keyword SUBJECT. "
@@ -163,10 +182,17 @@ def parse_lines(file_lines):
     master_list = []
     cur_indent = 0
     indent_levels = set()
+    table = []
     for line in file_lines[memo_begin_loc:]:
         dash_loc = line.find("-")
-        if dash_loc == -1:
+        if (dash_loc == -1 or line.count("-") > 1) and line.find("|") > -1:
+            table.append(line)
+            continue
+        elif dash_loc == -1:
             continue  # not a valid line
+        if table != [] and line.find("|") == -1:
+            master_list.append(process_table(table))
+            table = []
 
         begin_line = dash_loc + 1
         indent_levels.add(dash_loc)
@@ -174,9 +200,7 @@ def parse_lines(file_lines):
         line_text = add_latex_escape_chars(line[begin_line:].strip())
         proper_indent_level = master_list  # start at level 0
 
-        for i in list(
-            filter(lambda x: x < dash_loc, sorted(list(indent_levels)))
-        ):
+        for i in list(filter(lambda x: x < dash_loc, sorted(list(indent_levels)))):
             if isinstance(proper_indent_level[-1], list):
                 proper_indent_level = proper_indent_level[-1]
 
