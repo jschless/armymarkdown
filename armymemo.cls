@@ -31,7 +31,7 @@
   \setlength{\parskip}{0pt}
   \vspace*{\baselineskip}
   \noindent\am@authorityline\\
-  \vspace*{4\baselineskip}
+  \vspace*{3\baselineskip}
   \begin{tikzpicture}[overlay]
     %% to draw a grid for debugging
     % \draw[style=help lines] (0,0) grid (15,5);
