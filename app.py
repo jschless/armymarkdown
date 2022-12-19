@@ -108,6 +108,7 @@ def process_task(task, result_func):
             "result": result_func(result),
             "presigned_url": get_aws_link(result_func(result)),
         }
+        remove_files(result_func(result))
         task.forget()
     else:
         # something went wrong in the background job
@@ -124,8 +125,7 @@ def taskstatus(task_id):
     return jsonify(process_task(task, lambda res: res[:-4] + ".pdf"))
 
 
-@app.route("/results/<pdf_name>", methods=["GET", "POST"])
-def results(pdf_name):
+def remove_files(pdf_name):
     file_endings = [
         ".aux",
         ".fdb_latexmk",
@@ -134,13 +134,6 @@ def results(pdf_name):
         ".out",
         ".tex",
     ]
-    file_path = os.path.join(app.root_path, pdf_name)
-
-    for end in file_endings:
-        if os.path.exists(file_path[:-4] + end):
-            os.remove(file_path[:-4] + end)
-
-    return redirect(get_aws_link(pdf_name), code=302)
 
 
 def get_aws_link(file_name):
