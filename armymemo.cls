@@ -31,7 +31,7 @@
   \setlength{\parskip}{0pt}
   \vspace*{\baselineskip}
   \noindent\am@authorityline\\
-  \vspace*{3\baselineskip}
+  \vspace*{3\baselineskip} % the new line at the end of enumerate means we only need to add 3 lines before signature
   \begin{tikzpicture}[overlay]
     %% to draw a grid for debugging
     % \draw[style=help lines] (0,0) grid (15,5);
