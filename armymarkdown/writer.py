@@ -113,6 +113,22 @@ class MemoWriter:
         self.lines.append("\\end{enumerate}")
         self.lines.append("\\end{document}")
 
+    def _process_table(self, a):
+        # need to add hlines and vertical lines
+        s1 = a.find("tabular") + 9
+        s2 = a.find("}", s1)
+        new_a = a.replace(a[s1:s2], "".join(["|" + c for c in a[s1:s2]]) + "|")
+        s3 = 4  # start after the header, which will be index 5
+        s4 = -3  # end before the bottom rule
+        return "\n".join(
+            [
+                s.replace("\\\\", "\\\\\hline")
+                if i >= s3 and i < len(new_a.split("\n")) + s4
+                else s
+                for i, s in enumerate(new_a.split("\n"))
+            ]
+        )
+
     def _iterate_lols(self, lol):
         for i in lol:
             if isinstance(i, list):
@@ -121,6 +137,12 @@ class MemoWriter:
                 self.lines.append("\\end{enumerate}")
             else:
                 if "tabular" in i:
-                    self.lines += ["", "", "\\begin{center}", i, "\\end{center}"]
+                    self.lines += [
+                        "",
+                        "",
+                        "\\begin{center}",
+                        self._process_table(i),
+                        "\\end{center}",
+                    ]
                 else:
                     self.lines.append("\\item " + i)
