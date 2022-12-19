@@ -130,7 +130,7 @@ def process_table(line_list):
             .dropna(axis=1, how="all")
             .iloc[1:]
         )
-        return tabulate(table, table.columns, tablefmt="latex_booktabs")
+        return tabulate(table, table.columns, tablefmt="latex")
     except Exception as e:
         return ""
 
