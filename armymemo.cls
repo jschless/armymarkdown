@@ -1,4 +1,4 @@
-% Army memo class
+% Army memo class. Something broke for no reason. Re-commit to try to motivate Heroku to work.
 
 % George Allen base64(Z2xhbGxlbjAx) AT base64(Z21haWwuY29t)
 
@@ -197,7 +197,7 @@
 \renewcommand{\theenumiv}{\alph{enumiv}}\renewcommand{\labelenumiv}{(\theenumiv)}
 % these \setlist provide the layout for each indentation level
 % the after={} on level[1] prevents orphaned signature-blocks without the preceding final paragraph.
-\setlist[1]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=16pt,align=left,
+\setlist[1]{labelwidth=14pt,labelsep=2pt,leftmargin=0pt,itemindent=12pt,align=left,
   after={\nopagebreak\@nobreaktrue}}
 \setlist[2]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=0.5in,align=left}
 \setlist[3]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=0.75in,align=left}

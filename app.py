@@ -36,9 +36,7 @@ s3 = boto3.client(
     "s3",
     aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
     aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
-    config=boto3.session.Config(
-        region_name="us-east-2", signature_version="s3v4"
-    ),
+    config=boto3.session.Config(region_name="us-east-2", signature_version="s3v4"),
 )
 
 
@@ -73,6 +71,17 @@ def check_memo(text):
     return None
 
 
+@app.route("/process_files", methods=["POST"])
+def process_files():
+    print("Processing files", request.files)
+    task_ids = []
+    for uploaded_file in request.files.getlist("file"):
+        text = uploaded_file.read().decode()
+        task = create_memo.delay(text)
+        task_ids.append(task.id)
+    return (",".join(task_ids), 200, {"File_list": task_ids})
+
+
 @app.route("/process", methods=["POST"])
 def process():
     text = request.form["memo_text"]
@@ -81,7 +90,6 @@ def process():
         return memo_errors, 400
 
     task = create_memo.delay(text)
-
     return (
         "Hi, we're waiting for your PDF to be created.",
         200,
@@ -100,6 +108,7 @@ def process_task(task, result_func):
             "result": result_func(result),
             "presigned_url": get_aws_link(result_func(result)),
         }
+        remove_files(result_func(result))
         task.forget()
     else:
         # something went wrong in the background job
@@ -116,8 +125,7 @@ def taskstatus(task_id):
     return jsonify(process_task(task, lambda res: res[:-4] + ".pdf"))
 
 
-@app.route("/results/<pdf_name>", methods=["GET", "POST"])
-def results(pdf_name):
+def remove_files(pdf_name):
     file_endings = [
         ".aux",
         ".fdb_latexmk",
@@ -126,13 +134,6 @@ def results(pdf_name):
         ".out",
         ".tex",
     ]
-    file_path = os.path.join(app.root_path, pdf_name)
-
-    for end in file_endings:
-        if os.path.exists(file_path[:-4] + end):
-            os.remove(file_path[:-4] + end)
-
-    return redirect(get_aws_link(pdf_name), code=302)
 
 
 def get_aws_link(file_name):
@@ -189,7 +190,7 @@ def create_memo(text):
     file_path = os.path.join(app.root_path, temp_name)
 
     mw.write(output_file=file_path)
- 
+
     mw.generate_memo()
     if os.path.exists(file_path[:-4] + ".pdf"):
         upload_file_to_s3(file_path[:-4] + ".pdf", temp_name[:-4] + ".pdf")
