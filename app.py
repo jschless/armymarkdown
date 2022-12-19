@@ -134,6 +134,8 @@ def remove_files(pdf_name):
         ".out",
         ".tex",
     ]
+    for ending in file_ends:
+        os.remove(pdf_name[:-4] + ending)
 
 
 def get_aws_link(file_name):
