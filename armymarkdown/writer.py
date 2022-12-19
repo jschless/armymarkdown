@@ -121,6 +121,6 @@ class MemoWriter:
                 self.lines.append("\\end{enumerate}")
             else:
                 if "tabular" in i:
-                    self.lines += ["", "", i]
+                    self.lines += ["", "", "\\begin{center}", i, "\\end{center}"]
                 else:
                     self.lines.append("\\item " + i)
