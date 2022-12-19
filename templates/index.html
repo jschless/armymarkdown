@@ -208,6 +208,10 @@
         if (data["state"] == "SUCCESS") {
           window.open(data["presigned_url"]); // support multiple files
           return;
+        } else if (data["state"] == "FAILURE") {
+          $("#editor").val(
+            "There was an unknown error with your memo. I know this isn't super helpful, but fix the issue and try again."
+          );
         } else {
           let rerun_freq = 2000;
           count += 1;
