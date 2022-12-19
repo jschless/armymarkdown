@@ -185,12 +185,12 @@ def parse_lines(file_lines):
     table = []
     for line in file_lines[memo_begin_loc:]:
         dash_loc = line.find("-")
-        if (dash_loc == -1 or line.count("-") > 1) and line.find("|") > -1:
+        if (dash_loc == -1 or line.count("-") > 1) and line.count("|") > 1:
             table.append(line)
             continue
         elif dash_loc == -1:
             continue  # not a valid line
-        if table != [] and line.find("|") == -1:
+        if table != [] and line.count("|") < 2:
             master_list.append(process_table(table))
             table = []
 
