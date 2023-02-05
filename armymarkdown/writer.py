@@ -1,11 +1,9 @@
 import subprocess
 import os
 
-from . import memo_model
-
 
 class MemoWriter:
-    def __init__(self, data: memo_model.MemoModel):
+    def __init__(self, data):
         self.data = data
         self.lines = []
 
