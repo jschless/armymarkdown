@@ -27,6 +27,12 @@ SUBJECT = Army Markdown Tutorial
         - We can indent even further.
             - We can try to indent further, but it will only change from numbers to letters.
 
+# Insert bolds, italics, or underlines as follows. **text** will make text bold, *text* will make it in italics, and ***text*** will underline it.
+
+- **Look** at *this* special ***formatting***.
+
+You can also add a second paragraph to the same bullet by simply skipping a line.
+
 - Now, returning to the original indentation level.
 
 - Press the "Create Memo PDF" button when you're done!
