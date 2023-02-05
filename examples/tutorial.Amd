@@ -31,7 +31,7 @@ SUBJECT = Army Markdown Tutorial
 
 - **Look** at *this* special ***formatting***.
 
-You can also add a second paragraph to the same bullet by simply skipping a line.
+You can also add a second paragraph to the same bullet by simply skipping a line *without* a new "-".
 
 - Now, returning to the original indentation level.
 
