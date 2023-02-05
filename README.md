@@ -1,6 +1,6 @@
 # Project Overview
 
-The Army relies on memorandums to operate. The guidelines for these memorandums are fairly simple, but they can be tedious to implement them in Microsoft Word, which sucks. I am tired of both making and noticing others' mistakes.
+The Army relies on memorandums to operate. The guidelines for these memorandums are fairly simple, but they can be tedious to implement them in Microsoft Word, which sucks. I am tired of both making and noticing others' mistakes. 
 
 While some brilliant soul has already created a [latex class for Army memos](https://github.com/glallen01/army-memorandum-class), latex is intimidating and inaccessible to the average soldier. Hopefully, I can reach a wider audience with this project.
 
