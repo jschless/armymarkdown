@@ -5,8 +5,8 @@ import pandas as pd
 from io import StringIO
 from tabulate import tabulate
 
-from armymarkdown.utils import branch_to_abbrev, abbrev_to_branch
-from armymarkdown.utils import (
+from utils import branch_to_abbrev, abbrev_to_branch
+from utils import (
     key_converter,
     inv_key_converter,
     list_keys,
