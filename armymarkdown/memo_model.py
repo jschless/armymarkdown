@@ -196,7 +196,12 @@ def parse_lines(file_lines):
             table.append(line)
             continue
         elif dash_loc == -1:
-            continue  # not a valid line
+            # not a table and not a new line, so it's a new paragraph within same item
+            cur_list = master_list
+            while isinstance(cur_list[-1], list):
+                cur_list = cur_list[-1]
+            cur_list[-1] += "\n\n" + add_latex_escape_chars(line.strip())
+            continue
         if table != [] and line.count("|") < 2:
             master_list.append(process_table(table))
             table = []
