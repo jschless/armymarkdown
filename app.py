@@ -134,7 +134,7 @@ def remove_files(pdf_name):
         ".out",
         ".tex",
     ]
-    for ending in file_ends:
+    for ending in file_endings:
         os.remove(pdf_name[:-4] + ending)
 
 
