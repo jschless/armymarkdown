@@ -112,6 +112,13 @@ def add_latex_escape_chars(s):
     for c in normal_chars:
         s = s.replace(c, f"\\{c}")
 
+    underline_regex = re.compile(r"\*\*\*(.*?)\*\*\*")
+    bold_regex = re.compile(r"\*\*(.*?)\*\*")
+    italics_regex = re.compile(r"\*(.*?)\*")
+    s = re.sub(underline_regex, r"\\underline{\1}", s)
+    s = re.sub(bold_regex, r"\\textbf{\1}", s)
+    s = re.sub(italics_regex, r"\\textit{\1}", s)
+
     return s
 
 
