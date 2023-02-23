@@ -12,6 +12,7 @@ from celery import Celery
 import boto3
 from botocore.exceptions import ClientError
 from armymarkdown import memo_model, writer
+from flask_talisman import Talisman
 
 app = Flask(__name__)
 
@@ -202,6 +203,9 @@ def create_memo(text):
         raise Exception(f"PDF at path {file_path[:-4]}.pdf was not created")
 
     return temp_name
+
+
+Talisman(app, content_security_policy=None)
 
 
 def main():
