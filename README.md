@@ -12,11 +12,20 @@ The goal of this project is two-fold:
 
 ## Features
 - Web server where you can create and download memos.
-- Spelling and grammar checker. (blocked by DODIN-A)
+- ~~Spelling and grammar checker, custom syntax highlighting and code editor.~~ (blocked by DODIN-A)
 - Include more obscure memo formats and features.
+- Upload list of files (if you have a bunch of command memos to generate, for example) and receive list of PDFs.
 
+### TODO 
+- Migrate to AWS (save $$$, get actual on-demand pricing v. Heroku nonsense)
+- Add user database so organizational information will auto-fill (could use cookies or account login, maybe save previous documents...)
+- Optimize latex compilation so it doesn't take so dang long
+- Support tables (good luck)
+  
 ## Army Markdown Template
-I arrived on the following markdown language design, where 
+I arrived on the following markdown language design, where each document starts with the basic config signified by ALLCAPS_VARIABLE=example text. It's not particularly elegant, as it's sensitive to both whitespace and the unescape "=" delimiter. 
+
+The memo is whatever follows the SUBJECT= parameter. Each paragraph is signified by a "-". It supports Github-like markdown for italicized, bolded, and highlighted text.
 
 ```
 ORGANIZATION_NAME=4th Engineer Battalion
@@ -24,7 +33,6 @@ ORGANIZATION_STREET_ADDRESS=588 Wetzel Road
 ORGANIZATION_CITY_STATE_ZIP=Colorado Springs, CO 80904
 
 OFFICE_SYMBOL=ABC-DEF-GH
-DATE
 AUTHOR=Joseph C. Schlessinger
 RANK=1LT
 BRANCH=EN
