@@ -9,7 +9,7 @@ services:
   flask_app:
     image: armymarkdown:latest
     ports:
-      - "5001:5000"
+      - "8000:8000"
     depends_on:
       - redis
 
@@ -17,7 +17,7 @@ services:
     image: armymarkdown:latest
     volumes:
       - .:/src
-    container_name: cl01
+    container_name: cel01
     command: celery -A app.celery worker -l info
     links:
       - redis
