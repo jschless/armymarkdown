@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+  flask_app:
+    image: armymarkdown:latest
+    ports:
+      - "5001:5000"
+    depends_on:
+      - redis
+
+  celery:
+    image: armymarkdown:latest
+    volumes:
+      - .:/src
+    container_name: cl01
+    command: celery -A app.celery worker -l info
+    links:
+      - redis

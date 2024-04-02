@@ -205,11 +205,11 @@ def create_memo(text):
     return temp_name
 
 
-Talisman(app, content_security_policy=None)
+# Talisman(app, content_security_policy=None)
 
 
 def main():
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0")
 
 
 if __name__ == "__main__":
