@@ -206,7 +206,7 @@
       // send GET request to status URL
       $.get(status_url, function (data) {
         if (data["state"] == "SUCCESS") {
-          window.open(data["presigned_url"]); // support multiple files
+          window.open(data["presigned_url"], "_blank"); // support multiple files
           return;
         } else if (data["state"] == "FAILURE") {
           $("#editor").val(
