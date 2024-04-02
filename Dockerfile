@@ -33,14 +33,14 @@ RUN apt-get clean \
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
 # Copy your application files (if any)
 COPY . /app
 
 # Set working directory
 WORKDIR /app
-
-# Install Python dependencies (if any)
-RUN pip install -r requirements.txt
 
 # Command to run the application
 CMD ["gunicorn", "-b", "0.0.0.0", "-w", "4", "app:app"]
