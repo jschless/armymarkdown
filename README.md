@@ -1,9 +1,7 @@
 # Project Overview
-*Note from author: the website is currently down. Heroku raised their prices about 4-fold and I can no longer justify spending my own money to keep the site up. I have future plans to containerize the website and migrate it to AWS where it will be much cheaper, but this will require a lot of work and will not happen particularly soon.*
+The Army relies on memorandums to operate. The guidelines for these memorandums are fairly simple, but they can be tedious to implement in Microsoft Word, which sucks, or is susceptible to fat finger errors. I am tired of both making mistakes and noticing the mistakes of others. For a document standard that is so rigid, WYSIWYG is not the solution.
 
-The Army relies on memorandums to operate. The guidelines for these memorandums are fairly simple, but they can be tedious to implement in Microsoft Word, which sucks. I am tired of both making mistakes and noticing the mistakes of others. 
-
-While some brilliant soul has already created a [latex class for Army memos](https://github.com/glallen01/army-memorandum-class), latex is intimidating and inaccessible to the average soldier. Hopefully, I can reach a wider audience with this project. The writeup of this project can be found [on my website](https://jschless.github.io/posts/armymarkdown/).
+While some brilliant soul has already created a [latex class for Army memos](https://github.com/glallen01/army-memorandum-class), latex is intimidating and inaccessible to the average soldier. By writing a *hopefully* easy-to-use markdown-inspired language, I hope to bring the reliability of latex to a less technical audience. The website can be found at [http://www.armymemomaker.com]. 
 
 The goal of this project is two-fold:
 
@@ -17,11 +15,20 @@ The goal of this project is two-fold:
 - Upload list of files (if you have a bunch of command memos to generate, for example) and receive list of PDFs.
 
 ### TODO 
-- Migrate to AWS (save $$$, get actual on-demand pricing v. Heroku nonsense)
-- Add user database so organizational information will auto-fill (could use cookies or account login, maybe save previous documents...)
-- Optimize latex compilation so it doesn't take so dang long
-- Support tables (good luck)
-  
+- [x] Containerize and get off Heroku (save $$$, get actual on-demand pricing v. Heroku nonsense)
+- [x] Support embedded tables (sort of works, they're not pretty though)
+- [ ] Add user database so organizational information will auto-fill (could use cookies or account login, maybe save previous documents...)
+- [ ] Add SSL support, migrate to proxy server instead of gunicorn
+- [ ] Optimize latex compilation so it doesn't take so dang long
+
+### Stack / How to Run
+This web app is fully containerized. I use ```docker-compose``` to run three containers: 
+1. A simple ```flask``` app served via ```gunicorn```
+2. A ```celery``` worker
+3. A ```redis``` server for task scheduling with ```celery```
+
+The ```celery``` worker handles the time-intensive ```lualatex``` compilation. Then I upload the generated pdf to an AWS S3 bucket and serve it to the client.
+
 ## Army Markdown Template
 I arrived on the following markdown language design, where each document starts with the basic config signified by ALLCAPS_VARIABLE=example text. It's not particularly elegant, as it's sensitive to both whitespace and the unescape "=" delimiter. 
 
@@ -53,12 +60,3 @@ SUBJECT=Template for Army markdown
 
 - Point of contact is the undersigned blah blah blah.
 ```
-
-## Website
-Here's what the user interface looks like. I know its a little rough, but DODIN blocks all in-browser text editors I tried! So it has to be a plain HTML textbox.
-
-![website screenshot](website_screenshot.png)
-
-When you press the button, it generates a pdf version of your memo:
-
-![example memo](example_memo.png)
