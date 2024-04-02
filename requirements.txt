@@ -1,5 +1,4 @@
 amqp==5.1.1
--e git+https://github.com/jschless/armymarkdown.git@c2fe9f15fa13adbc34d190aa9f0ae2cceaebb7d0#egg=armymarkdown
 async-timeout==4.0.2
 attrs==21.4.0
 billiard==3.6.4.0

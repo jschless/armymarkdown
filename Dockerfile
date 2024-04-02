@@ -9,27 +9,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     redis-server \
     texlive \
     texlive-xetex \
+    latexmk \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-
-# RUN fc-cache -f
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 
-# Set working directory
-WORKDIR /app
-
 # Copy your application files (if any)
 COPY . /app
+
+# Set working directory
+WORKDIR /app
 
 RUN cp ./Arial /usr/local/share/fonts 
 
 # Install Python dependencies (if any)
 RUN pip install -r requirements.txt
 
-# Expose ports (if any)
-EXPOSE 8000
-
 # Command to run the application
-CMD [ "python", "app.py" ]
+CMD ["flask", "run", "--host", "0.0.0.0"]
