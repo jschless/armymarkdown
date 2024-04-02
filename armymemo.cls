@@ -1,8 +1,8 @@
-% Army memo class. Something broke for no reason. Re-commit to try to motivate Heroku to work.
+% Army memo class
 
-% George Allen base64(Z2xhbGxlbjAx) AT base64(Z21haWwuY29t)
+% https://github.com/glallen01/army-memorandum-class
 
-\ProvidesClass{armymemo}[2019/03/10 0.2.1 Army Memorandum Class]
+\ProvidesClass{armymemo}[2023/10/16 0.2.2 Army Memorandum Class]
 \NeedsTeXFormat{LaTeX2e}
 
 \LoadClass[
@@ -21,7 +21,7 @@
   }
   \am@putlogo%
   \dodheader%
-  \vspace*{2\baselineskip}
+  \vspace*{1\baselineskip}
 }
 
 % \typeout{===========>}\show\@enddocumenthook
@@ -31,7 +31,7 @@
   \setlength{\parskip}{0pt}
   \vspace*{\baselineskip}
   \noindent\am@authorityline\\
-  \vspace*{3\baselineskip} % the new line at the end of enumerate means we only need to add 3 lines before signature
+  \vspace*{4\baselineskip}
   \begin{tikzpicture}[overlay]
     %% to draw a grid for debugging
     % \draw[style=help lines] (0,0) grid (15,5);
@@ -87,8 +87,16 @@
 \RequirePackage{fontspec}
 \RequirePackage[english]{babel}
 % AR 25-50 recommends Arial as of 17 May 2013.  1-17b
-\setmainfont{Arial}
-\setsansfont{Arial}
+\setmainfont[Path = /usr/share/fonts/truetype/msttcorefonts/,
+  Extension = .ttf,
+  BoldFont=Arial_Bold,
+  ItalicFont = Arial_Italic
+]{Arial}
+\setsansfont[Path = /usr/share/fonts/truetype/msttcorefonts/,
+  Extension = .ttf,
+  BoldFont=Arial_Bold,
+  ItalicFont = Arial_Italic
+]{Arial}
 \defaultfontfeatures{Mapping=tex-text} % To support LaTeX ``" quotes.
 
 % used to change date format
@@ -197,8 +205,8 @@
 \renewcommand{\theenumiv}{\alph{enumiv}}\renewcommand{\labelenumiv}{(\theenumiv)}
 % these \setlist provide the layout for each indentation level
 % the after={} on level[1] prevents orphaned signature-blocks without the preceding final paragraph.
-\setlist[1]{labelwidth=14pt,labelsep=2pt,leftmargin=0pt,itemindent=16pt,align=left,
-after={\nopagebreak\@nobreaktrue}}
+\setlist[1]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=16pt,align=left,
+  after={\nopagebreak\@nobreaktrue}}
 \setlist[2]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=0.5in,align=left}
 \setlist[3]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=0.75in,align=left}
 \setlist[4]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=0.75in,align=left}
@@ -207,9 +215,6 @@ after={\nopagebreak\@nobreaktrue}}
 % \renewcommand{\theenumvi}{\alph{enumivi}}\renewcommand{\labelenumvi}{(\theenumvi)}
 % \setlist[5]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=1.00in,align=left}
 % \setlist[6]{labelwidth=12pt,labelsep=4pt,leftmargin=0pt,itemindent=1.25in,align=left}
-
-\AddToHook{env/enumerate/before}{\ClearHookNext{para/begin}}
-
 
 % define superscripts for use in unit addresses, etc.
 % these may need to be followed by an '\ '
@@ -429,5 +434,6 @@ after={\nopagebreak\@nobreaktrue}}
   \noindent\am@officesymbol\hspace*{\fill}\am@signaturedate\\
   \am@memoline
   \vspace{\baselineskip}
-  \noindent\am@subject\\
+  \noindent\am@subject
+  \par
 }
