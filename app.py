@@ -109,7 +109,6 @@ def process_task(task, result_func):
             "result": result_func(result),
             "presigned_url": get_aws_link(result_func(result)),
         }
-        remove_files(result_func(result))
         task.forget()
     else:
         # something went wrong in the background job
@@ -124,21 +123,6 @@ def process_task(task, result_func):
 def taskstatus(task_id):
     task = create_memo.AsyncResult(task_id)
     return jsonify(process_task(task, lambda res: res[:-4] + ".pdf"))
-
-
-def remove_files(pdf_name):
-    file_endings = [
-        ".aux",
-        ".fdb_latexmk",
-        ".fls",
-        ".log",
-        ".out",
-        ".tex",
-    ]
-    for ending in file_endings:
-        temp = pdf_name[:-4] + ending
-        if os.path.exists(temp):
-            os.remove(temp)
 
 
 def get_aws_link(file_name):
@@ -168,7 +152,7 @@ def upload_file_to_s3(file, aws_path, acl="public-read"):
             aws_path,
             ExtraArgs={
                 "ContentType": "application/pdf",
-                "ContentDisposition": "attachment",
+                "ContentDisposition": "inline",
             },
         )
         ret_val = file
@@ -201,6 +185,21 @@ def create_memo(text):
         upload_file_to_s3(file_path[:-4] + ".pdf", temp_name[:-4] + ".pdf")
     else:
         raise Exception(f"PDF at path {file_path[:-4]}.pdf was not created")
+
+    # clean up temp files after upload to AWS
+    file_endings = [
+        ".aux",
+        ".fdb_latexmk",
+        ".fls",
+        ".log",
+        ".out",
+        ".tex",
+    ]
+
+    for ending in file_endings:
+        temp = temp_name[:-4] + ending
+        if os.path.exists(temp):
+            os.remove(temp)
 
     return temp_name
 
