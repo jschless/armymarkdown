@@ -21,6 +21,7 @@ class MemoWriter:
             print("\n".join(self.lines), file=f)
 
     def generate_memo(self):
+        # subprocess.run(["xelatex", self.output_file])
         subprocess.run(["latexmk", "-quiet", "-lualatex", self.output_file])
 
     def _write_for_lines(self) -> list:
