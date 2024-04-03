@@ -35,6 +35,13 @@ s3 = boto3.client(
     config=boto3.session.Config(region_name="us-east-2", signature_version="s3v4"),
 )
 
+hashes = set(
+    [
+        hash(open(os.path.join("./examples", f), "r").read())
+        for f in os.listdir("./examples")
+    ]
+)
+
 
 @app.route("/")
 def home():
@@ -43,24 +50,28 @@ def home():
 
 @app.route("/<example_file>")
 def index(example_file="./tutorial.Amd"):
-    text = ""
+    if example_file == "autosave" and session.get("input_data", None):
+        return render_template("index.html", memo_text=session["input_data"])
+
     if example_file not in os.listdir("./examples"):
         example_file = "./tutorial.Amd"
 
-    example_file = os.path.join("./examples", example_file)
-    if session.get("input_data", None):
-        text = session["input_data"]
-    else:
-        text = open(example_file, "r").read()
-
-    return render_template("index.html", memo_text=text)
+    return render_template(
+        "index.html",
+        memo_text=open(os.path.join("./examples", example_file), "r").read(),
+    )
 
 
 @app.route("/save_data", methods=["POST"])
 def save_data():
     data = request.form.get("input_data")
-    session["input_data"] = data
-    return "Data saved successfully"
+    if hash(data) not in hashes and (
+        "input_data" in session and hash(session["input_data"]) != hash(data)
+    ):
+        session["input_data"] = data
+        print("Updated session variable with autosaved data")
+        return "Session updated with progress"
+    return "No update made, session was unchanged"
 
 
 def check_memo(text):

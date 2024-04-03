@@ -52,6 +52,7 @@
     </div>  
 
     <div class="row">
+      <div class="nine columns">
         <label for="examples">Example List</label>
         <select id="linkSelector" onchange="changeHref()">
           <option value="{{url_for('index', example_file='tutorial.Amd')}}">Tutorial</option>
@@ -62,10 +63,14 @@
           <option value="{{url_for('index', example_file='memo_thru.Amd')}}">Memorandum Thru</option>
           <option value="{{url_for('index', example_file='memo_extra_features.Amd')}}">Memorandum with Enclosures, Distros, Suspense Dates, and Classification Markings</option          <option value="{{url_for('index', example_file='long_memo.Amd')}}">Long Memorandum (Figure 2-2 from AR 25-50)</option>
         </select>
+      </div> 
+      <div class="three columns">
+        <label for="examples">Recover last session</label>
+        <button class="button-primary" id="load-last-file">Load autosaved file</button>
+      </div>
     </div>
-    
+
     <div class="row">
-      <!-- <label for="exampleMessage">Memo Text</label> -->
         <textarea id="editor" spellcheck="true" class="u-full-width u-full-height">{{memo_text}}</textarea>
         <button class="button-primary" id="start-bg-job">Create Memo PDF</button>
     </div>
@@ -202,6 +207,13 @@
       $("#start-bg-job").click(generate_memo);
     });
 
+    $(function () {
+      $("#load-last-file").click(function() {
+        window.location.href = window.location.origin + "/autosave";
+      });
+    });
+
+   
     $("a[href*='" + location.pathname + "']").addClass("active");
   </script>
 </body>
