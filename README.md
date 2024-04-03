@@ -9,18 +9,21 @@ The goal of this project is two-fold:
 2. Create a website where soldiers can upload/type memos and the server will compile the latex and make the memo available for download.
 
 ## Features
-- Web server where you can create and download memos.
-- ~~Spelling and grammar checker, custom syntax highlighting and code editor.~~ (blocked by DODIN-A)
-- Include more obscure memo formats and features.
-- Upload list of files (if you have a bunch of command memos to generate, for example) and receive list of PDFs.
+- Web server where you can create and download memos
+- ~~Custom syntax highlighting and code editor~~ (blocked by DODIN-A, no javascript-based code editor will work)
+- Supports multiple features, like text styling, basic tables, classifications, enclosures, etc.
+- Easily recover last session document
+
 
 ### TODO 
 - [x] Containerize and get off Heroku (save $$$, get actual on-demand pricing v. Heroku nonsense)
 - [x] Support embedded tables (sort of works, they're not pretty though)
-- [ ] Add user database so organizational information will auto-fill (could use cookies or account login, maybe save previous documents...)
-- [ ] Add SSL support, migrate to proxy server instead of gunicorn
+- [x] Add user database so organizational information will auto-fill (could use cookies or account login, maybe save previous documents...)
+- [ ] Add SSL support, migrate to nginx proxy server instead of gunicorn
 - [ ] Optimize latex compilation so it doesn't take so dang long
-
+- [ ] Allow form-based submission alternatives.
+- [ ] Upload list of files (if you have a bunch of command memos to generate, for example) and receive list of PDFs.
+  
 ### Stack / How to Run
 This web app is fully containerized. I use ```docker-compose``` to run three containers: 
 1. A simple ```flask``` app served via ```gunicorn```
