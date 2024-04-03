@@ -65,8 +65,10 @@ def index(example_file="./tutorial.Amd"):
 @app.route("/save_data", methods=["POST"])
 def save_data():
     data = request.form.get("input_data")
-    if hash(data) not in hashes and (
-        "input_data" in session and hash(session["input_data"]) != hash(data)
+    if (
+        hash(data) not in hashes
+        and not data.startswith("Waiting")
+        and ("input_data" in session and hash(session["input_data"]) != hash(data))
     ):
         session["input_data"] = data
         print("Updated session variable with autosaved data")
