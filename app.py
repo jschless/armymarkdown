@@ -7,7 +7,7 @@ from botocore.exceptions import ClientError
 from armymarkdown import memo_model, writer
 from flask_talisman import Talisman
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path="/static")
 
 if "REDIS_URL" not in os.environ:
     # set os.environ from local_config
