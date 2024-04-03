@@ -109,7 +109,27 @@
        this.selectionStart = this.selectionEnd = start + 4;
      }
    });
+
+   function saveData() {
+     var inputData = document.getElementById('editor').value;
+     fetch('/save_data', {
+       method: 'POST',
+       headers: {
+         'Content-Type': 'application/x-www-form-urlencoded',
+       },
+       body: 'input_data=' + encodeURIComponent(inputData)
+     })
+       .then(response => {
+         console.log('Data saved successfully');
+       })
+       .catch(error => {
+         console.error('Error saving data:', error);
+       });
+   }
    
+   // Save data every 5 seconds (adjust as needed)
+   setInterval(saveData, 5000);
+
    
     function button_press(endpoint, polling_function) {
       $.ajax({

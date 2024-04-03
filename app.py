@@ -1,13 +1,6 @@
 import random
 import os
-from flask import (
-    Flask,
-    render_template,
-    request,
-    url_for,
-    jsonify,
-    redirect,
-)
+from flask import Flask, render_template, request, url_for, jsonify, redirect, session
 from celery import Celery
 import boto3
 from botocore.exceptions import ClientError
@@ -22,6 +15,8 @@ if "REDIS_URL" not in os.environ:
 
     for key, val in config.items():
         os.environ[key] = val
+
+app.secret_key = os.environ["FLASK_SECRET"]
 
 celery = Celery(
     app.name,
@@ -53,9 +48,19 @@ def index(example_file="./tutorial.Amd"):
         example_file = "./tutorial.Amd"
 
     example_file = os.path.join("./examples", example_file)
-    text = open(example_file, "r").read()
+    if session.get("input_data", None):
+        text = session["input_data"]
+    else:
+        text = open(example_file, "r").read()
 
     return render_template("index.html", memo_text=text)
+
+
+@app.route("/save_data", methods=["POST"])
+def save_data():
+    data = request.form.get("input_data")
+    session["input_data"] = data
+    return "Data saved successfully"
 
 
 def check_memo(text):
