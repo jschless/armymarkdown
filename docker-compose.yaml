@@ -7,7 +7,10 @@ services:
   flask_app:
     image: armymarkdown:latest
     ports:
+      - "443:8000"
       - "80:8000"
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
     depends_on:
       - redis
 
