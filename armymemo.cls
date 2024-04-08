@@ -183,7 +183,8 @@
 
 % AR 25-50 allows for hyphenation (just not across pages, which LaTeX won't do
 % anyway) we just want less hyphenation than more
-\hyphenpenalty=5000
+\hyphenpenalty=10000
+\emergencystretch 3em
 % \RequirePackage[none]{hyphenat}
 % https://tex.stackexchange.com/a/134318
 % https://tex.stackexchange.com/a/249335
