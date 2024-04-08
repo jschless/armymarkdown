@@ -48,7 +48,7 @@
     <h1>Army Memo Maker</h1>
 
     <div class="row">
-      Welcome to Army Memo Maker, a simple webapp that helps you make memos formatted in perfect accordance with AR 25-50. Memos are guaranteed to have the right spacing and font.
+      Welcome to Army Memo Maker, a simple webapp that helps you make memos formatted in perfect accordance with AR 25-50. Memos are guaranteed to have the right spacing and font. Note, generating your memo will take around 20 seconds (this website is currently running on a server less powerful than your phone).
 
       The tutorial example explains how to create your memo. You can also view other example memos to see other supported features. If you have previously visited the site, you can click "Load autosaved file" button to recover your last memo template.
     </div>  
@@ -58,13 +58,13 @@
         <label for="examples">Example List</label>
         <select id="linkSelector" onchange="changeHref()">
           <option value="{{url_for('index', example_file='tutorial.Amd')}}">Tutorial</option>
+          <option value="{{url_for('index', example_file='long_memo.Amd')}}">Long Memorandum (Figure 2-2 from AR 25-50)</option>
           <option value="{{url_for('index', example_file='basic_mfr.Amd')}}">Memorandum for Record</option>
           <option value="{{url_for('index', example_file='basic_mfr_w_table.Amd')}}">Memorandum for Record with Table</option>
           <option value="{{url_for('index', example_file='memo_for.Amd')}}">Memorandum For</option>
           <option value="{{url_for('index', example_file='memo_multi_for.Amd')}}">Memorandum For Multiple</option>
           <option value="{{url_for('index', example_file='memo_thru.Amd')}}">Memorandum Thru</option>
           <option value="{{url_for('index', example_file='memo_extra_features.Amd')}}">Memorandum with Enclosures, Distros, Suspense Dates, and Classification Markings</option>
-          <option value="{{url_for('index', example_file='long_memo.Amd')}}">Long Memorandum (Figure 2-2 from AR 25-50)</option>
         </select>
       </div> 
       <div class="three columns">
