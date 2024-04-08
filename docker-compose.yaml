@@ -3,13 +3,14 @@ version: '3'
 services:
   redis:
     image: redis:latest
-    ports:
-      - "6379:6379"
 
   flask_app:
     image: armymarkdown:latest
     ports:
+      - "443:8000"
       - "80:8000"
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
     depends_on:
       - redis
 

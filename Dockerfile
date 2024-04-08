@@ -43,4 +43,4 @@ COPY . /app
 WORKDIR /app
 
 # Command to run the application
-CMD ["gunicorn", "-b", "0.0.0.0", "-w", "4", "app:app"]
+CMD ["gunicorn", "-b", "0.0.0.0", "-w", "4", "--certfile", "/etc/letsencrypt/live/armymemomaker.com/fullchain.pem", "--keyfile", "/etc/letsencrypt/live/armymemomaker.com/privkey.pem", "app:app"]
