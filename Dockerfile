@@ -42,5 +42,8 @@ COPY . /app
 # Set working directory
 WORKDIR /app
 
-# Command to run the application
-CMD ["gunicorn", "-b", "0.0.0.0", "-w", "4", "--certfile", "/etc/letsencrypt/live/armymemomaker.com/fullchain.pem", "--keyfile", "/etc/letsencrypt/live/armymemomaker.com/privkey.pem", "app:app"]
+CMD gunicorn -w 1 -b 0.0.0.0:8000 -t 360 --reload app:app & \
+    gunicorn -w 3 --certfile /etc/letsencrypt/live/armymemomaker.com/fullchain.pem --keyfile /etc/letsencrypt/live/armymemomaker.com/privkey.pem -b 0.0.0.0:8443 -t 360 --reload app:app
+
+# CMD ["gunicorn", "-w", "1", "-b", "0.0.0.0:8000", "-t", "360", "--reload", "app:app", "&"]
+# , "gunicorn", "-w", "3", "--certfile", "/etc/letsencrypt/live/armymemomaker.com/fullchain.pem", "--keyfile", "/etc/letsencrypt/live/armymemomaker.com/privkey.pem", "-b", "0.0.0.0:8443", "-t", "360", "--reload", "app:app"]
