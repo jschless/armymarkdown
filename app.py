@@ -1,11 +1,14 @@
 import random
 import os
+import sys
 from flask import Flask, render_template, request, url_for, jsonify, redirect, session
 from celery import Celery
+import logging
 import boto3
 from botocore.exceptions import ClientError
 from armymarkdown import memo_model, writer
 from flask_talisman import Talisman
+from db.db import init_db
 
 app = Flask(__name__, static_url_path="/static")
 
@@ -27,6 +30,12 @@ celery = Celery(
 celery.conf.broker_pool_limit = 0
 celery.conf.redis_max_connections = 20  # free heroku tier limit
 
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////data/users.db"  # Path to users.db
+app.config["SQLALCHEMY_BINDS"] = {
+    "drafts": "sqlite:////data/drafts.db"
+}  # Path to drafts.db
+
+init_db(app)
 
 s3 = boto3.client(
     "s3",
@@ -41,6 +50,8 @@ hashes = set(
         for f in os.listdir("./examples")
     ]
 )
+
+import login
 
 
 @app.route("/")
@@ -222,7 +233,7 @@ def create_memo(text):
     return temp_name
 
 
-Talisman(app, content_security_policy=None)
+# Talisman(app, content_security_policy=None)
 
 
 def main():
