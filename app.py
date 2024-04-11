@@ -25,10 +25,8 @@ celery = Celery(
     app.name,
     broker=os.environ["REDIS_URL"],
     backend=os.environ["REDIS_URL"],
+    broker_connection_retry_on_startup=True,
 )
-
-celery.conf.broker_pool_limit = 0
-celery.conf.redis_max_connections = 20  # free heroku tier limit
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////data/users.db"  # Path to users.db
 app.config["SQLALCHEMY_BINDS"] = {
