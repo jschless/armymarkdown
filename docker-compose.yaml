@@ -5,20 +5,31 @@ services:
     image: redis:latest
 
   flask_app:
-    image: armymarkdown:latest
+    build: ./
     ports:
-      - "443:8443"
-      - "80:8000"
+#      - "443:8443"
+      - "8000:8000"
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt
+      - db-data:/data
     depends_on:
       - redis
+      - sqlite_db
 
   celery:
-    image: armymarkdown:latest
+    build: ./
     volumes:
       - .:/src
+      - db-data:/data
     container_name: cel01
     command: celery -A app.celery worker -l info
     links:
       - redis
+
+  sqlite_db:
+    build: ./db
+    volumes:
+      - db-data:/data
+
+volumes:
+  db-data:
