@@ -90,12 +90,29 @@ class MemoModel:
         return []
 
     def to_dict(self):
-        # convert into form dict format
-        form_dict = {field.name: getattr(self, field.name) for field in fields(self)}
+        return {field.name: getattr(self, field.name) for field in fields(self)}
+
+    def to_form(self):
+        form_dict = {
+            field.name: getattr(self, field.name)
+            for field in fields(self)
+            if field.name not in list_keys
+        }
         form_dict["text"] = nested_list_to_string(form_dict["text"])
 
-        # TODO, need to handle lists of FOR_ORGANIZATION_CITY_STATE_ZIP, etc.
-
+        # for key in list_keys:
+        #     val = []
+        #     keep_looping = True
+        #     i = 1
+        #     while keep_looping:
+        #         if key + str(i) in form_dict:
+        #             val.append(form_dict[key + str(i)])
+        #             i += 1
+        #         else:
+        #             keep_looping = False
+        #     if len(val) > 0:
+        #         memo_dict[key_converter[key]] = val
+        # # if form_dict.get("user_")
         return form_dict
 
     @classmethod
@@ -110,10 +127,10 @@ class MemoModel:
                 if k in missing_keys:
                     missing_keys.remove(k)  # remove optional keys
 
-                    return (
-                        f"Missing the following keys: "
-                        f"{','.join([inv_key_converter[k] for k in missing_keys])}"
-                    )
+            return (
+                f"Missing the following keys: "
+                f"{','.join([inv_key_converter[k] for k in missing_keys])}"
+            )
 
     @classmethod
     def from_form(cls, form_dict):
@@ -126,7 +143,23 @@ class MemoModel:
                 )
             )
         )
-        return cls.from_dict(memo_dict)
+        # If there are list keys in form_dict, they will be of the form list_key1, list_key2, list_key3
+        # So, let's check each list_key to see if it is in there...
+
+        r_key_converter = {v: k for k, v in key_converter.items()}
+
+        for key in [r_key_converter[key] for key in list_keys]:
+            val = []
+            keep_looping = True
+            i = 1
+            while keep_looping:
+                if key + str(i) in form_dict:
+                    val.append(form_dict[key + str(i)])
+                    i += 1
+                else:
+                    keep_looping = False
+            if len(val) > 0:
+                memo_dict[key_converter[key]] = val
 
     @classmethod
     def from_file(cls, filepath):
@@ -233,7 +266,9 @@ def nested_list_to_string(lst, indent=0):
         if isinstance(item, list):
             result += nested_list_to_string(item, indent + 4)
         else:
-            result += " " * indent + "- " + str(item) + "\n\n"
+            result += (
+                " " * indent + "- " + remove_latex_escape_chars(str(item)) + "\n\n"
+            )
     return result
 
 
