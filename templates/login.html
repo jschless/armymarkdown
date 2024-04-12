@@ -1,48 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
+{% extends 'base.html' %}
 
-    <!-- Basic Page Needs
-         –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-    <meta charset="utf-8">
-    <title>Army Memo Maker</title>
-    <meta name="description" content="">
-    <meta name="author" content="">
-
-    <!-- Mobile Specific Metas
-         –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- FONT
-         –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-    
-    <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
-
-    <!-- CSS
-         –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-    <link rel="stylesheet" href="{{ url_for('static',filename='css/normalize.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static',filename='css/skeleton.css') }}">
-
-
-    <!-- Favicon
-         –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" />
-    <style>
-     textarea.u-full-height {
-       height: 75vh;
-     }
-
-     body {
-       font-family: Arial, sans-serif;
-     }
-    </style>
-
-    <head>
-      <title>Login</title>
-    </head>
+{% block content %}
     <body>
       <div class="container">
-        <h1>Army Memo Maker</h1>
         <h2>Login</h2>
         
         <form method="post">
@@ -58,11 +18,10 @@
             <div class="two columns">
               <input class="button" type="submit" name="submit" value="Register">
             </div>
-          </div>
-
-          
+          </div>         
         </form>
       </div>
       
     </body>
-</html>
+{% endblock %}
+
