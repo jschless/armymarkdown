@@ -59,10 +59,11 @@ function update_progress(status_url, count) {
     // send GET request to status URL
     $.get(status_url, function (data) {
         if (data["state"] == "SUCCESS") {
-            window.open(data["presigned_url"], "_blank"); // support multiple files
+            $("#status").text("");
+	    window.open(data["presigned_url"], "_blank"); // support multiple files
             return;
         } else if (data["state"] == "FAILURE") {
-            $("#editor").val(
+            $("#status").text(
 		"There was an unknown error with your memo. I know this isn't super helpful, but fix the issue and try again."
             );
         } else {
@@ -70,7 +71,7 @@ function update_progress(status_url, count) {
             count += 1;
             // rerun in 2 seconds
             if (count < 50) {
-		$("#editor").val(
+		$("#status").text(
 		    "Waiting for your memo pdf to be generated! Please be patient! It's only been " +
 			count * 2 +
 			" seconds."
