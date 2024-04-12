@@ -64,8 +64,9 @@ def logout():
 @login_required
 def history():
     user_id = current_user.id
-    documents = Document.query.filter_by(user_id=user_id).all()
-
+    documents = (
+        Document.query.filter_by(user_id=user_id).order_by(Document.id.desc()).all()
+    )
     processed_documents = []
     for document in documents:
         start_index = document.content.find("SUBJECT") + 8  # go to end of subject
