@@ -2,15 +2,15 @@
 
 {% block content %}
 <h2>Memo Form</h2>
-<form>
+<form id="memo" action="/form" method="post">
   <div class="twelve columns">
     <div class="six columns offset-by-three">
       <label for="ORGANIZATION_NAME" class="center">Organization Name / Title</label>
-      <input type="text" placeholder="36th Engineer Brigade" id="ORGANIZATION_NAME" class="u-full-width center">
+      <input type="text" value="36th Engineer Brigade" name="ORGANIZATION_NAME" id="ORGANIZATION_NAME" class="u-full-width center">
       <label for="ORGANIZATION_STREET_ADDRESS" class="center">Street Address</label>
-      <input type="text" placeholder="1234 Washington Road" id="ORGANIZATION_STREET_ADDRESS" class="u-full-width center">
+      <input type="text" value="1234 Washington Road" id="ORGANIZATION_STREET_ADDRESS" name="ORGANIZATION_STREET_ADDRESS" class="u-full-width center">
       <label for="ORGANIZATION_CITY_STATE_ZIP" class="center">City, State, Zip</label>
-      <input type="text" placeholder="Fort Cavazos, TX 01234" id="ORGANIZATION_CITY_STATE_ZIP" class="u-full-width center">
+      <input type="text" value="Fort Cavazos, TX 01234" id="ORGANIZATION_CITY_STATE_ZIP" name="ORGANIZATION_CITY_STATE_ZIP" class="u-full-width center">
     </div>
   </div>
 
@@ -19,11 +19,11 @@
   <div class="row">
     <div class="three columns">
       <label for="OFFICE_SYMBOL" class="center">Office Symbol</label>
-      <input type="text" placeholder="ABC-DEF-GHIJ" id="OFFICE_SYMBOL" class="u-full-width center">
+      <input type="text" value="ABC-DEF-GHIJ" name="OFFICE_SYMBOL" id="OFFICE_SYMBOL" class="u-full-width center">
     </div>
     <div  class="three columns offset-by-six">
       <label for="DATE" class="center">Date</label>
-      <input type="text" placeholder="24 January 2024" id="DATE" class="u-full-width center">
+      <input type="text" value="24 January 2024" id="DATE" name="DATE" class="u-full-width center">
     </div>    
   </div>
 
@@ -43,13 +43,13 @@
 
   <div class="row">
     <label for="SUBJECT">Subject</label>
-    <input class="u-full-width" type="text" placeholder="This is your memo subject", id="SUBJECT">
+    <input class="u-full-width" type="text" value="This is your memo subject" name="SUBJECT" id="SUBJECT">
   </div>
 
   
   <div class="row">
     <label for="MEMO_TEXT">Memo Text</label>
-    <textarea class="u-full-width u-half-height" id="MEMO_TEXT">{{memo_text}}</textarea>
+    <textarea class="u-full-width u-half-height" name="MEMO_TEXT" id="MEMO_TEXT">{{memo_text}}</textarea>
   </div>
 
   <hr>
@@ -59,11 +59,11 @@
     <div class="twelve columns">
       <div class="three columns offset-by-six" id="signature">
         <label for="AUTHOR">Your Name</label>
-        <input type="text" placeholder="James F. Ryan" id="AUTHOR" class="u-full-width">
+        <input type="text" value="James F. Ryan" name="AUTHOR" id="AUTHOR" class="u-full-width">
         <label for="RANK">Rank</label>
-        <input type="text" placeholder="PVT" id="RANK" class="u-full-width">
+        <input type="text" value="PVT" id="RANK" name="RANK" class="u-full-width">
         <label for="BRANCH">Branch</label>
-        <input type="text" placeholder="IN" id="BRANCH" class="u-full-width">
+        <input type="text" value="IN" id="BRANCH" name="BRANCH" class="u-full-width">
         <input class="button" type="button" id="addTitle" value="Add Title">
       </div>
     </div>    
@@ -105,7 +105,9 @@
      var input = document.createElement('input');
      input.type = 'text';
      input.id = field.id;
+     input.name = field.id;
      input.placeholder = field.placeholder;
+     input.value = field.placeholder;
      input.classList.add("u-full-width");
      input.classList.add("center");
 
@@ -142,7 +144,9 @@
    var input = document.createElement('input');
    input.type = 'text';
    input.id = "TITLE";
+   input.name = "TITLE";
    input.placeholder = "Lost Private";
+   input.value = "Lost Private";
    input.classList.add("u-full-width");
 
      
