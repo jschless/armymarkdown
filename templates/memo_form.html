@@ -32,18 +32,18 @@
 
   <div id="thruFieldContainer">
     {% for name, add, city in zipped_thru %}
-
-    <div class="row" id="thru{{loop.index}}">
+    
+    <div class="row" id="thru{{ zipped_thru|length - loop.index0 }}">
       <div class="six columns">
-        <label class="u-full-width center" for="THRU_ORGANIZATION_NAME{{loop.index}}">THRU Organization Name</label>
-        <input type="text" id="THRU_ORGANIZATION_NAME{{loop.index}}" name="THRU_ORGANIZATION_NAME{{loop.index}}" value="{{ name }}" class="u-full-width center">
+        <label class="u-full-width center" for="THRU_ORGANIZATION_NAME{{ zipped_thru|length - loop.index0 }}">THRU Organization Name</label>
+        <input type="text" id="THRU_ORGANIZATION_NAME {{  zipped_thru|length - loop.index0 }}" name="THRU_ORGANIZATION_NAME{{  zipped_thru|length - loop.index0}}" value="{{ name }}" class="u-full-width center">
         <br>
-        <label class="u-full-width center" for="THRU_ORGANIZATION_STREET_ADDRESS{{loop.index}}">THRU Street Address</label>
-        <input type="text" id="THRU_ORGANIZATION_STREET_ADDRESS{{loop.index}}" name="THRU_ORGANIZATION_STREET_ADDRESS{{loop.index}}" value="{{ add }}" class="u-full-width center">
+        <label class="u-full-width center" for="THRU_ORGANIZATION_STREET_ADDRESS{{ zipped_thru|length - loop.index0 }}">THRU Street Address</label>
+        <input type="text" id="THRU_ORGANIZATION_STREET_ADDRESS{{ zipped_thru|length - loop.index0}}" name="THRU_ORGANIZATION_STREET_ADDRESS{{ zipped_thru|length - loop.index0 }}" value="{{ add }}" class="u-full-width center">
         <br>
-        <label class="u-full-width center" for="THRU_ORGANIZATION_CITY_STATE_ZIP{{loop.index}}">THRU City, State Zip</label>
-        <input type="text" id="THRU_ORGANIZATION_CITY_STATE_ZIP{{loop.index}}" name="THRU_ORGANIZATION_CITY_STATE_ZIP{{loop.index}}" value="{{ city }}" class="u-full-width center">
-      <input type="button" value="Remove Thru Address" onclick="deleteElement('thru{{loop.index}}')">
+        <label class="u-full-width center" for="THRU_ORGANIZATION_CITY_STATE_ZIP{{  zipped_thru|length - loop.index0 }}">THRU City, State Zip</label>
+        <input type="text" id="THRU_ORGANIZATION_CITY_STATE_ZIP{{ zipped_thru|length - loop.index0 }}" name="THRU_ORGANIZATION_CITY_STATE_ZIP{{ zipped_thru|length - loop.index0 }}" value="{{ city }}" class="u-full-width center">
+      <input type="button" value="Remove Thru Address" onclick="deleteElement('thru{{ zipped_thru|length - loop.index0 }}')">
       </div>
     </div>
     {% endfor %}
@@ -62,18 +62,18 @@
   <div id="forFieldContainer">
     {% for name, add, city in zipped_for %}
 
-    <div class="row" id="for{{loop.index}}">
+    <div class="row" id="for{{ zipped_for|length - loop.index0 }}">
       <div class="six columns">
-        <label class="u-full-width center" for="FOR_ORGANIZATION_NAME{{loop.index}}">FOR Organization Name</label>
-        <input type="text" id="FOR_ORGANIZATION_NAME{{loop.index}}" name="FOR_ORGANIZATION_NAME{{loop.index}}" value="{{ name }}" class="u-full-width center">
+        <label class="u-full-width center" for="FOR_ORGANIZATION_NAME{{ zipped_for|length - loop.index0}}">FOR Organization Name</label>
+        <input type="text" id="FOR_ORGANIZATION_NAME{{ zipped_for|length - loop.index0 }}" name="FOR_ORGANIZATION_NAME{{ zipped_for|length - loop.index0 }}" value="{{ name }}" class="u-full-width center">
         <br>
-        <label class="u-full-width center" for="FOR_ORGANIZATION_STREET_ADDRESS{{loop.index}}">FOR Street Address</label>
-        <input type="text" id="FOR_ORGANIZATION_STREET_ADDRESS{{loop.index}}" name="FOR_ORGANIZATION_STREET_ADDRESS{{loop.index}}" value="{{ add }}" class="u-full-width center">
+        <label class="u-full-width center" for="FOR_ORGANIZATION_STREET_ADDRESS{{ zipped_for|length - loop.index0 }}">FOR Street Address</label>
+        <input type="text" id="FOR_ORGANIZATION_STREET_ADDRESS{{ zipped_for|length - loop.index0 }}" name="FOR_ORGANIZATION_STREET_ADDRESS{{ zipped_for|length - loop.index0 }}" value="{{ add }}" class="u-full-width center">
         <br>
-        <label class="u-full-width center" for="FOR_ORGANIZATION_CITY_STATE_ZIP{{loop.index}}">FOR City, State Zip</label>
-        <input type="text" id="FOR_ORGANIZATION_CITY_STATE_ZIP{{loop.index}}" name="FOR_ORGANIZATION_CITY_STATE_ZIP{{loop.index}}" value="{{ city }}" class="u-full-width center">
+        <label class="u-full-width center" for="FOR_ORGANIZATION_CITY_STATE_ZIP{{ zipped_for|length - loop.index0 }}">FOR City, State Zip</label>
+        <input type="text" id="FOR_ORGANIZATION_CITY_STATE_ZIP{{ zipped_for|length - loop.index0 }}" name="FOR_ORGANIZATION_CITY_STATE_ZIP{{ zipped_for|length - loop.index0 }}" value="{{ city }}" class="u-full-width center">
         <br>
-        <input type="button" value="Remove For Address" onclick="deleteElement('for{{loop.index}}')">      
+        <input type="button" value="Remove For Address" onclick="deleteElement('for{{ zipped_for|length - loop.index0 }}')">      
       </div>
     </div>
     {% endfor %}
@@ -150,8 +150,21 @@
  var formattedDate = currentDate.toLocaleDateString('en-GB', options);
  document.getElementById('DATE').placeholder = formattedDate;
 
- var forCount = 0;
- var thruCount = 0;
+ function findHighest(prefix) {
+   var highestNumber = 0;
+
+   document.querySelectorAll("[id^='" + prefix + "']").forEach(function(element) {
+    var idNumber = parseInt(element.id.replace(prefix, ""));
+    if (idNumber > highestNumber) {
+        highestNumber = idNumber;
+    }
+   });
+
+   return highestNumber;
+ }
+
+ var forCount = findHighest("for");
+ var thruCount = findHighest("thru");
  
  function addAddress(fields, is_for) {
    // reuse this for thru and for address buttons
@@ -160,7 +173,7 @@
    var newDiv = document.createElement('div');
    newDiv.classList.add("six");
    newDiv.classList.add("columns");
-
+   console.log(forCount, thruCount);
    is_for ? forCount++ : thruCount++; 
 
    var suffix = is_for ? forCount : thruCount;
