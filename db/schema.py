@@ -19,5 +19,5 @@ class User(UserMixin, db.Model):
 
 class Document(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.String(1000))
+    content = db.Column(db.String(5000))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
