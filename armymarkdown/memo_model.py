@@ -98,6 +98,36 @@ def parse(file_name):
     return parse_lines(file_lines)
 
 
+def build_from_form(form_dict):
+    # Takes a dictionary of variables and builds the memo_model
+    memo_dict = {}
+    for k, v in form_dict.items():
+        memo_dict[key_converter[k]] = v
+
+    memo_dict["text"] = parse_memo_body(
+        list(
+            filter(  # remove comments and blank lines
+                lambda line: len(line.strip()) > 0 and line.strip()[0] != "#",
+                form_dict["MEMO_TEXT"].split("\n"),
+            )
+        )
+    )
+
+    try:
+        return MemoModel(**memo_dict)
+    except TypeError as e:
+        print(e)
+        missing_keys = set(inv_key_converter.keys()) - set(memo_dict.keys())
+        for k in optional_keys:
+            if k in missing_keys:
+                missing_keys.remove(k)  # remove optional keys
+
+        return (
+            f"Missing the following keys: "
+            f"{','.join([inv_key_converter[k] for k in missing_keys])}"
+        )
+
+
 def add_latex_escape_chars(s):
     special_chars = {
         "~": "\\textasciitilde ",
