@@ -89,7 +89,7 @@ def form():
 
     app.logger.info("loaded memo model", m.to_dict())
 
-    memo_dict = m.to_dict()
+    memo_dict = m.to_form()
 
     return render_template("memo_form.html", **memo_dict)
 
@@ -222,6 +222,7 @@ def create_memo(text, dictionary=None):
         app.logger.debug(text)
         m = memo_model.MemoModel.from_text(text)
 
+    app.logger.debug(m.to_dict())
     mw = writer.MemoWriter(m)
 
     temp_name = (
