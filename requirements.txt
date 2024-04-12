@@ -12,7 +12,9 @@ click-didyoumean
 click-plugins
 click-repl
 Deprecated
+email_validator
 Flask
+Flask-WTF
 flask-login
 Flask-SQLAlchemy
 flask-talisman

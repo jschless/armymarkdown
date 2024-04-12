@@ -1,4 +1,5 @@
-from flask import render_template, request, url_for, jsonify, redirect, sessions
+from flask import render_template, request, url_for, jsonify, redirect, sessions, flash
+from urllib.parse import urlsplit
 from app import app
 from db.schema import User, Document, db
 from flask_login import (
@@ -8,7 +9,7 @@ from flask_login import (
     login_required,
     current_user,
 )
-import logging
+from forms import LoginForm, RegistrationForm
 
 
 login_manager = LoginManager()
@@ -21,41 +22,48 @@ def load_user(user_id):
 
 
 @app.route("/login", methods=["GET", "POST"])
-def signup():
-    if request.method == "POST":
-        app.logger.debug(request.form)
-        action = request.form["submit"]
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for("index"))
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
+        if user is None or not user.check_password(form.password.data):
+            app.logger.info(
+                f"{form.username.data} logged in with wrong username or password"
+            )
+            flash("Invalid username or password")
+            return redirect(url_for("login"))
+        login_user(user, remember=form.remember_me.data)
+        next_page = request.args.get("next")
+        if not next_page or urlsplit(next_page).netloc != "":
+            next_page = url_for("index", example_file="tutorial.Amd")
+        app.logger.info(f"{form.username.data} logged in")
 
-        username = request.form["username"]
-        password = request.form["password"]
+        return redirect(next_page)
+    return render_template("login.html", title="Sign In", form=form)
 
-        if action == "Login":
-            # Handle login
-            user = User.query.filter_by(username=username).first()
-            if user and user.password == password:
-                login_user(user)
-                return redirect(
-                    redirect(url_for("index", example_file="tutorial.Amd"))
-                )  # Redirect to the main page after login
-            else:
-                return "Invalid username or password"  # Handle invalid login
 
-        elif action == "Register":
-            # Handle signup
-            existing_user = User.query.filter_by(username=username).first()
-            if existing_user:
-                return "Username already exists! Please choose a different one."
-            new_user = User(username=username, password=password)
-            db.session.add(new_user)
-            db.session.commit()
-            return redirect(url_for("index", example_file="tutorial.Amd"))
-
-    return render_template("login.html")
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if current_user.is_authenticated:
+        return url_for("index", example_file="tutorial.Amd")
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        user = User(username=form.username.data, email=form.email.data)
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        flash("Congratulations, you are now a registered user!")
+        app.logger.info(f"{form.username.data} created an account")
+        return redirect(url_for("index", example_file="tutorial.Amd"))
+    return render_template("register.html", title="Register", form=form)
 
 
 @app.route("/logout")
 @login_required
 def logout():
+    app.logger.info(f"{current_user.username} logged out")
     logout_user()
     return redirect(url_for("index", example_file="tutorial.Amd"))
 
