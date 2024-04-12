@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from datetime import date
 import re
 import pandas as pd
@@ -88,6 +88,9 @@ class MemoModel:
 
     def _check_body(self):
         return []
+
+    def to_dict(self):
+        return {field.name: getattr(self, field.name) for field in fields(self)}
 
 
 def parse(file_name):
