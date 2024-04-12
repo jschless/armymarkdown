@@ -1,27 +1,24 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <body>
-      <div class="container">
-        <h2>Login</h2>
-        
-        <form method="post">
-          <label for="username">Username:</label>
-          <input type="text" id="username" name="username" required><br><br>
-          
-          <label for="password">Password:</label>
-          <input type="password" id="password" name="password" required><br><br>
-          <div class="row">
-            <div class="two columns">
-              <input class="button-primary" type="submit" name="submit" value="Login">
-            </div>
-            <div class="two columns">
-              <input class="button" type="submit" name="submit" value="Register">
-            </div>
-          </div>         
-        </form>
+<div class="row">
+  <h2>Login</h2>
+  
+  <form method="post">
+    <label for="username">Username:</label>
+    <input type="text" id="username" name="username" required><br><br>
+    
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password" required><br><br>
+    <div class="row">
+      <div class="two columns">
+        <input class="button-primary" type="submit" name="submit" value="Login">
       </div>
-      
-    </body>
+      <div class="two columns">
+        <input class="button" type="submit" name="submit" value="Register">
+      </div>
+    </div>         
+  </form>
+</div>
 {% endblock %}
 
