@@ -71,6 +71,21 @@ def index(example_file="./tutorial.Amd"):
     )
 
 
+@app.route("/form")
+def form():
+    return render_template(
+        "memo_form.html",
+        memo_text="""- This memo is a demo.
+
+- This item contains sub items.
+    - Thing one.
+    - Thing two.
+        - Here is a sub sub item
+
+- Point of contact is the undersigned.""",
+    )
+
+
 @app.route("/save_progress", methods=["POST"])
 def save_progress():
     text = request.form.get("input_data")

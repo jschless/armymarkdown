@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Memo Form</h2>
+<form>
+  <div class="twelve columns">
+    <div class="six columns offset-by-three">
+      <label for="ORGANIZATION_NAME" class="center">Organization Name / Title</label>
+      <input type="text" placeholder="36th Engineer Brigade" id="ORGANIZATION_NAME" class="u-full-width center">
+      <label for="ORGANIZATION_STREET_ADDRESS" class="center">Street Address</label>
+      <input type="text" placeholder="1234 Washington Road" id="ORGANIZATION_STREET_ADDRESS" class="u-full-width center">
+      <label for="ORGANIZATION_CITY_STATE_ZIP" class="center">City, State, Zip</label>
+      <input type="text" placeholder="Fort Cavazos, TX 01234" id="ORGANIZATION_CITY_STATE_ZIP" class="u-full-width center">
+    </div>
+  </div>
+
+  <hr>
+
+  <div class="row">
+    <div class="three columns">
+      <label for="OFFICE_SYMBOL" class="center">Office Symbol</label>
+      <input type="text" placeholder="ABC-DEF-GHIJ" id="OFFICE_SYMBOL" class="u-full-width center">
+    </div>
+    <div  class="three columns offset-by-six">
+      <label for="DATE" class="center">Date</label>
+      <input type="text" placeholder="24 January 2024" id="DATE" class="u-full-width center">
+    </div>    
+  </div>
+
+  <hr>
+
+  <div id="forFieldContainer">
+    <div class="row">
+      <input class="button" type="button" id="addFOR"  value="Add FOR address">
+    </div>
+  </div>
+
+  <div id="thruFieldContainer">
+    <div class="row">
+      <input class="button" type="button" id="addTHRU" value="Add THRU address">
+    </div>
+  </div>
+
+  <div class="row">
+    <label for="SUBJECT">Subject</label>
+    <input class="u-full-width" type="text" placeholder="This is your memo subject", id="SUBJECT">
+  </div>
+
+  
+  <div class="row">
+    <label for="MEMO_TEXT">Memo Text</label>
+    <textarea class="u-full-width u-half-height" id="MEMO_TEXT">{{memo_text}}</textarea>
+  </div>
+
+  <hr>
+
+  
+  <div class="row">    
+    <div class="twelve columns">
+      <div class="three columns offset-by-six" id="signature">
+        <label for="AUTHOR">Your Name</label>
+        <input type="text" placeholder="James F. Ryan" id="AUTHOR" class="u-full-width">
+        <label for="RANK">Rank</label>
+        <input type="text" placeholder="PVT" id="RANK" class="u-full-width">
+        <label for="BRANCH">Branch</label>
+        <input type="text" placeholder="IN" id="BRANCH" class="u-full-width">
+        <input class="button" type="button" id="addTitle" value="Add Title">
+      </div>
+    </div>    
+  </div>
+
+  <div class="row">
+    <input class="button-primary" type="submit" value="Submit">
+    {% if current_user.is_authenticated %}
+    <input class="button" type="submit" value="Save Progress">
+    {% endif %}   
+  </div>
+
+
+</form>
+<script>
+ var currentDate = new Date();
+
+ var options = { day: 'numeric', month: 'long', year: 'numeric' };
+
+ var formattedDate = currentDate.toLocaleDateString('en-GB', options);
+ document.getElementById('DATE').placeholder = formattedDate;
+
+ function addAddress(fields, is_for) {
+   // reuse this for thru and for address buttons
+   var newRow = document.createElement('div');
+   newRow.classList.add("row")
+   var newDiv = document.createElement('div');
+   newDiv.classList.add("six");
+   newDiv.classList.add("columns");
+
+   fields.forEach(function(field) {
+     var label = document.createElement('label');
+     label.textContent = field.label;
+     label.classList.add("u-full-width");
+     label.classList.add("center");
+     label.setAttribute('for', field.id);
+
+     
+     var input = document.createElement('input');
+     input.type = 'text';
+     input.id = field.id;
+     input.placeholder = field.placeholder;
+     input.classList.add("u-full-width");
+     input.classList.add("center");
+
+     
+     newDiv.append(label);
+     newDiv.append(input);
+     newDiv.append(document.createElement('br')); // Add line break
+
+   });
+
+   var deleteButton = document.createElement('button');
+   deleteButton.textContent = is_for ? 'Delete FOR address' : 'Delete THRU address';
+   deleteButton.addEventListener('click', function() {
+     newRow.remove();
+   });
+   newDiv.append(deleteButton);
+
+   newDiv.append(document.createElement('hr'));
+   newRow.append(newDiv);
+   console.log("trying to add", newDiv);
+   whereToAdd = is_for ? "forFieldContainer" : "thruFieldContainer";
+   document.getElementById(whereToAdd).prepend(newRow);
+
+ }
+
+ function addTitle() {
+   var title = document.createElement('div');
+   var label = document.createElement('label');
+   label.textContent = "Title";
+   label.classList.add("u-full-width");
+   label.setAttribute('for', "TITLE");
+   
+   
+   var input = document.createElement('input');
+   input.type = 'text';
+   input.id = "TITLE";
+   input.placeholder = "Lost Private";
+   input.classList.add("u-full-width");
+
+     
+   title.append(label);
+   title.append(input);
+
+   
+   var deleteButton = document.createElement('button');
+
+   var addButton = document.getElementById('addTitle');
+   var savedButton = addButton.cloneNode(true);
+   addButton.remove();
+
+   deleteButton.textContent = 'Remove title';
+   deleteButton.addEventListener('click', function() {
+     title.remove();
+     document.getElementById('signature').append(savedButton);
+     savedButton.addEventListener('click', addTitle);
+   });
+   title.append(deleteButton);
+   document.getElementById('signature').append(title);
+ }
+ 
+ function addForAddress() {
+   var fields = [
+    { id: "FOR_ORGANIZATION_NAME", placeholder: "U.S. Army Command and General Staff College (ATZL)", label: "FOR Organization Name"},
+    { id: "FOR_ORGANIZATION_STREET_ADDRESS", placeholder: "100 Stimson Avenue", label: "FOR Street Address"},
+    { id: "FOR_ORGANIZATION_CITY_STATE_ZIP", placeholder: "Ft Leavenworth, KS 66027-1352", label: "FOR City, State Zip"}
+   ];
+
+   addAddress(fields, true);
+ }
+
+ function addThruAddress() {
+   var fields = [
+    { id: "THRU_ORGANIZATION_NAME", placeholder: "U.S. Army Command and General Staff College (ATZL)", label: "THRU Organization Name"},
+    { id: "THRU_ORGANIZATION_STREET_ADDRESS", placeholder: "100 Stimson Avenue", label: "THRU Street Address"},
+    { id: "THRU_ORGANIZATION_CITY_STATE_ZIP", placeholder: "Ft Leavenworth, KS 66027-1352", label: "THRU City, State Zip"}
+   ];
+
+   addAddress(fields, false);
+ }
+
+ document.addEventListener('DOMContentLoaded', function() {
+   document.getElementById('addFOR').addEventListener('click', addForAddress);
+   document.getElementById('addTHRU').addEventListener('click', addThruAddress);
+   document.getElementById('addTitle').addEventListener('click', addTitle);
+ });
+
+</script>
+{% endblock %}

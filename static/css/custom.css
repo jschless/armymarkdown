@@ -30,6 +30,10 @@
     padding: 20px; 
 }
 
+.center {
+    text-align: center;
+}
+
 /* Responsive navigation menu */
 @media screen and (max-width: 600px) {
     .navbar {
@@ -44,6 +48,10 @@
 
 textarea.u-full-height {
     height: 75vh;
+}
+
+textarea.u-half-height {
+    height: 50vh;
 }
 
 .flash {
