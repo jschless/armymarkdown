@@ -30,17 +30,65 @@
 
   <hr>
 
-  <div id="forFieldContainer">
-    <div class="row">
-      <input class="button" type="button" id="addFOR"  value="Add FOR address">
-    </div>
-  </div>
-
   <div id="thruFieldContainer">
+    {% for name, add, city in zipped_thru %}
+
+    <div class="row" id="thru{{loop.index}}">
+      <div class="six columns">
+        <label class="u-full-width center" for="THRU_ORGANIZATION_NAME{{loop.index}}">THRU Organization Name</label>
+        <input type="text" id="THRU_ORGANIZATION_NAME{{loop.index}}" name="THRU_ORGANIZATION_NAME{{loop.index}}" value="{{ name }}" class="u-full-width center">
+        <br>
+        <label class="u-full-width center" for="THRU_ORGANIZATION_STREET_ADDRESS{{loop.index}}">THRU Street Address</label>
+        <input type="text" id="THRU_ORGANIZATION_STREET_ADDRESS{{loop.index}}" name="THRU_ORGANIZATION_STREET_ADDRESS{{loop.index}}" value="{{ add }}" class="u-full-width center">
+        <br>
+        <label class="u-full-width center" for="THRU_ORGANIZATION_CITY_STATE_ZIP{{loop.index}}">THRU City, State Zip</label>
+        <input type="text" id="THRU_ORGANIZATION_CITY_STATE_ZIP{{loop.index}}" name="THRU_ORGANIZATION_CITY_STATE_ZIP{{loop.index}}" value="{{ city }}" class="u-full-width center">
+      <input type="button" value="Remove Thru Address" onclick="deleteElement('thru{{loop.index}}')">
+      </div>
+    </div>
+    {% endfor %}
+
     <div class="row">
       <input class="button" type="button" id="addTHRU" value="Add THRU address">
     </div>
+
+    {% if zipped_thru is defined %}
+    <hr>
+    {% endif %}
+
+
   </div>
+  
+  <div id="forFieldContainer">
+    {% for name, add, city in zipped_for %}
+
+    <div class="row" id="for{{loop.index}}">
+      <div class="six columns">
+        <label class="u-full-width center" for="FOR_ORGANIZATION_NAME{{loop.index}}">FOR Organization Name</label>
+        <input type="text" id="FOR_ORGANIZATION_NAME{{loop.index}}" name="FOR_ORGANIZATION_NAME{{loop.index}}" value="{{ name }}" class="u-full-width center">
+        <br>
+        <label class="u-full-width center" for="FOR_ORGANIZATION_STREET_ADDRESS{{loop.index}}">FOR Street Address</label>
+        <input type="text" id="FOR_ORGANIZATION_STREET_ADDRESS{{loop.index}}" name="FOR_ORGANIZATION_STREET_ADDRESS{{loop.index}}" value="{{ add }}" class="u-full-width center">
+        <br>
+        <label class="u-full-width center" for="FOR_ORGANIZATION_CITY_STATE_ZIP{{loop.index}}">FOR City, State Zip</label>
+        <input type="text" id="FOR_ORGANIZATION_CITY_STATE_ZIP{{loop.index}}" name="FOR_ORGANIZATION_CITY_STATE_ZIP{{loop.index}}" value="{{ city }}" class="u-full-width center">
+        <br>
+        <input type="button" value="Remove For Address" onclick="deleteElement('for{{loop.index}}')">      
+      </div>
+    </div>
+    {% endfor %}
+
+    <div class="row">
+      <input class="button" type="button" id="addFOR"  value="Add FOR address">
+    </div>
+    
+    {% if zipped_for is defined %}
+    <hr>
+    {% endif %}
+    
+  </div>
+
+
 
   <div class="row">
     <label for="SUBJECT">Subject</label>
@@ -271,6 +319,15 @@
      }
    });
  }
+
+ function deleteElement(elementId) {
+  var element = document.getElementById(elementId);
+  if (element) {
+    element.remove();
+  } else {
+    console.log("Element with ID " + elementId + " not found.");
+  }
+}
 
  $('#memo').submit(function(e){
    e.preventDefault();

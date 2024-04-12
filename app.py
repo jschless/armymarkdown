@@ -85,12 +85,16 @@ def form():
             {"Location": url_for("taskstatus", task_id=task.id)},
         )
 
-    m = memo_model.MemoModel.from_file(os.path.join("./examples", "tutorial.Amd"))
+    m = memo_model.MemoModel.from_file(os.path.join("./examples", "memo_thru.Amd"))
 
-    app.logger.info("loaded memo model", m.to_dict())
+    app.logger.debug("loaded memo model")
+    app.logger.debug(m.to_dict())
 
     memo_dict = m.to_form()
+    app.logger.debug("passing the following to the form site")
+    app.logger.debug(memo_dict)
 
+    app.logger.info("lo")
     return render_template("memo_form.html", **memo_dict)
 
 

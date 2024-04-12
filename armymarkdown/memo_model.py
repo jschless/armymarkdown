@@ -100,19 +100,24 @@ class MemoModel:
         }
         form_dict["text"] = nested_list_to_string(form_dict["text"])
 
-        # for key in list_keys:
-        #     val = []
-        #     keep_looping = True
-        #     i = 1
-        #     while keep_looping:
-        #         if key + str(i) in form_dict:
-        #             val.append(form_dict[key + str(i)])
-        #             i += 1
-        #         else:
-        #             keep_looping = False
-        #     if len(val) > 0:
-        #         memo_dict[key_converter[key]] = val
-        # # if form_dict.get("user_")
+        if self.for_unit_name is not None:
+            form_dict["zipped_for"] = list(
+                zip(
+                    self.for_unit_name,
+                    self.for_unit_street_address,
+                    self.for_unit_city_state_zip,
+                )
+            )
+
+        if self.thru_unit_name is not None:
+            form_dict["zipped_thru"] = list(
+                zip(
+                    self.thru_unit_name,
+                    self.thru_unit_street_address,
+                    self.thru_unit_city_state_zip,
+                )
+            )
+
         return form_dict
 
     @classmethod
