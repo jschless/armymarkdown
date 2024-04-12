@@ -90,89 +90,54 @@ class MemoModel:
         return []
 
     def to_dict(self):
-        return {field.name: getattr(self, field.name) for field in fields(self)}
+        # convert into form dict format
+        form_dict = {field.name: getattr(self, field.name) for field in fields(self)}
+        form_dict["text"] = nested_list_to_string(form_dict["text"])
 
+        # TODO, need to handle lists of FOR_ORGANIZATION_CITY_STATE_ZIP, etc.
 
-def parse(file_name):
-    # Takes a .Amd file and processes it into a memo_model
-    with open(file_name, "r") as f:
-        file_lines = f.readlines()
+        return form_dict
 
-    return parse_lines(file_lines)
+    @classmethod
+    def from_dict(cls, memo_dict):
+        # creates the class given a dictionary of keys
+        try:
+            return cls(**memo_dict)
+        except TypeError as e:
+            print(e)
+            missing_keys = set(inv_key_converter.keys()) - set(memo_dict.keys())
+            for k in optional_keys:
+                if k in missing_keys:
+                    missing_keys.remove(k)  # remove optional keys
 
+                    return (
+                        f"Missing the following keys: "
+                        f"{','.join([inv_key_converter[k] for k in missing_keys])}"
+                    )
 
-def build_from_form(form_dict):
-    # Takes a dictionary of variables and builds the memo_model
-    memo_dict = {}
-    for k, v in form_dict.items():
-        memo_dict[key_converter[k]] = v
-
-    memo_dict["text"] = parse_memo_body(
-        list(
-            filter(  # remove comments and blank lines
-                lambda line: len(line.strip()) > 0 and line.strip()[0] != "#",
-                form_dict["MEMO_TEXT"].split("\n"),
+    @classmethod
+    def from_form(cls, form_dict):
+        memo_dict = {key_converter[k]: v for k, v in form_dict.items()}
+        memo_dict["text"] = parse_memo_body(
+            list(
+                filter(  # remove comments and blank lines
+                    lambda line: len(line.strip()) > 0 and line.strip()[0] != "#",
+                    form_dict["MEMO_TEXT"].split("\n"),
+                )
             )
         )
-    )
+        return cls.from_dict(memo_dict)
 
-    try:
-        return MemoModel(**memo_dict)
-    except TypeError as e:
-        print(e)
-        missing_keys = set(inv_key_converter.keys()) - set(memo_dict.keys())
-        for k in optional_keys:
-            if k in missing_keys:
-                missing_keys.remove(k)  # remove optional keys
+    @classmethod
+    def from_file(cls, filepath):
+        with open(filepath, "r") as f:
+            file_lines = f.readlines()
 
-        return (
-            f"Missing the following keys: "
-            f"{','.join([inv_key_converter[k] for k in missing_keys])}"
-        )
+        return parse_lines(file_lines)
 
-
-def add_latex_escape_chars(s):
-    special_chars = {
-        "~": "\\textasciitilde ",
-        "^": "\\textasciicircum",
-        "\\": "\\textbackslash",
-    }
-    normal_chars = ["&", "%", "$", "#", "_", "{", "}"]
-
-    for c, r in special_chars.items():
-        s = s.replace(c, r)
-
-    for c in normal_chars:
-        s = s.replace(c, f"\\{c}")
-
-    underline_regex = re.compile(r"\*\*\*(.*?)\*\*\*")
-    bold_regex = re.compile(r"\*\*(.*?)\*\*")
-    italics_regex = re.compile(r"\*(.*?)\*")
-    s = re.sub(underline_regex, r"\\underline{\1}", s)
-    s = re.sub(bold_regex, r"\\textbf{\1}", s)
-    s = re.sub(italics_regex, r"\\textit{\1}", s)
-
-    return s
-
-
-def process_table(line_list):
-    # print(line_list, flush=True)
-    table_str = "\n".join(line_list)
-    try:
-        table = (
-            pd.read_table(
-                StringIO(table_str),
-                sep="|",
-                header=0,
-                index_col=1,
-                skipinitialspace=True,
-            )
-            .dropna(axis=1, how="all")
-            .iloc[1:]
-        )
-        return tabulate(table, table.columns, tablefmt="latex")
-    except Exception as e:
-        return ""
+    @classmethod
+    def from_text(cls, text):
+        return parse_lines(text.split("\n"))
 
 
 def parse_memo_body(lines):
@@ -217,6 +182,7 @@ def parse_memo_body(lines):
 
 def parse_lines(file_lines):
     # processes a text block into a latex memo_model
+
     memo_dict = {}
 
     # remove comments and empty lines
@@ -227,7 +193,6 @@ def parse_lines(file_lines):
             file_lines,
         )
     )
-
     try:
         memo_begin_loc = [i for i, s in enumerate(file_lines) if "SUBJECT" in s][0]
     except IndexError:
@@ -247,7 +212,6 @@ def parse_lines(file_lines):
                     f"ERROR: No such keyword as {key.strip()}, "
                     "please remove or fix {line}"
                 )
-                return
 
             processed_text = add_latex_escape_chars(text.strip())
             if key_converter[key.strip()] in list_keys:
@@ -260,17 +224,81 @@ def parse_lines(file_lines):
                 memo_dict[key_converter[key.strip()]] = processed_text
 
     memo_dict["text"] = parse_memo_body(file_lines[memo_begin_loc:])
+    return MemoModel.from_dict(memo_dict)
 
+
+def nested_list_to_string(lst, indent=0):
+    result = ""
+    for item in lst:
+        if isinstance(item, list):
+            result += nested_list_to_string(item, indent + 4)
+        else:
+            result += " " * indent + "- " + str(item) + "\n\n"
+    return result
+
+
+def add_latex_escape_chars(s):
+    special_chars = {
+        "~": "\\textasciitilde ",
+        "^": "\\textasciicircum",
+        "\\": "\\textbackslash",
+    }
+    normal_chars = ["&", "%", "$", "#", "_", "{", "}"]
+
+    for c, r in special_chars.items():
+        s = s.replace(c, r)
+
+    for c in normal_chars:
+        s = s.replace(c, f"\\{c}")
+
+    underline_regex = re.compile(r"\*\*\*(.*?)\*\*\*")
+    bold_regex = re.compile(r"\*\*(.*?)\*\*")
+    italics_regex = re.compile(r"\*(.*?)\*")
+    s = re.sub(underline_regex, r"\\underline{\1}", s)
+    s = re.sub(bold_regex, r"\\textbf{\1}", s)
+    s = re.sub(italics_regex, r"\\textit{\1}", s)
+
+    return s
+
+
+def remove_latex_escape_chars(s):
+    special_chars = {
+        "\\textasciitilde ": "~",
+        "\\textasciicircum": "^",
+        "\\textbackslash": "\\",
+    }
+    normal_chars = ["&", "%", "$", "#", "_", "{", "}"]
+
+    for r, c in special_chars.items():
+        s = s.replace(r, c)
+
+    for c in normal_chars:
+        s = s.replace(f"\\{c}", c)
+
+    underline_regex = re.compile(r"\\underline{(.*?)}")
+    bold_regex = re.compile(r"\\textbf{(.*?)}")
+    italics_regex = re.compile(r"\\textit{(.*?)}")
+    s = re.sub(underline_regex, r"***\1***", s)
+    s = re.sub(bold_regex, r"**\1**", s)
+    s = re.sub(italics_regex, r"*\1*", s)
+
+    return s
+
+
+def process_table(line_list):
+    table_str = "\n".join(line_list)
     try:
-        return MemoModel(**memo_dict)
-    except TypeError as e:
-        print(e)
-        missing_keys = set(inv_key_converter.keys()) - set(memo_dict.keys())
-        for k in optional_keys:
-            if k in missing_keys:
-                missing_keys.remove(k)  # remove optional keys
-
-        return (
-            f"Missing the following keys: "
-            f"{','.join([inv_key_converter[k] for k in missing_keys])}"
+        table = (
+            pd.read_table(
+                StringIO(table_str),
+                sep="|",
+                header=0,
+                index_col=1,
+                skipinitialspace=True,
+            )
+            .dropna(axis=1, how="all")
+            .iloc[1:]
         )
+        return tabulate(table, table.columns, tablefmt="latex")
+    except Exception as e:
+        return ""
