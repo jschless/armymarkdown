@@ -102,6 +102,9 @@
  var formattedDate = currentDate.toLocaleDateString('en-GB', options);
  document.getElementById('DATE').placeholder = formattedDate;
 
+ var forCount = 0;
+ var thruCount = 0;
+ 
  function addAddress(fields, is_for) {
    // reuse this for thru and for address buttons
    var newRow = document.createElement('div');
@@ -110,18 +113,22 @@
    newDiv.classList.add("six");
    newDiv.classList.add("columns");
 
+   is_for ? forCount++ : thruCount++; 
+
+   var suffix = is_for ? forCount : thruCount;
+   
    fields.forEach(function(field) {
      var label = document.createElement('label');
      label.textContent = field.label;
      label.classList.add("u-full-width");
      label.classList.add("center");
-     label.setAttribute('for', field.id);
+     label.setAttribute('for', field.id + suffix);
 
      
      var input = document.createElement('input');
      input.type = 'text';
-     input.id = field.id;
-     input.name = field.id;
+     input.id = field.id + suffix;
+     input.name = field.id + suffix;
      input.placeholder = field.placeholder;
      input.value = field.placeholder;
      input.classList.add("u-full-width");
