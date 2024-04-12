@@ -118,6 +118,15 @@ class MemoModel:
     @classmethod
     def from_dict(cls, memo_dict):
         # creates the class given a dictionary of keys
+
+        # deduce memo type based on arguments
+        if "thru_unit_name" in memo_dict:
+            memo_dict["memo_type"] = "MEMORANDUM THRU"
+        elif "for_unit_name" in memo_dict:
+            memo_dict["memo_type"] = "MEMORANDUM FOR"
+        else:
+            memo_dict["memo_type"] = "MEMORANDUM FOR RECORD"
+
         try:
             return cls(**memo_dict)
         except TypeError as e:
@@ -134,7 +143,9 @@ class MemoModel:
 
     @classmethod
     def from_form(cls, form_dict):
-        memo_dict = {key_converter[k]: v for k, v in form_dict.items()}
+        memo_dict = {
+            key_converter[k]: v for k, v in form_dict.items() if k in key_converter
+        }
         memo_dict["text"] = parse_memo_body(
             list(
                 filter(  # remove comments and blank lines
@@ -150,16 +161,14 @@ class MemoModel:
 
         for key in [r_key_converter[key] for key in list_keys]:
             val = []
-            keep_looping = True
-            i = 1
-            while keep_looping:
+            for i in range(7, 0, -1):
                 if key + str(i) in form_dict:
                     val.append(form_dict[key + str(i)])
-                    i += 1
-                else:
-                    keep_looping = False
+
             if len(val) > 0:
                 memo_dict[key_converter[key]] = val
+
+        return MemoModel.from_dict(memo_dict)
 
     @classmethod
     def from_file(cls, filepath):
