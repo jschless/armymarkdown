@@ -2,7 +2,8 @@
 
 {% block content %}
 <h2>Memo Form</h2>
-<form id="memo" action="/form" method="post">
+<div><h4 class="flash" id="status"></h4></div>
+<form id="memo" method="post">
   <div class="twelve columns">
     <div class="six columns offset-by-three">
       <label for="ORGANIZATION_NAME" class="center">Organization Name / Title</label>
@@ -196,5 +197,58 @@
    document.getElementById('addTitle').addEventListener('click', addTitle);
  });
 
+ 
+ function button_press(endpoint, polling_function) {
+   var formData = new FormData(document.getElementById('memo')); 
+   $.ajax({
+     type: "POST",
+     url: endpoint,
+     data: formData,
+     processData: false, // Prevent jQuery from processing the data
+     contentType: false, // Prevent jQuery from setting the Content-Type header
+     success: function (data, status, request) {
+       status_url = request.getResponseHeader("Location");
+       polling_function(status_url, 0);
+     },
+     error: function (XMLHttpRequest, text, e) {
+       alert("ERROR WHEN PARSING INPUT\n\n" + XMLHttpRequest.responseText);
+     },
+   });
+ }
+
+ function update_progress(status_url, count) {
+   // send GET request to status URL
+   $.get(status_url, function (data) {
+     if (data["state"] == "SUCCESS") {
+       $("#status").text("");
+       window.open(data["presigned_url"], "_blank"); // support multiple files
+       return;
+     } else if (data["state"] == "FAILURE") {
+       $("#status").text(
+		     "There was an unknown error with your memo. I know this isn't super helpful, but fix the issue and try again."
+       );
+     } else {
+       let rerun_freq = 2000;
+       count += 1;
+       // rerun in 2 seconds
+       if (count < 50) {
+		     $("#status").text(
+		       "Waiting for your memo pdf to be generated! Please be patient! It's only been " +
+			     count * 2 +
+			     " seconds."
+		     );
+		     setTimeout(function () {
+		       update_progress(status_url, count);
+		     }, rerun_freq);
+       }
+     }
+   });
+ }
+
+ $('#memo').submit(function(e){
+   e.preventDefault();
+   button_press("/form", update_progress);
+ });
+ 
 </script>
 {% endblock %}
