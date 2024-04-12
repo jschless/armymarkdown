@@ -35,27 +35,6 @@ textarea.addEventListener("keydown", function(event) {
     }
 });
 
-function saveData() {
-    var inputData = document.getElementById('editor').value;
-    fetch('/save_data', {
-	method: 'POST',
-	headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-	},
-	body: 'input_data=' + encodeURIComponent(inputData)
-    })
-	.then(response => {
-            console.log('Data saved successfully');
-	})
-	.catch(error => {
-            console.error('Error saving data:', error);
-	});
-}
-
-// Save data every 5 seconds (adjust as needed)
-setInterval(saveData, 5000);
-
-
 function button_press(endpoint, polling_function) {
     $.ajax({
         type: "POST",
@@ -127,8 +106,28 @@ $(function () {
     $("#start-bg-job").click(generate_memo);
 });
 
+function saveData() {
+    var inputData = document.getElementById('editor').value;
+    fetch('/save_progress', {
+	method: 'POST',
+	headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+	},
+	body: 'input_data=' + encodeURIComponent(inputData)
+    })
+	.then(response => {
+            console.log('Data saved successfully');
+	    location.reload();	   
+            $("#editor").val(inputData);
+	    
+	})
+	.catch(error => {
+            console.error('Error saving data:', error);
+	});
+}
+
 $(function () {
-    $("#load-last-file").click(function() {
-        window.location.href = window.location.origin + "/autosave";
-    });
+    $("#save-progress").click(saveData);
 });
+
+
