@@ -71,8 +71,20 @@ def index(example_file="./tutorial.Amd"):
     )
 
 
-@app.route("/form")
+@app.route("/form", methods=["GET", "POST"])
 def form():
+    if request.method == "POST":
+        app.logger.info("Form fields:")
+        for key, value in request.form.items():
+            app.logger.info(f"{key}: {value}")
+
+        task = create_memo.delay("", dictionary=request.form.to_dict())
+        return (
+            "Hi, we're waiting for your PDF to be created.",
+            200,
+            {"Location": url_for("taskstatus", task_id=task.id)},
+        )
+
     return render_template(
         "memo_form.html",
         memo_text="""- This memo is a demo.
@@ -204,8 +216,11 @@ def upload_file_to_s3(file, aws_path, acl="public-read"):
 
 
 @celery.task(name="create_memo")
-def create_memo(text):
-    m = memo_model.parse_lines(text.split("\n"))
+def create_memo(text, dictionary=None):
+    if dictionary:
+        m = memo_model.build_from_form(dictionary)
+    else:
+        m = memo_model.parse_lines(text.split("\n"))
     mw = writer.MemoWriter(m)
 
     temp_name = (
