@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="row">
-  <h2>Documents</h2>
+  <h2>Previous Documents</h2>
   <ol>
     {% for document in documents %}
     <li><a href="{{ url_for('get_document', document_id=document.id) }}">{{ document.content }}</a></li>
