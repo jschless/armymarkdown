@@ -43,7 +43,8 @@
         <br>
         <label class="u-full-width center" for="THRU_ORGANIZATION_CITY_STATE_ZIP{{  zipped_thru|length - loop.index0 }}">THRU City, State Zip</label>
         <input type="text" id="THRU_ORGANIZATION_CITY_STATE_ZIP{{ zipped_thru|length - loop.index0 }}" name="THRU_ORGANIZATION_CITY_STATE_ZIP{{ zipped_thru|length - loop.index0 }}" value="{{ city }}" class="u-full-width center">
-      <input type="button" value="Remove Thru Address" onclick="deleteElement('thru{{ zipped_thru|length - loop.index0 }}')">
+        <input type="button" value="Remove Thru Address" onclick="deleteElement('thru{{ zipped_thru|length - loop.index0 }}')">
+        <hr>
       </div>
     </div>
     {% endfor %}
@@ -51,12 +52,6 @@
     <div class="row">
       <input class="button" type="button" id="addTHRU" value="Add THRU address">
     </div>
-
-    {% if zipped_thru is defined %}
-    <hr>
-    {% endif %}
-
-
   </div>
   
   <div id="forFieldContainer">
@@ -74,18 +69,14 @@
         <input type="text" id="FOR_ORGANIZATION_CITY_STATE_ZIP{{ zipped_for|length - loop.index0 }}" name="FOR_ORGANIZATION_CITY_STATE_ZIP{{ zipped_for|length - loop.index0 }}" value="{{ city }}" class="u-full-width center">
         <br>
         <input type="button" value="Remove For Address" onclick="deleteElement('for{{ zipped_for|length - loop.index0 }}')">      
+        <hr>
       </div>
     </div>
     {% endfor %}
 
     <div class="row">
       <input class="button" type="button" id="addFOR"  value="Add FOR address">
-    </div>
-    
-    {% if zipped_for is defined %}
-    <hr>
-    {% endif %}
-    
+    </div>    
   </div>
 
 
