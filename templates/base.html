@@ -42,10 +42,11 @@
   </header>
 
   <div class="container">
+    <h4 class="flash" id="status"></h4>
     {% with messages = get_flashed_messages() %}
     {% if messages %} 
     {% for message in messages %}
-    <h3 class="flash">{{ message }}</h3>
+    <h4 class="flash">{{ message }}</h4>
     {% endfor %}
     {% endif %}
     {% endwith %}
