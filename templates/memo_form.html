@@ -7,11 +7,11 @@
   <div class="twelve columns">
     <div class="six columns offset-by-three">
       <label for="ORGANIZATION_NAME" class="center">Organization Name / Title</label>
-      <input type="text" value="36th Engineer Brigade" name="ORGANIZATION_NAME" id="ORGANIZATION_NAME" class="u-full-width center">
+      <input type="text" value="{{ unit_name | default('36th Engineer Brigade') }}" name="ORGANIZATION_NAME" id="ORGANIZATION_NAME" class="u-full-width center">
       <label for="ORGANIZATION_STREET_ADDRESS" class="center">Street Address</label>
-      <input type="text" value="1234 Washington Road" id="ORGANIZATION_STREET_ADDRESS" name="ORGANIZATION_STREET_ADDRESS" class="u-full-width center">
+      <input type="text" value="{{ unit_street_address | default('1234 Washington Road')}}" id="ORGANIZATION_STREET_ADDRESS" name="ORGANIZATION_STREET_ADDRESS" class="u-full-width center">
       <label for="ORGANIZATION_CITY_STATE_ZIP" class="center">City, State, Zip</label>
-      <input type="text" value="Fort Cavazos, TX 01234" id="ORGANIZATION_CITY_STATE_ZIP" name="ORGANIZATION_CITY_STATE_ZIP" class="u-full-width center">
+      <input type="text" value="{{ unit_city_state_zip | default('Fort Cavazos, TX 01234')}}" id="ORGANIZATION_CITY_STATE_ZIP" name="ORGANIZATION_CITY_STATE_ZIP" class="u-full-width center">
     </div>
   </div>
 
@@ -20,11 +20,11 @@
   <div class="row">
     <div class="three columns">
       <label for="OFFICE_SYMBOL" class="center">Office Symbol</label>
-      <input type="text" value="ABC-DEF-GHIJ" name="OFFICE_SYMBOL" id="OFFICE_SYMBOL" class="u-full-width center">
+      <input type="text" value="{{ office_symbol | default('ABC-DEF-GHIJ')}}" name="OFFICE_SYMBOL" id="OFFICE_SYMBOL" class="u-full-width center">
     </div>
     <div  class="three columns offset-by-six">
       <label for="DATE" class="center">Date</label>
-      <input type="text" value="24 January 2024" id="DATE" name="DATE" class="u-full-width center">
+      <input type="text" value="24 January 2006" id="DATE" name="DATE" class="u-full-width center">
     </div>    
   </div>
 
@@ -44,13 +44,13 @@
 
   <div class="row">
     <label for="SUBJECT">Subject</label>
-    <input class="u-full-width" type="text" value="This is your memo subject" name="SUBJECT" id="SUBJECT">
+    <input class="u-full-width" type="text" value="{{ subject | default('This is your memo subject') }}" name="SUBJECT" id="SUBJECT">
   </div>
 
   
   <div class="row">
     <label for="MEMO_TEXT">Memo Text</label>
-    <textarea class="u-full-width u-half-height" name="MEMO_TEXT" id="MEMO_TEXT">{{memo_text}}</textarea>
+    <textarea class="u-full-width u-half-height" name="MEMO_TEXT" id="MEMO_TEXT">{{text}}</textarea>
   </div>
 
   <hr>
@@ -60,12 +60,20 @@
     <div class="twelve columns">
       <div class="three columns offset-by-six" id="signature">
         <label for="AUTHOR">Your Name</label>
-        <input type="text" value="James F. Ryan" name="AUTHOR" id="AUTHOR" class="u-full-width">
+        <input type="text" value="{{ author_name | default('James F. Ryan') }}" name="AUTHOR" id="AUTHOR" class="u-full-width">
         <label for="RANK">Rank</label>
-        <input type="text" value="PVT" id="RANK" name="RANK" class="u-full-width">
+        <input type="text" value="{{ author_rank | default('PVT') }}" id="RANK" name="RANK" class="u-full-width">
         <label for="BRANCH">Branch</label>
-        <input type="text" value="IN" id="BRANCH" name="BRANCH" class="u-full-width">
-        <input class="button" type="button" id="addTitle" value="Add Title">
+        <input type="text" value="{{ author_branch | default('IN') }}" id="BRANCH" name="BRANCH" class="u-full-width">
+        {% if author_title is defined %}
+        <div id="titleDiv">
+          <label for="TITLE">Title</label>
+          <input type="text" value="{{ author_title}}" id="TITLE" name="TITLE" class="u-full-width">
+          <input class="button" type="button" id="removeTitle" value="Remove Title">
+        </div>
+        {% else %}
+        <input class="button" type="button" id="addTitle" value="Add Title">      
+        {% endif %}
       </div>
     </div>    
   </div>
@@ -191,10 +199,15 @@
    addAddress(fields, false);
  }
 
+ function removeTitle() {
+   document.getElementById('titleDiv').remove();  
+ }
+
  document.addEventListener('DOMContentLoaded', function() {
    document.getElementById('addFOR').addEventListener('click', addForAddress);
    document.getElementById('addTHRU').addEventListener('click', addThruAddress);
    document.getElementById('addTitle').addEventListener('click', addTitle);
+   document.getElementById('removeTitle').addEventListener('click', removeTitle);
  });
 
  

@@ -71,6 +71,16 @@ def index(example_file="./tutorial.Amd"):
     )
 
 
+def nested_list_to_string(lst, indent=0):
+    result = ""
+    for item in lst:
+        if isinstance(item, list):
+            result += nested_list_to_string(item, indent + 4)
+        else:
+            result += " " * indent + "- " + str(item) + "\n\n"
+    return result
+
+
 @app.route("/form", methods=["GET", "POST"])
 def form():
     if request.method == "POST":
@@ -85,8 +95,16 @@ def form():
             {"Location": url_for("taskstatus", task_id=task.id)},
         )
 
+    m = memo_model.parse(os.path.join("./examples", "tutorial.Amd"))
+
+    app.logger.info("loaded memo model", m.to_dict())
+    memo_dict = m.to_dict()
+    memo_text = nested_list_to_string(memo_dict["text"])
+    memo_dict["text"] = memo_text
+
     return render_template(
         "memo_form.html",
+        **memo_dict,
         memo_text="""- This memo is a demo.
 
 - This item contains sub items.
