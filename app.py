@@ -39,7 +39,8 @@ celery = Celery(
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////data/users.db"
 
-app.logger.setLevel(logging.DEBUG)
+if os.environ["DEVELOPMENT"]:
+    app.logger.setLevel(logging.DEBUG)
 
 init_db(app)
 
@@ -225,7 +226,8 @@ def create_memo(text):
     return temp_name
 
 
-# Talisman(app, content_security_policy=None)
+if not os.environ["DEVELOPMENT"]:
+    Talisman(app, content_security_policy=None)
 
 
 def main():

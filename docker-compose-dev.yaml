@@ -18,7 +18,9 @@ services:
       - sqlite_db
 
   celery:
-    build: ./
+    build:
+      context: ./
+      dockerfile: Dockerfile.development
     volumes:
       - .:/src
       - db-data:/data
