@@ -50,6 +50,7 @@ hashes = set(
 )
 
 import login
+from login import save_document
 
 
 @app.route("/")
@@ -117,6 +118,7 @@ def process():
     if memo_errors is not None:
         return memo_errors, 400
 
+    save_document(text)
     task = create_memo.delay(text)
     return (
         "Hi, we're waiting for your PDF to be created.",

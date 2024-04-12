@@ -50,6 +50,7 @@
       {% if current_user.is_authenticated %}
       <li><span>{{ current_user.username }}</span>
         <li><a href="/logout">Log Out</a>
+          <li><a href="/history">View History</a>          
           {% else %}
           <li><a href="/login">Log In</a>
             {% endif %}
