@@ -90,6 +90,21 @@ def save_document(text):
         return
 
     user_id = current_user.id
+
+    existing_document = Document.query.filter_by(user_id=user_id, content=text).first()
+    if existing_document:
+        return jsonify({"message": "Document already exists"})
+
+    num_documents = Document.query.filter_by(user_id=user_id).count()
+    if num_documents >= 10:
+        oldest_document = (
+            Document.query.filter_by(user_id=user_id)
+            .order_by(Document.id.asc())
+            .first()
+        )
+        db.session.delete(oldest_document)
+        db.session.commit()
+
     try:
         new_document = Document(content=text, user_id=user_id)
         db.session.add(new_document)
