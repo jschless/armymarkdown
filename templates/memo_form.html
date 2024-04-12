@@ -1,7 +1,26 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Memo Form</h2>
+
+<div class="row">
+  Here's a more intuitive form builder. You can load the same examples into the form builder.
+</div>
+
+<div class="row">
+  <div class="nine columns">
+    <label for="examples">Example List</label>
+    <select id="linkSelector" onchange="changeHref()">
+      <option value="{{url_for('form', example_file='tutorial.Amd')}}" id="tutorial.Amd">Tutorial</option>
+      <option value="{{url_for('form', example_file='long_memo.Amd')}}" id="long_memo.Amd">Long Memorandum (Figure 2-2 from AR 25-50)</option>
+      <option value="{{url_for('form', example_file='basic_mfr.Amd')}}" id="basic_mfr.Amd">Memorandum for Record</option>
+      <option value="{{url_for('form', example_file='basic_mfr_w_table.Amd')}}" id="basic_mfr_w_table.Amd">Memorandum for Record with Table</option>
+      <option value="{{url_for('form', example_file='memo_for.Amd')}}" id="memo_for.Amd">Memorandum For</option>
+      <option value="{{url_for('form', example_file='memo_multi_for.Amd')}}" id="memo_multi_for.Amd">Memorandum For Multiple</option>
+      <option value="{{url_for('form', example_file='memo_thru.Amd')}}" id="memo_thru.Amd">Memorandum Thru</option>
+      <option value="{{url_for('form', example_file='memo_extra_features.Amd')}}" id="memo_extra_features.Amd">Memorandum with Enclosures, Distros, Suspense Dates, and Classification Markings</option>
+    </select>
+  </div> 
+</div>
 
 <form id="memo" method="post">
   <div class="twelve columns">
@@ -336,6 +355,27 @@
  $('#memo').submit(function(e){
    e.preventDefault();
    button_press("/form", update_progress);
+ });
+
+ function changeHref() {
+    var selectElement = document.getElementById("linkSelector");
+    var selectedValue = selectElement.options[selectElement.selectedIndex].value;     
+    window.location.href = selectedValue;
+}
+
+ document.addEventListener('DOMContentLoaded', function() {
+   var urlParams = new URLSearchParams(window.location.search);
+   var exampleFile = urlParams.get('example_file');
+
+   // Loop through the options and find the one that matches the current URL
+   var linkSelector = document.getElementById('linkSelector');
+   for (var i = 0; i < linkSelector.options.length; i++) {       
+	   var option = linkSelector.options[i];
+	   if (option.id === exampleFile) {
+       option.selected = true;
+       break;
+	   }
+   }
  });
  
 </script>

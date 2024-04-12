@@ -72,7 +72,7 @@ def index(example_file="./tutorial.Amd"):
 
 
 @app.route("/form", methods=["GET", "POST"])
-def form():
+def form(example_file="./tutorial.Amd"):
     if request.method == "POST":
         app.logger.info("Form fields:")
         for key, value in request.form.items():
@@ -85,7 +85,11 @@ def form():
             {"Location": url_for("taskstatus", task_id=task.id)},
         )
 
-    m = memo_model.MemoModel.from_file(os.path.join("./examples", "memo_thru.Amd"))
+    example_file = request.args.get("example_file", "tutorial.Amd")
+
+    app.logger.debug("loading the following file")
+    app.logger.debug(example_file)
+    m = memo_model.MemoModel.from_file(os.path.join("./examples", example_file))
 
     app.logger.debug("loaded memo model")
     app.logger.debug(m.to_dict())
@@ -94,7 +98,6 @@ def form():
     app.logger.debug("passing the following to the form site")
     app.logger.debug(memo_dict)
 
-    app.logger.info("lo")
     return render_template("memo_form.html", **memo_dict)
 
 
