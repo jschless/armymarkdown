@@ -23,15 +23,14 @@
       <option value="{{url_for('index', example_file='memo_extra_features.Amd')}}">Memorandum with Enclosures, Distros, Suspense Dates, and Classification Markings</option>
     </select>
   </div> 
-  <div class="three columns">
-    <label for="examples">Recover last session</label>
-    <button class="button-primary" id="load-last-file">Load autosaved file</button>
-  </div>
 </div>
 
 <div class="row">
   <textarea id="editor" spellcheck="true" class="u-full-width u-full-height">{{memo_text}}</textarea>
   <button class="button-primary" id="start-bg-job">Create Memo PDF</button>
+  {% if current_user.is_authenticated %}
+  <button class="button.u-pull-right" id="save-progress">Save Progress</button>
+  {% endif %}
 </div>
 
 <script src="{{ url_for('static', filename='index.js') }}"></script>

@@ -45,3 +45,7 @@
 textarea.u-full-height {
     height: 75vh;
 }
+
+.flash {
+    color: green;
+}

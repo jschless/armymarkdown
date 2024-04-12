@@ -93,10 +93,11 @@ def save_document(text):
 
     existing_document = Document.query.filter_by(user_id=user_id, content=text).first()
     if existing_document:
-        return jsonify({"message": "Document already exists"})
+        return "Document is already saved."
 
     num_documents = Document.query.filter_by(user_id=user_id).count()
-    if num_documents >= 10:
+    removed_oldest = num_documents >= 10
+    if removed_oldest:
         oldest_document = (
             Document.query.filter_by(user_id=user_id)
             .order_by(Document.id.asc())
@@ -110,8 +111,11 @@ def save_document(text):
         db.session.add(new_document)
         db.session.commit()
 
-        return jsonify({"message": "Document saved successfully"}), 201
+        if removed_oldest:
+            return "Document saved successfully. Removed oldest document."
+
+        return "Document saved successfully."
 
     except Exception as e:
         db.session.rollback()
-        return jsonify({"message": "Failed to save document", "error": str(e)}), 500
+        return "Document failed to save."

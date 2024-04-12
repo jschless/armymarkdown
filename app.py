@@ -1,7 +1,16 @@
 import random
 import os
 import sys
-from flask import Flask, render_template, request, url_for, jsonify, redirect, session
+from flask import (
+    Flask,
+    render_template,
+    request,
+    url_for,
+    jsonify,
+    redirect,
+    session,
+    flash,
+)
 from celery import Celery
 import logging
 import boto3
@@ -28,10 +37,7 @@ celery = Celery(
     broker_connection_retry_on_startup=True,
 )
 
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////data/users.db"  # Path to users.db
-app.config["SQLALCHEMY_BINDS"] = {
-    "drafts": "sqlite:////data/drafts.db"
-}  # Path to drafts.db
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////data/users.db"
 
 init_db(app)
 
@@ -40,13 +46,6 @@ s3 = boto3.client(
     aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
     aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
     config=boto3.session.Config(region_name="us-east-2", signature_version="s3v4"),
-)
-
-hashes = set(
-    [
-        hash(open(os.path.join("./examples", f), "r").read())
-        for f in os.listdir("./examples")
-    ]
 )
 
 import login
@@ -60,9 +59,6 @@ def home():
 
 @app.route("/<example_file>")
 def index(example_file="./tutorial.Amd"):
-    if example_file == "autosave" and session.get("input_data", None):
-        return render_template("index.html", memo_text=session["input_data"])
-
     if example_file not in os.listdir("./examples"):
         example_file = "./tutorial.Amd"
 
@@ -72,18 +68,12 @@ def index(example_file="./tutorial.Amd"):
     )
 
 
-@app.route("/save_data", methods=["POST"])
-def save_data():
-    data = request.form.get("input_data")
-    if (
-        hash(data) not in hashes
-        and not data.startswith("Waiting")
-        and ("input_data" in session and hash(session["input_data"]) != hash(data))
-    ):
-        session["input_data"] = data
-        print("Updated session variable with autosaved data")
-        return "Session updated with progress"
-    return "No update made, session was unchanged"
+@app.route("/save_progress", methods=["POST"])
+def save_progress():
+    text = request.form.get("input_data")
+    res = save_document(text)
+    flash(res)
+    return jsonify({"message": "OK", "flash": {"category": "success", "message": res}})
 
 
 def check_memo(text):
