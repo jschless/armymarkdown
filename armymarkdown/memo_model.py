@@ -142,6 +142,46 @@ def process_table(line_list):
         return ""
 
 
+def parse_memo_body(lines):
+    master_list = []
+    cur_indent = 0
+    indent_levels = set()
+    table = []
+    for line in lines:
+        dash_loc = line.find("-")
+        if (dash_loc == -1 or line.count("-") > 1) and line.count("|") > 1:
+            table.append(line)
+            continue
+        elif dash_loc == -1:
+            # not a table and not a new line, so it's a new paragraph within same item
+            cur_list = master_list
+            while isinstance(cur_list[-1], list):
+                cur_list = cur_list[-1]
+            cur_list[-1] += "\n\n" + add_latex_escape_chars(line.strip())
+            continue
+        if table != [] and line.count("|") < 2:
+            master_list.append(process_table(table))
+            table = []
+
+        begin_line = dash_loc + 1
+        indent_levels.add(dash_loc)
+
+        line_text = add_latex_escape_chars(line[begin_line:].strip())
+        proper_indent_level = master_list  # start at level 0
+
+        for i in list(filter(lambda x: x < dash_loc, sorted(list(indent_levels)))):
+            if isinstance(proper_indent_level[-1], list):
+                proper_indent_level = proper_indent_level[-1]
+
+        if dash_loc > cur_indent:
+            proper_indent_level.append([line_text])
+        elif dash_loc <= cur_indent:
+            proper_indent_level.append(line_text)
+        cur_indent = dash_loc
+
+    return master_list
+
+
 def parse_lines(file_lines):
     # processes a text block into a latex memo_model
     memo_dict = {}
@@ -186,43 +226,7 @@ def parse_lines(file_lines):
             else:
                 memo_dict[key_converter[key.strip()]] = processed_text
 
-    master_list = []
-    cur_indent = 0
-    indent_levels = set()
-    table = []
-    for line in file_lines[memo_begin_loc:]:
-        dash_loc = line.find("-")
-        if (dash_loc == -1 or line.count("-") > 1) and line.count("|") > 1:
-            table.append(line)
-            continue
-        elif dash_loc == -1:
-            # not a table and not a new line, so it's a new paragraph within same item
-            cur_list = master_list
-            while isinstance(cur_list[-1], list):
-                cur_list = cur_list[-1]
-            cur_list[-1] += "\n\n" + add_latex_escape_chars(line.strip())
-            continue
-        if table != [] and line.count("|") < 2:
-            master_list.append(process_table(table))
-            table = []
-
-        begin_line = dash_loc + 1
-        indent_levels.add(dash_loc)
-
-        line_text = add_latex_escape_chars(line[begin_line:].strip())
-        proper_indent_level = master_list  # start at level 0
-
-        for i in list(filter(lambda x: x < dash_loc, sorted(list(indent_levels)))):
-            if isinstance(proper_indent_level[-1], list):
-                proper_indent_level = proper_indent_level[-1]
-
-        if dash_loc > cur_indent:
-            proper_indent_level.append([line_text])
-        elif dash_loc <= cur_indent:
-            proper_indent_level.append(line_text)
-        cur_indent = dash_loc
-
-    memo_dict["text"] = master_list
+    memo_dict["text"] = parse_memo_body(file_lines[memo_begin_loc:])
 
     try:
         return MemoModel(**memo_dict)
