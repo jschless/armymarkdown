@@ -55,25 +55,6 @@ function generate_memo() {
 }
 
 
-$("#myForm").submit(function (event) {
-    event.preventDefault();
-    var form_data = new FormData($('#myForm')[0]);
-    $.ajax({
-        type: 'POST',
-        url: '/process_files',
-        data: form_data,
-        contentType: false,
-        cache: false,
-        processData: false,
-        success: function (data, status, request) {
-            data.split(",").forEach(function (task_id) {
-		update_progress("/status/" + task_id, 0);
-            });
-        },
-    });
-});
-
-
 function update_progress(status_url, count) {
     // send GET request to status URL
     $.get(status_url, function (data) {
