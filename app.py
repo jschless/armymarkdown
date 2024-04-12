@@ -71,16 +71,6 @@ def index(example_file="./tutorial.Amd"):
     )
 
 
-def nested_list_to_string(lst, indent=0):
-    result = ""
-    for item in lst:
-        if isinstance(item, list):
-            result += nested_list_to_string(item, indent + 4)
-        else:
-            result += " " * indent + "- " + str(item) + "\n\n"
-    return result
-
-
 @app.route("/form", methods=["GET", "POST"])
 def form():
     if request.method == "POST":
@@ -95,25 +85,13 @@ def form():
             {"Location": url_for("taskstatus", task_id=task.id)},
         )
 
-    m = memo_model.parse(os.path.join("./examples", "tutorial.Amd"))
+    m = memo_model.MemoModel.from_file(os.path.join("./examples", "tutorial.Amd"))
 
     app.logger.info("loaded memo model", m.to_dict())
+
     memo_dict = m.to_dict()
-    memo_text = nested_list_to_string(memo_dict["text"])
-    memo_dict["text"] = memo_text
 
-    return render_template(
-        "memo_form.html",
-        **memo_dict,
-        memo_text="""- This memo is a demo.
-
-- This item contains sub items.
-    - Thing one.
-    - Thing two.
-        - Here is a sub sub item
-
-- Point of contact is the undersigned.""",
-    )
+    return render_template("memo_form.html", **memo_dict)
 
 
 @app.route("/save_progress", methods=["POST"])
@@ -125,7 +103,7 @@ def save_progress():
 
 
 def check_memo(text):
-    m = memo_model.parse_lines(text.split("\n"))
+    m = memo_model.MemoModel.from_text(text)
 
     if isinstance(m, str):
         # rudimentary error handling
@@ -236,9 +214,14 @@ def upload_file_to_s3(file, aws_path, acl="public-read"):
 @celery.task(name="create_memo")
 def create_memo(text, dictionary=None):
     if dictionary:
-        m = memo_model.build_from_form(dictionary)
+        app.logger.debug("Dictionary")
+        app.logger.debug(dictionary)
+        m = memo_model.MemoModel.from_form(dictionary)
     else:
-        m = memo_model.parse_lines(text.split("\n"))
+        app.logger.debug("Memo text")
+        app.logger.debug(text)
+        m = memo_model.MemoModel.from_text(text)
+
     mw = writer.MemoWriter(m)
 
     temp_name = (
