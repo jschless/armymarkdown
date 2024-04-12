@@ -39,6 +39,8 @@ celery = Celery(
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////data/users.db"
 
+app.logger.setLevel(logging.DEBUG)
+
 init_db(app)
 
 s3 = boto3.client(

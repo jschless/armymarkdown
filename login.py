@@ -93,6 +93,9 @@ def save_document(text):
 
     existing_document = Document.query.filter_by(user_id=user_id, content=text).first()
     if existing_document:
+        app.logger.info(
+            f"{current_user.username} tried to save a document that already was saved"
+        )
         return "Document is already saved."
 
     num_documents = Document.query.filter_by(user_id=user_id).count()
@@ -105,12 +108,14 @@ def save_document(text):
         )
         db.session.delete(oldest_document)
         db.session.commit()
-
+        app.logger.info(
+            f"{current_user.username} deleting documents to make room for more saves"
+        )
     try:
         new_document = Document(content=text, user_id=user_id)
         db.session.add(new_document)
         db.session.commit()
-
+        app.logger.info(f"{current_user.username} saved document")
         if removed_oldest:
             return "Document saved successfully. Removed oldest document."
 
