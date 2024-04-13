@@ -156,8 +156,17 @@
   </div>
 
   <div class="row">    
-      <div class="three columns" id="distributions">
-        <input class="u-full-width center" class="button" type="button" id="addDistribution" value="Add Distribution">
+    <div class="three columns" id="distributions">
+      {% for dist in distros %}
+        <div id="distro{{distros|length - loop.index0}}">
+          <label class="u-full-width center"  for="DISTRO{{distros|length - loop.index0}}">Distribution</label>
+          <input type="text" id="DISTRO{{distros|length - loop.index0}}" name="DISTRO{{distros|length - loop.index0}}" value="{{dist}}" class="u-full-width center">
+          <input class="u-full-width center" type="button" value="Remove Distro" onclick="deleteElement('distro{{distros|length - loop.index0 }}')">
+          <hr>
+        </div>
+        {% endfor %}
+
+        <input class="u-full-width center" class="button" type="button" id="addDistro" value="Add Distribution">
       </div>
   </div>
 
@@ -194,10 +203,12 @@
  var forCount = findHighest("for");
  var thruCount = findHighest("thru");
  var encCount = findHighest("enc");
+ var distroCount = findHighest("distro");
  var suffixToVarMap = {
     "for": forCount,
     "thru": thruCount,
-    "enc": encCount
+   "enc": encCount,
+   "distro": distroCount
 };
  function addAddress(fields, is_for) {
    // reuse this for thru and for address buttons
@@ -298,6 +309,10 @@
  function addEnclosure() {
    addField("enc", "Enclosure", "Enclosure Name", "enclosures");
  }
+
+ function addDistro() {
+   addField("distro", "Distribution", "Distribution Name", "distributions");
+ }
  
  function addField(suffix, labelText, inputValue, divId) {
    var div = document.createElement('div');
@@ -369,6 +384,7 @@
    document.getElementById('addFOR').addEventListener('click', addForAddress);
    document.getElementById('addTHRU').addEventListener('click', addThruAddress);
    document.getElementById('addEnclosure').addEventListener('click', addEnclosure);
+   document.getElementById('addDistro').addEventListener('click', addDistro);
    if (document.getElementById('removeTitle')) {
      document.getElementById('removeTitle').addEventListener('click', removeTitle);
    }
