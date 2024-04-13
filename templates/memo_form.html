@@ -171,7 +171,15 @@
   </div>
 
     <div class="row">    
-      <div class="three columns" id="cf">
+      <div class="three columns" id="cfs">
+        {% for cf in cfs %}
+        <div id="cf{{cfs|length - loop.index0}}">
+          <label class="u-full-width center"  for="CF{{cfs|length - loop.index0}}">Copies Furnished</label>
+          <input type="text" id="CF{{cfs|length - loop.index0}}" name="CF{{cfs|length - loop.index0}}" value="{{cf}}" class="u-full-width center">
+          <input class="u-full-width center" type="button" value="Remove Copies Furnished" onclick="deleteElement('cf{{cfs|length - loop.index0 }}')">
+          <hr>
+        </div>
+        {% endfor %}        
         <input class="u-full-width center" type="button" id="addCF" value="Add Copies Furnished">
       </div>
   </div>
@@ -204,12 +212,16 @@
  var thruCount = findHighest("thru");
  var encCount = findHighest("enc");
  var distroCount = findHighest("distro");
+ var cfCount = findHighest("cf");
+
  var suffixToVarMap = {
-    "for": forCount,
-    "thru": thruCount,
+   "for": forCount,
+   "thru": thruCount,
    "enc": encCount,
-   "distro": distroCount
+   "distro": distroCount,
+   "cf": cfCount   
 };
+
  function addAddress(fields, is_for) {
    // reuse this for thru and for address buttons
    var newRow = document.createElement('div');
@@ -313,6 +325,10 @@
  function addDistro() {
    addField("distro", "Distribution", "Distribution Name", "distributions");
  }
+
+ function addCF() {
+   addField("cf", "Copies Furnished", "Copies Furnished Name", "cfs");
+ }
  
  function addField(suffix, labelText, inputValue, divId) {
    var div = document.createElement('div');
@@ -385,6 +401,7 @@
    document.getElementById('addTHRU').addEventListener('click', addThruAddress);
    document.getElementById('addEnclosure').addEventListener('click', addEnclosure);
    document.getElementById('addDistro').addEventListener('click', addDistro);
+   document.getElementById('addCF').addEventListener('click', addCF);
    if (document.getElementById('removeTitle')) {
      document.getElementById('removeTitle').addEventListener('click', removeTitle);
    }
