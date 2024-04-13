@@ -9,8 +9,6 @@ RANK = 1LT
 BRANCH = EN
 TITLE = Platoon Leader
 
-MEMO_TYPE = MEMORANDUM FOR RECORD
-
 SUBJECT = Army markdown
 
 - This memo is a demo.

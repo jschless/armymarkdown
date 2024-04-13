@@ -12,8 +12,6 @@ RANK = PVT
 BRANCH = IN
 TITLE = Lost Private
 
-MEMO_TYPE = MEMORANDUM FOR RECORD
-
 SUBJECT = Army Markdown Tutorial
 
 # The SUBJECT = line marks the end of the admin info. You must begin the memo now!
