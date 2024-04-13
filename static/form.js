@@ -282,6 +282,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
 });
 
+// allows tab in the text area to indent
+var textarea = document.getElementById("MEMO_TEXT");
+
+textarea.addEventListener("keydown", function(event) {
+    if (event.key === "Tab") {
+	event.preventDefault();
+
+	var start = this.selectionStart;
+	var end = this.selectionEnd;
+
+	// Insert four spaces at the caret position
+	this.value = this.value.substring(0, start) + "    " + this.value.substring(end);
+
+	// Move the caret position forward by four spaces
+	this.selectionStart = this.selectionEnd = start + 4;
+    }
+});
 
 function button_press(endpoint, polling_function) {
     var formData = new FormData(document.getElementById('memo')); 
