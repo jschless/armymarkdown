@@ -124,6 +124,7 @@
   <div class="row">    
     <div class="twelve columns">
       <div class="three columns" id="enclosures">
+        {% if enclosures is iterable %}
         {% for enc in enclosures %}
         <div id="enc{{enclosures|length - loop.index0}}">
           <label class="u-full-width center"  for="ENCLOSURE{{enclosures|length - loop.index0}}">Enclosure</label>
@@ -132,9 +133,10 @@
           <hr>
         </div>
         {% endfor %}
+        {% endif %}
           <input class="u-full-width center" type="button" id="addEnclosure" value="Add Enclosure">
       </div>
-      
+
       <div class="three columns offset-by-six" id="signature">
         <label for="AUTHOR">Your Name</label>
         <input type="text" value="{{ author_name | default('James F. Ryan') }}" name="AUTHOR" id="AUTHOR" class="u-full-width">
@@ -157,6 +159,7 @@
 
   <div class="row">    
     <div class="three columns" id="distributions">
+      {% if distros is iterable %}
       {% for dist in distros %}
         <div id="distro{{distros|length - loop.index0}}">
           <label class="u-full-width center"  for="DISTRO{{distros|length - loop.index0}}">Distribution</label>
@@ -165,13 +168,14 @@
           <hr>
         </div>
         {% endfor %}
-
+        {% endif %}
         <input class="u-full-width center" class="button" type="button" id="addDistro" value="Add Distribution">
       </div>
   </div>
 
     <div class="row">    
       <div class="three columns" id="cfs">
+        {% if cfs is iterable %}
         {% for cf in cfs %}
         <div id="cf{{cfs|length - loop.index0}}">
           <label class="u-full-width center"  for="CF{{cfs|length - loop.index0}}">Copies Furnished</label>
@@ -179,7 +183,8 @@
           <input class="u-full-width center" type="button" value="Remove Copies Furnished" onclick="deleteElement('cf{{cfs|length - loop.index0 }}')">
           <hr>
         </div>
-        {% endfor %}        
+        {% endfor %}
+        {% endif %}
         <input class="u-full-width center" type="button" id="addCF" value="Add Copies Furnished">
       </div>
   </div>
@@ -275,11 +280,20 @@
    document.getElementById(whereToAdd).prepend(newRow);
 
  }
+
+ function addTitle(){
+   addSingleField("Title", "TITLE", "Lost Private", "signature", "removeTitle", removeTitle, "titleDiv");   
+ }
+
+ function removeTitle(){
+   removeSingleField("titleDiv", "signature", "addTitle", "Add Title", addTitle);
+ }
  
- function addTitle() {
-   var title = document.createElement('div');
+ function addSingleField(name, id, value, targetDivId, deleteId, removeFunc, divId) {
+   var div = document.createElement('div');
+   div.id = divId;
    var label = document.createElement('label');
-   label.textContent = "Title";
+   label.textContent = name;
    label.classList.add("u-full-width");
    label.classList.add("center");
    label.setAttribute('for', "TITLE");
@@ -287,36 +301,45 @@
    
    var input = document.createElement('input');
    input.type = 'text';
-   input.id = "TITLE";
-   input.name = "TITLE";
-   input.placeholder = "Lost Private";
-   input.value = "Lost Private";
+   input.id = id;
+   input.name = id;
+   input.value = value;
    input.classList.add("u-full-width");
    input.classList.add("center");
 
      
-   title.append(label);
-   title.append(input);
+   div.append(label);
+   div.append(input);
 
    
    var deleteButton = document.createElement('button');
-
    var addButton = document.getElementById('addTitle');
    var savedButton = addButton.cloneNode(true);
    addButton.remove();
 
-   deleteButton.textContent = 'Remove title';
+   deleteButton.textContent = 'Remove ' + name;
    deleteButton.classList.add("u-full-width");
    deleteButton.classList.add("center");
-
-   deleteButton.addEventListener('click', function() {
-     title.remove();
-     document.getElementById('signature').append(savedButton);
-     savedButton.addEventListener('click', addTitle);
-   });
-   title.append(deleteButton);
-   document.getElementById('signature').append(title);
+   deleteButton.id = deleteId;
+   deleteButton.addEventListener('click', removeFunc);
+   
+   div.append(deleteButton);
+   document.getElementById(targetDivId).append(div);
  }
+ 
+ function removeSingleField(targetDivId, targetLocationId, buttonId, buttonText, buttonFunc) {
+   document.getElementById(targetDivId).remove();
+   var targetDiv = document.getElementById(targetLocationId);
+   var inputElement = document.createElement('input');
+   inputElement.setAttribute('type', 'button');
+   inputElement.setAttribute('id', buttonId);
+   inputElement.setAttribute('value', buttonText);
+   inputElement.classList.add('u-full-width');
+   inputElement.classList.add('center');
+   inputElement.addEventListener('click', buttonFunc);
+   targetDiv.append(inputElement);
+ }
+
 
  function addEnclosure() {
    addField("enc", "Enclosure", "Enclosure Name", "enclosures");
@@ -382,18 +405,6 @@
    ];
 
    addAddress(fields, false);
- }
-
- function removeTitle() {
-   document.getElementById('titleDiv').remove();
-   var targetDiv = document.getElementById('signature');
-   var inputElement = document.createElement('input');
-   inputElement.setAttribute('type', 'button');
-   inputElement.setAttribute('id', 'addTitle');
-   inputElement.setAttribute('value', 'Add Title');
-   inputElement.classList.add('button');
-   inputElement.addEventListener('click', addTitle);
-   targetDiv.append(inputElement);
  }
  
  document.addEventListener('DOMContentLoaded', function() {
