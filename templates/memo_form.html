@@ -124,7 +124,14 @@
   <div class="row">    
     <div class="twelve columns">
       <div class="three columns" id="enclosures">
-        <input class="button" type="button" id="addEnclosure" value="Add Enclosure">
+        {% for enc in enclosures %}
+        <div id="enc{{enclosures|length - loop.index0}}">
+          <label class="u-full-width center"  for="ENCLOSURE{{enclosures|length - loop.index0}}">Enclosure</label>
+          <input type="text" id="ENCLOSURE{{enclosures|length - loop.index0}}" name="ENCLOSURE{{enclosures|length - loop.index0}}" value="{{enc}}" class="u-full-width center">
+          <input type="button" value="Remove Enclosure" onclick="deleteElement('enc{{enclosures|length - loop.index0 }}')">      
+        </div>
+        {% endfor %}
+          <input class="button" type="button" id="addEnclosure" value="Add Enclosure">
       </div>
       
       <div class="three columns offset-by-six" id="signature">
