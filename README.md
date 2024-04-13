@@ -12,16 +12,16 @@ The goal of this project is two-fold:
 - Web server where you can create and download memos
 - ~~Custom syntax highlighting and code editor~~ (blocked by DODIN-A, no javascript-based code editor will work)
 - Supports multiple features, like text styling, basic tables, classifications, enclosures, etc.
-- Easily recover last session document
-
+- Create an account, save documents and load old documents
+- Build memos with either armymarkdown or a form resembling a memo
 
 ### TODO 
 - [x] Containerize and get off Heroku (save $$$, get actual on-demand pricing v. Heroku nonsense)
 - [x] Support embedded tables (sort of works, they're not pretty though)
 - [x] Add user database so organizational information will auto-fill (could use cookies or account login, maybe save previous documents...)
 - [x] Add SSL support
+- [x] Allow form-based submission alternatives.
 - [ ] Optimize latex compilation so it doesn't take so dang long
-- [ ] Allow form-based submission alternatives.
 - [ ] Add examples of common memos
 - [ ] Upload list of files (if you have a bunch of command memos to generate, for example) and receive list of PDFs.
   
@@ -30,7 +30,8 @@ This web app is fully containerized. I use ```docker-compose``` to run three con
 1. A simple ```flask``` app served via ```gunicorn```
 2. A ```celery``` worker
 3. A ```redis``` server for task scheduling with ```celery```
-
+4. a ```sqlite``` database for users and saved drafts.
+   
 The ```celery``` worker handles the time-intensive ```lualatex``` compilation. Then I upload the generated pdf to an AWS S3 bucket and serve it to the client.
 
 ## Army Markdown Template
