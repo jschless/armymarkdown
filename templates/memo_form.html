@@ -3,7 +3,7 @@
 {% block content %}
 
 <div class="row">
-  Here's a more intuitive form builder. You can load the same examples into the form builder.
+Here's a more intuitive form builder. You can load the same examples or past memos into the form builder.
 </div>
 
 <div class="row">
@@ -56,7 +56,10 @@
       <label for="OFFICE_SYMBOL" class="u-full-width center" class="center">Office Symbol</label>
       <input type="text" value="{{ office_symbol | default('ABC-DEF-GHIJ')}}" name="OFFICE_SYMBOL" id="OFFICE_SYMBOL" class="u-full-width center">
     </div>
-    <div  class="three columns offset-by-six">
+    <div class="six columns">
+      <label class="u-full-width"></label>
+    </div>
+    <div  class="three columns">
       <label for="DATE" class="u-full-width center" class="center">Date</label>
       <input type="text" value="24 January 2006" id="DATE" name="DATE" class="u-full-width center">
     </div>    
@@ -84,7 +87,9 @@
     {% endfor %}
 
     <div class="row">
-      <input class="u-full-width center" type="button" id="addTHRU" value="Add THRU address">
+      <div class="three columns">
+        <input class="u-full-width center" type="button" id="addTHRU" value="Add THRU address">
+      </div>
     </div>
   </div>
   
@@ -109,8 +114,10 @@
     {% endfor %}
 
     <div class="row">
-      <input class="u-full-width center" class="button" type="button" id="addFOR"  value="Add FOR address">
-    </div>    
+      <div class="three columns">
+        <input class="u-full-width center" class="button" type="button" id="addFOR"  value="Add FOR address">
+      </div>
+    </div>
   </div>
 
 
