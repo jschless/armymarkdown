@@ -194,7 +194,11 @@
  var forCount = findHighest("for");
  var thruCount = findHighest("thru");
  var encCount = findHighest("enc");
- 
+ var suffixToVarMap = {
+    "for": forCount,
+    "thru": thruCount,
+    "enc": encCount
+};
  function addAddress(fields, is_for) {
    // reuse this for thru and for address buttons
    var newRow = document.createElement('div');
@@ -284,36 +288,41 @@
  }
 
  function addEnclosure() {
-   var enc = document.createElement('div');
+   addField("enc", "Enclosure", "Enclosure Name", "enclosures");
+ }
+ 
+ function addField(suffix, labelText, inputValue, divId) {
+   var div = document.createElement('div');
    var label = document.createElement('label');
-   encCount++;
+   suffixToVarMap[suffix]++;
+   var count = suffixToVarMap[suffix];
    
-   label.textContent = "Enclosure";
+   label.textContent = labelText;
    label.classList.add("u-full-width");
    label.classList.add("center");
 
    var input = document.createElement('input');
    input.type = 'text';
-   input.id = "ENC" + encCount;
-   input.name = "ENC" + encCount;
-   input.value = "Enclosure Name";
+   input.id = suffix + count;
+   input.name = suffix + count;
+   input.value = inputValue;
    input.classList.add("u-full-width");
    input.classList.add("center");
 
-   enc.append(label);
-   enc.append(input);
+   div.append(label);
+   div.append(input);
 
    var deleteButton = document.createElement('button');
    deleteButton.classList.add("u-full-width");
    deleteButton.classList.add("center");
    deleteButton.type = 'text';
-   deleteButton.textContent = 'Remove Enclosure';
+   deleteButton.textContent = 'Remove ' + labelText;
    deleteButton.addEventListener('click', function() {
-     enc.remove();
+     div.remove();
    });
-   enc.append(deleteButton);
-   enc.append(document.createElement('hr'));
-   document.getElementById('enclosures').prepend(enc);      
+   div.append(deleteButton);
+   div.append(document.createElement('hr'));
+   document.getElementById(divId).prepend(div);      
  }
  
  function addForAddress() {
