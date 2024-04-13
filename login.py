@@ -94,9 +94,8 @@ def get_document(document_id):
         flash("This is not your file, so you can't view it")
         return redirect(url_for("index", example_file="tutorial.Amd"))
 
-    use_form_editor = request.args.get("form_editor", type=bool)
-
-    if use_form_editor == "True" or use_form_editor == True:
+    use_form_editor = request.args.get("form_editor")
+    if use_form_editor == "True":
         m = memo_model.MemoModel.from_text(document.content)
         d = m.to_form()
         return render_template("memo_form.html", **d)
