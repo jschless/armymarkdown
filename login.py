@@ -56,7 +56,7 @@ def register():
         db.session.commit()
         flash("Congratulations, you are now a registered user!")
         app.logger.info(f"{form.username.data} created an account")
-        return redirect(url_for("index", example_file="tutorial.Amd"))
+        return render_template("login.html", title="Sign In", form=form)
     return render_template("register.html", title="Register", form=form)
 
 
@@ -90,6 +90,10 @@ def history():
 @login_required
 def get_document(document_id):
     document = Document.query.get_or_404(document_id)
+    if document.user_id != current_user.id:
+        flash("This is not your file, so you can't view it")
+        return redirect(url_for("index", example_file="tutorial.Amd"))
+
     use_form_editor = request.args.get("form_editor", type=bool)
 
     if use_form_editor == "True":
