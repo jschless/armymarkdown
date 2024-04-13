@@ -96,7 +96,7 @@ def get_document(document_id):
 
     use_form_editor = request.args.get("form_editor", type=bool)
 
-    if use_form_editor == "True":
+    if use_form_editor == "True" or use_form_editor == True:
         m = memo_model.MemoModel.from_text(document.content)
         d = m.to_form()
         return render_template("memo_form.html", **d)
