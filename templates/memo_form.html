@@ -175,15 +175,15 @@ Here's a more intuitive form builder. You can load the same examples or past mem
       </div>
 
       <div class="three columns offset-by-three" id="signature">
-        <label for="AUTHOR">Your Name</label>
+        <label class="u-full-width center" for="AUTHOR">Signer's Name</label>
         <input type="text" value="{{ author_name | default('James F. Ryan') }}" name="AUTHOR" id="AUTHOR" class="u-full-width center">
-        <label for="RANK">Rank</label>
+        <label class="u-full-width center" for="RANK">Rank</label>
         <input type="text" value="{{ author_rank | default('PVT') }}" id="RANK" name="RANK" class="u-full-width center">
-        <label for="BRANCH">Branch</label>
+        <label class="u-full-width center" for="BRANCH">Branch</label>
         <input type="text" value="{{ author_branch | default('IN') }}" id="BRANCH" name="BRANCH" class="u-full-width center">
         {% if author_title is defined %}
         <div id="titleDiv">
-          <label for="TITLE">Title</label>
+          <label class="u-full-width center" for="TITLE">Title</label>
           <input type="text" value="{{ author_title}}" id="TITLE" name="TITLE" class="u-full-width center">
           <input class="u-full-width center" type="button" id="removeTitle" value="Remove Title">
         </div>
