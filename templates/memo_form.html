@@ -3,7 +3,9 @@
 {% block content %}
 
 <div class="row">
-Here's a more intuitive form builder. You can load the same examples or past memos into the form builder.
+  <h2>Form Builder</h2>
+
+  <p> Here's a more intuitive way to make your memos. You'll see it resembles an actual memo. Simply fill out the appropriate parts and add the options you need for your purposes. You can view the same examples or, if you have an account, your past memos. As always, click the blue button to wait for your memo.</p>
 </div>
 
 <div class="row">
@@ -38,7 +40,7 @@ Here's a more intuitive form builder. You can load the same examples or past mem
 
   <div class="row">
     <div class="three columns offset-by-nine" id="suspense">
-      {% if suspense_date is defined %}
+      {% if suspense_date is defined and suspense_date is not none %}
         <div id="suspenseDiv">
           <label class="u-full-width center" for="SUSPENSE">Suspense Date</label>
           <input type="text" value="{{suspense_date}}" id="SUSPENSE" name="SUSPENSE" class="u-full-width center">
@@ -142,7 +144,7 @@ Here's a more intuitive form builder. You can load the same examples or past mem
 
   <div class="row">
     <div class="three columns" id="authority">
-      {% if authority is defined %}
+      {% if authority is defined and authority is not none %}
         <div id="authorityDiv">
           <label class="u-full-width center" for="AUTHORITY">Authority</label>
           <input type="text" value="{{authority}}" id="AUTHORITY" name="AUTHORITY" class="u-full-width center">
@@ -194,6 +196,13 @@ Here's a more intuitive form builder. You can load the same examples or past mem
     </div>    
   </div>
 
+  <hr>
+  <div class="row">
+    <div class="six columns offset-by-three">
+      <h3 class="center">Less Common Items</h4>
+    </div>
+  </div>
+  
   <div class="row">    
     <div class="three columns" id="distributions">
       {% if distros is iterable %}
@@ -224,8 +233,25 @@ Here's a more intuitive form builder. You can load the same examples or past mem
         {% endif %}
         <input class="u-full-width center" type="button" id="addCF" value="Add Copies Furnished">
       </div>
+    </div>
+
+  <div class="row">
+    <div class="six columns offset-by-three" id="document_mark">
+      {% if document_mark is defined and document_mark is not none %}
+        <div id="documentMarkDiv">
+          <label class="u-full-width center" for="DOCUMENT_MARK">Classification</label>
+          <input type="text" value="{{document_mark}}" id="DOCUMENT_MARK" name="DOCUMENT_MARK" class="u-full-width center">
+          <input class="u-full-width center" type="button" id="removeDocumentMark" value="Remove Document Mark">
+        </div>
+        {% else %}
+        <input class="u-full-width center" type="button" id="addDocumentMark" value="Add Classification">      
+        {% endif %}
+
+    </div>
   </div>
 
+    
+  <hr>
   
   <div class="row">
     <input class="button-primary" type="submit" value="Submit">
@@ -318,6 +344,15 @@ Here's a more intuitive form builder. You can load the same examples or past mem
 
  }
 
+ function addDocumentMark(){
+   addSingleField("Document Mark", "DOCUMENT_MARK", "CUI", "document_mark", "removeDocumentMark", removeDocumentMark, "documentMarkDiv", "addDocumentMark");   
+ }
+
+ function removeDocumentMark(){
+   removeSingleField("documentMarkDiv", "document_mark", "addDocumentMark", "Add Document Mark", addDocumentMark);
+ }
+
+ 
  function addAuthority(){
    addSingleField("Authority", "AUTHORITY", "GEN Milley", "authority", "removeAuthority", removeAuthority, "authorityDiv", "addAuthority");   
  }
@@ -485,6 +520,12 @@ Here's a more intuitive form builder. You can load the same examples or past mem
    }
    if (document.getElementById('addAuthority')) {
      document.getElementById('addAuthority').addEventListener('click', addAuthority);     
+   }
+   if (document.getElementById('removeDocumentMark')) {
+     document.getElementById('removeDocumentMark').addEventListener('click', removeDocumentMark);
+   }
+   if (document.getElementById('addDocumentMark')) {
+     document.getElementById('addDocumentMark').addEventListener('click', addDocumentMark);     
    }
 
  });
