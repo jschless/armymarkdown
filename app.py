@@ -42,6 +42,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////data/users.db"
 
 
 if os.environ.get("DEVELOPMENT") is not None:
+    app.debug = True
     app.logger.setLevel(logging.DEBUG)
 
 init_db(app)
