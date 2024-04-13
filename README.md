@@ -22,6 +22,7 @@ The goal of this project is two-fold:
 - [x] Add SSL support
 - [ ] Optimize latex compilation so it doesn't take so dang long
 - [ ] Allow form-based submission alternatives.
+- [ ] Add examples of common memos
 - [ ] Upload list of files (if you have a bunch of command memos to generate, for example) and receive list of PDFs.
   
 ### Stack / How to Run
