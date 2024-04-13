@@ -25,7 +25,7 @@ function update_progress(status_url, count) {
 		// 	count * 2 +
 		// 	" seconds."
 		// );
-		let progress = count / averageSeconds * 100;
+		let progress = Math.min(count / averageSeconds * 100, 100);
 		document.getElementById('progress').style.width = progress + '%';
         
 		setTimeout(function () {
