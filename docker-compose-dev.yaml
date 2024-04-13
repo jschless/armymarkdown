@@ -5,11 +5,10 @@ services:
     image: redis:latest
 
   flask_app:
-    build: 
+    build:
       context: ./
-      dockerfile: Dockerfile.production
+      dockerfile: Dockerfile.development
     ports:
-     - "443:8443"
       - "8000:8000"
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt
@@ -19,9 +18,9 @@ services:
       - sqlite_db
 
   celery:
-    build: 
+    build:
       context: ./
-      dockerfile: Dockerfile.production
+      dockerfile: Dockerfile.development
     volumes:
       - .:/src
       - db-data:/data
