@@ -10,7 +10,7 @@ class MemoWriter:
     def write(self, output_file=None):
         self.output_file = output_file
 
-        self.lines.append("\\documentclass{armymemo}")
+        self.lines.append("\\documentclass{armymemo-notikz}")
         self._write_admin()
         self._write_body()
         self.temp_dir = os.path.join(os.getcwd(), "assets")
@@ -21,8 +21,7 @@ class MemoWriter:
             print("\n".join(self.lines), file=f)
 
     def generate_memo(self):
-        # subprocess.run(["xelatex", self.output_file])
-        subprocess.run(["latexmk", "-quiet", "-lualatex", self.output_file])
+        subprocess.run(["lualatex", self.output_file])
 
     def _write_for_lines(self) -> list:
         ans = []
@@ -61,7 +60,7 @@ class MemoWriter:
         for name, val in [
             ("authority", self.data.authority),
             ("title", self.data.author_title),
-            ("documentmark", self.data.document_mark),
+            # ("documentmark", self.data.document_mark),
             ("suspensedate", self.data.suspense_date),
         ]:
             if val is not None:
