@@ -118,6 +118,10 @@ class MemoModel:
                 )
             )
 
+        form_dict["enclosures"] = self.enclosures
+        form_dict["distros"] = self.distros
+        form_dict["cfs"] = self.cfs
+
         return form_dict
 
     @classmethod
