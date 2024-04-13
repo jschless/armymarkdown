@@ -123,6 +123,10 @@
   
   <div class="row">    
     <div class="twelve columns">
+      <div class="three columns" id="enclosures">
+        <input class="button" type="button" id="addEnclosure" value="Add Enclosure">
+      </div>
+      
       <div class="three columns offset-by-six" id="signature">
         <label for="AUTHOR">Your Name</label>
         <input type="text" value="{{ author_name | default('James F. Ryan') }}" name="AUTHOR" id="AUTHOR" class="u-full-width">
@@ -143,6 +147,19 @@
     </div>    
   </div>
 
+  <div class="row">    
+      <div class="three columns" id="distributions">
+        <input class="button" type="button" id="addDistribution" value="Add Distribution">
+      </div>
+  </div>
+
+    <div class="row">    
+      <div class="three columns" id="cf">
+        <input class="button" type="button" id="addCF" value="Add Copies Furnished">
+      </div>
+  </div>
+
+  
   <div class="row">
     <input class="button-primary" type="submit" value="Submit">
     {% if current_user.is_authenticated %}
@@ -219,7 +236,7 @@
    document.getElementById(whereToAdd).prepend(newRow);
 
  }
-
+ 
  function addTitle() {
    var title = document.createElement('div');
    var label = document.createElement('label');
@@ -256,6 +273,10 @@
    title.append(deleteButton);
    document.getElementById('signature').append(title);
  }
+
+ function addEnclosure() {
+     var fields = [{ id: "FOR_ORGANIZATION_NAME", placeholder: "U.S. Army Command and General Staff College (ATZL)", label: "FOR Organization Name"}];
+ }
  
  function addForAddress() {
    var fields = [
@@ -278,14 +299,27 @@
  }
 
  function removeTitle() {
-   document.getElementById('titleDiv').remove();  
+   document.getElementById('titleDiv').remove();
+   var targetDiv = document.getElementById('signature');
+   var inputElement = document.createElement('input');
+   inputElement.setAttribute('type', 'button');
+   inputElement.setAttribute('id', 'addTitle');
+   inputElement.setAttribute('value', 'Add Title');
+   inputElement.classList.add('button');
+   inputElement.addEventListener('click', addTitle);
+   targetDiv.append(inputElement);
  }
-
+ 
  document.addEventListener('DOMContentLoaded', function() {
    document.getElementById('addFOR').addEventListener('click', addForAddress);
    document.getElementById('addTHRU').addEventListener('click', addThruAddress);
-   document.getElementById('addTitle').addEventListener('click', addTitle);
-   document.getElementById('removeTitle').addEventListener('click', removeTitle);
+   if (document.getElementById('removeTitle')) {
+     document.getElementById('removeTitle').addEventListener('click', removeTitle);
+   }
+   if (document.getElementById('addTitle')) {
+     document.getElementById('addTitle').addEventListener('click', addTitle);     
+   }
+
  });
 
  
