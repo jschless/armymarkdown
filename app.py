@@ -19,8 +19,6 @@ from armymarkdown import memo_model, writer
 from flask_talisman import Talisman
 from db.db import init_db
 
-app = Flask(__name__, static_url_path="/static")
-
 if "REDIS_URL" not in os.environ:
     # set os.environ from local_config
     from local_config import config
@@ -28,7 +26,10 @@ if "REDIS_URL" not in os.environ:
     for key, val in config.items():
         os.environ[key] = val
 
+app = Flask(__name__, static_url_path="/static")
 app.secret_key = os.environ["FLASK_SECRET"]
+app.config["RECAPTCHA_PUBLIC_KEY"] = os.environ["RECAPTCHA_PUBLIC_KEY"]
+app.config["RECAPTCHA_PRIVATE_KEY"] = os.environ["RECAPTCHA_PRIVATE_KEY"]
 
 celery = Celery(
     app.name,

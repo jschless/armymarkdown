@@ -1,8 +1,11 @@
 from flask_wtf import FlaskForm
+from flask_wtf.recaptcha import RecaptchaField
+
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, Length
 import sqlalchemy as sa
 from db.schema import User, db
+from local_config import config
 
 
 class LoginForm(FlaskForm):
@@ -35,6 +38,7 @@ class RegistrationForm(FlaskForm):
     password2 = PasswordField(
         "Repeat Password", validators=[DataRequired(), EqualTo("password")]
     )
+    recaptcha = RecaptchaField()
     submit = SubmitField("Register")
 
     def validate_username(self, username):
