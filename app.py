@@ -1,13 +1,23 @@
 import random
 import os
-from flask import Flask, render_template, request, url_for, jsonify, redirect, session
+import sys
+from flask import (
+    Flask,
+    render_template,
+    request,
+    url_for,
+    jsonify,
+    redirect,
+    session,
+    flash,
+)
 from celery import Celery
+import logging
 import boto3
 from botocore.exceptions import ClientError
 from armymarkdown import memo_model, writer
 from flask_talisman import Talisman
-
-app = Flask(__name__, static_url_path="/static")
+from db.db import init_db
 
 if "REDIS_URL" not in os.environ:
     # set os.environ from local_config
@@ -16,17 +26,24 @@ if "REDIS_URL" not in os.environ:
     for key, val in config.items():
         os.environ[key] = val
 
+app = Flask(__name__, static_url_path="/static")
 app.secret_key = os.environ["FLASK_SECRET"]
+app.config["RECAPTCHA_PUBLIC_KEY"] = os.environ["RECAPTCHA_PUBLIC_KEY"]
+app.config["RECAPTCHA_PRIVATE_KEY"] = os.environ["RECAPTCHA_PRIVATE_KEY"]
 
 celery = Celery(
     app.name,
     broker=os.environ["REDIS_URL"],
     backend=os.environ["REDIS_URL"],
+    broker_connection_retry_on_startup=True,
 )
 
-celery.conf.broker_pool_limit = 0
-celery.conf.redis_max_connections = 20  # free heroku tier limit
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////data/users.db"
 
+if os.environ["DEVELOPMENT"]:
+    app.logger.setLevel(logging.DEBUG)
+
+init_db(app)
 
 s3 = boto3.client(
     "s3",
@@ -35,12 +52,8 @@ s3 = boto3.client(
     config=boto3.session.Config(region_name="us-east-2", signature_version="s3v4"),
 )
 
-hashes = set(
-    [
-        hash(open(os.path.join("./examples", f), "r").read())
-        for f in os.listdir("./examples")
-    ]
-)
+import login
+from login import save_document
 
 
 @app.route("/")
@@ -50,9 +63,6 @@ def home():
 
 @app.route("/<example_file>")
 def index(example_file="./tutorial.Amd"):
-    if example_file == "autosave" and session.get("input_data", None):
-        return render_template("index.html", memo_text=session["input_data"])
-
     if example_file not in os.listdir("./examples"):
         example_file = "./tutorial.Amd"
 
@@ -62,22 +72,46 @@ def index(example_file="./tutorial.Amd"):
     )
 
 
-@app.route("/save_data", methods=["POST"])
-def save_data():
-    data = request.form.get("input_data")
-    if (
-        hash(data) not in hashes
-        and not data.startswith("Waiting")
-        and ("input_data" in session and hash(session["input_data"]) != hash(data))
-    ):
-        session["input_data"] = data
-        print("Updated session variable with autosaved data")
-        return "Session updated with progress"
-    return "No update made, session was unchanged"
+@app.route("/form", methods=["GET", "POST"])
+def form(example_file="./tutorial.Amd"):
+    if request.method == "POST":
+        app.logger.info("Form fields:")
+        for key, value in request.form.items():
+            app.logger.info(f"{key}: {value}")
+
+        task = create_memo.delay("", dictionary=request.form.to_dict())
+        return (
+            "Hi, we're waiting for your PDF to be created.",
+            200,
+            {"Location": url_for("taskstatus", task_id=task.id)},
+        )
+
+    example_file = request.args.get("example_file", "tutorial.Amd")
+
+    app.logger.debug("loading the following file")
+    app.logger.debug(example_file)
+    m = memo_model.MemoModel.from_file(os.path.join("./examples", example_file))
+
+    app.logger.debug("loaded memo model")
+    app.logger.debug(m.to_dict())
+
+    memo_dict = m.to_form()
+    app.logger.debug("passing the following to the form site")
+    app.logger.debug(memo_dict)
+
+    return render_template("memo_form.html", **memo_dict)
+
+
+@app.route("/save_progress", methods=["POST"])
+def save_progress():
+    text = request.form.get("input_data")
+    res = save_document(text)
+    flash(res)
+    return jsonify({"message": "OK", "flash": {"category": "success", "message": res}})
 
 
 def check_memo(text):
-    m = memo_model.parse_lines(text.split("\n"))
+    m = memo_model.MemoModel.from_text(text)
 
     if isinstance(m, str):
         # rudimentary error handling
@@ -108,6 +142,7 @@ def process():
     if memo_errors is not None:
         return memo_errors, 400
 
+    save_document(text)
     task = create_memo.delay(text)
     return (
         "Hi, we're waiting for your PDF to be created.",
@@ -185,8 +220,17 @@ def upload_file_to_s3(file, aws_path, acl="public-read"):
 
 
 @celery.task(name="create_memo")
-def create_memo(text):
-    m = memo_model.parse_lines(text.split("\n"))
+def create_memo(text, dictionary=None):
+    if dictionary:
+        app.logger.debug("Dictionary")
+        app.logger.debug(dictionary)
+        m = memo_model.MemoModel.from_form(dictionary)
+    else:
+        app.logger.debug("Memo text")
+        app.logger.debug(text)
+        m = memo_model.MemoModel.from_text(text)
+
+    app.logger.debug(m.to_dict())
     mw = writer.MemoWriter(m)
 
     temp_name = (
@@ -222,7 +266,8 @@ def create_memo(text):
     return temp_name
 
 
-Talisman(app, content_security_policy=None)
+if not os.environ["DEVELOPMENT"]:
+    Talisman(app, content_security_policy=None)
 
 
 def main():

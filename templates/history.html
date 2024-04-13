@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+  <h2>Previous Documents</h2>
+  <ol>
+    {% for document in documents %}
+    <li> {{ document.content }}
+      <ul>
+        <li> <a href="{{ url_for('get_document', document_id=document.id, form_editor=false) }}">View in classic editor</a></li>
+        <li> <a href="{{ url_for('get_document', document_id=document.id, form_editor=true) }}">View in form editor</a></li>        
+      </ul>
+    {% endfor %}
+  </ol>
+</div>
+{% endblock %}
