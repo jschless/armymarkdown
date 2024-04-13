@@ -37,6 +37,22 @@
   <hr>
 
   <div class="row">
+    <div class="three columns"></div>
+    <div class="three columns offset-by-six" id="suspense">
+      {% if suspense_date is defined %}
+        <div id="suspenseDiv">
+          <label for="SUSPENSE">Suspense Date</label>
+          <input type="text" value="{{suspense_date}}" id="SUSPENSE" name="SUSPENSE" class="u-full-width">
+          <input class="u-full-width center" type="button" id="removeSuspense" value="Remove Suspense">
+        </div>
+        {% else %}
+        <input class="u-full-width center" type="button" id="addSuspense" value="Add Suspense">      
+        {% endif %}
+
+    </div>
+  </div>
+  
+  <div class="row">
     <div class="three columns">
       <label for="OFFICE_SYMBOL" class="u-full-width center" class="center">Office Symbol</label>
       <input type="text" value="{{ office_symbol | default('ABC-DEF-GHIJ')}}" name="OFFICE_SYMBOL" id="OFFICE_SYMBOL" class="u-full-width center">
@@ -281,15 +297,24 @@
 
  }
 
+ function addSuspense(){
+   addSingleField("Suspense Date", "SUSPENSE", "08 May 2026", "suspense", "removeSuspense", removeSuspense, "suspenseDiv", "addSuspense");   
+ }
+
+ function removeSuspense(){
+   removeSingleField("suspenseDiv", "suspense", "addSuspense", "Add Suspense", addSuspense);
+ }
+
+ 
  function addTitle(){
-   addSingleField("Title", "TITLE", "Lost Private", "signature", "removeTitle", removeTitle, "titleDiv");   
+   addSingleField("Title", "TITLE", "Lost Private", "signature", "removeTitle", removeTitle, "titleDiv", "addTitle");   
  }
 
  function removeTitle(){
    removeSingleField("titleDiv", "signature", "addTitle", "Add Title", addTitle);
  }
  
- function addSingleField(name, id, value, targetDivId, deleteId, removeFunc, divId) {
+ function addSingleField(name, id, value, targetDivId, deleteId, removeFunc, divId, addId) {
    var div = document.createElement('div');
    div.id = divId;
    var label = document.createElement('label');
@@ -313,8 +338,8 @@
 
    
    var deleteButton = document.createElement('button');
-   var addButton = document.getElementById('addTitle');
-   var savedButton = addButton.cloneNode(true);
+   var addButton = document.getElementById(addId);
+
    addButton.remove();
 
    deleteButton.textContent = 'Remove ' + name;
@@ -418,6 +443,12 @@
    }
    if (document.getElementById('addTitle')) {
      document.getElementById('addTitle').addEventListener('click', addTitle);     
+   }
+   if (document.getElementById('removeSuspense')) {
+     document.getElementById('removeSuspense').addEventListener('click', removeSuspense);
+   }
+   if (document.getElementById('addSuspense')) {
+     document.getElementById('addSuspense').addEventListener('click', addSuspense);     
    }
 
  });
