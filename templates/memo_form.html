@@ -153,13 +153,6 @@
 
 </form>
 <script>
- var currentDate = new Date();
-
- var options = { day: 'numeric', month: 'long', year: 'numeric' };
-
- var formattedDate = currentDate.toLocaleDateString('en-GB', options);
- document.getElementById('DATE').placeholder = formattedDate;
-
  function findHighest(prefix) {
    var highestNumber = 0;
 
@@ -376,6 +369,14 @@
        break;
 	   }
    }
+
+   // Update date
+   var currentDate = new Date();
+   
+   var options = { day: 'numeric', month: 'long', year: 'numeric' };
+   
+   var formattedDate = currentDate.toLocaleDateString('en-GB', options);
+   document.getElementById('DATE').value = formattedDate;
  });
  
 </script>
