@@ -1,84 +1,40 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+{% extends 'base.html' %}
 
-  <!-- Basic Page Needs
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-  <meta charset="utf-8">
-  <title>Army Memo Maker</title>
-  <meta name="description" content="">
-  <meta name="author" content="">
-
-  <!-- Mobile Specific Metas
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- FONT
-       –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-  
-  <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
-
-  <!-- CSS
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-  <link rel="stylesheet" href="{{ url_for('static',filename='css/normalize.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static',filename='css/skeleton.css') }}">
+{% block content %}
 
 
-  <!-- Favicon
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" />
-  <style>
-   textarea.u-full-height {
-     height: 75vh;
-   }
+<div class="row">
+  Welcome to Army Memo Maker, a simple webapp that helps you make memos formatted in perfect accordance with AR 25-50. Memos are guaranteed to have the right spacing and font. Note, generating your memo will take around 20 seconds (this website is currently running on a server less powerful than your phone).
 
-   body {
-     font-family: Arial, sans-serif;
-   }
-  </style>
+  <br><br>
+  The tutorial example explains how to create your memo. You can also view other example memos to see other supported features. If you make an account, you can save documents and load recently created ones.
 
-  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  <br><br>
+</div>  
 
-</head>
-<body>
+<div class="row">
+  <div class="nine columns">
+    <label for="examples">Example List</label>
+    <select id="linkSelector" onchange="changeHref()">
+      <option value="{{url_for('index', example_file='tutorial.Amd')}}">Tutorial</option>
+      <option value="{{url_for('index', example_file='long_memo.Amd')}}">Long Memorandum (Figure 2-2 from AR 25-50)</option>
+      <option value="{{url_for('index', example_file='basic_mfr.Amd')}}">Memorandum for Record</option>
+      <option value="{{url_for('index', example_file='basic_mfr_w_table.Amd')}}">Memorandum for Record with Table</option>
+      <option value="{{url_for('index', example_file='memo_for.Amd')}}">Memorandum For</option>
+      <option value="{{url_for('index', example_file='memo_multi_for.Amd')}}">Memorandum For Multiple</option>
+      <option value="{{url_for('index', example_file='memo_thru.Amd')}}">Memorandum Thru</option>
+      <option value="{{url_for('index', example_file='memo_extra_features.Amd')}}">Memorandum with Enclosures, Distros, Suspense Dates, and Classification Markings</option>
+    </select>
+  </div> 
+</div>
 
-  <!-- Primary Page Layout
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-  <div class="container">   
-    <h1>Army Memo Maker</h1>
+<div class="row">
+  <textarea id="editor" spellcheck="true" class="u-full-width u-full-height">{{memo_text}}</textarea>
+  <button class="button-primary" id="start-bg-job">Create Memo PDF</button>
+  {% if current_user.is_authenticated %}
+  <button class="button.u-pull-right" id="save-progress">Save Progress</button>
+  {% endif %}
+</div>
 
-    <div class="row">
-      Welcome to Army Memo Maker, a simple webapp that helps you make memos formatted in perfect accordance with AR 25-50. Memos are guaranteed to have the right spacing and font. Note, generating your memo will take around 20 seconds (this website is currently running on a server less powerful than your phone).
-
-      The tutorial example explains how to create your memo. You can also view other example memos to see other supported features. If you have previously visited the site, you can click "Load autosaved file" button to recover your last memo template.
-    </div>  
-
-    <div class="row">
-      <div class="nine columns">
-        <label for="examples">Example List</label>
-        <select id="linkSelector" onchange="changeHref()">
-          <option value="{{url_for('index', example_file='tutorial.Amd')}}">Tutorial</option>
-          <option value="{{url_for('index', example_file='long_memo.Amd')}}">Long Memorandum (Figure 2-2 from AR 25-50)</option>
-          <option value="{{url_for('index', example_file='basic_mfr.Amd')}}">Memorandum for Record</option>
-          <option value="{{url_for('index', example_file='basic_mfr_w_table.Amd')}}">Memorandum for Record with Table</option>
-          <option value="{{url_for('index', example_file='memo_for.Amd')}}">Memorandum For</option>
-          <option value="{{url_for('index', example_file='memo_multi_for.Amd')}}">Memorandum For Multiple</option>
-          <option value="{{url_for('index', example_file='memo_thru.Amd')}}">Memorandum Thru</option>
-          <option value="{{url_for('index', example_file='memo_extra_features.Amd')}}">Memorandum with Enclosures, Distros, Suspense Dates, and Classification Markings</option>
-        </select>
-      </div> 
-      <div class="three columns">
-        <label for="examples">Recover last session</label>
-        <button class="button-primary" id="load-last-file">Load autosaved file</button>
-      </div>
-    </div>
-
-    <div class="row">
-        <textarea id="editor" spellcheck="true" class="u-full-width u-full-height">{{memo_text}}</textarea>
-        <button class="button-primary" id="start-bg-job">Create Memo PDF</button>
-    </div>
-  </div>
-
-  <script src="{{ url_for('static', filename='index.js') }}"></script>
-</body>
-</html>
+<script src="{{ url_for('static', filename='index.js') }}"></script>
+{% endblock %}
