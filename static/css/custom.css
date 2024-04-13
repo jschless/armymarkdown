@@ -57,3 +57,28 @@ textarea.u-half-height {
 .flash {
     color: green;
 }
+
+.progress-bar-container {
+    display: none;
+    position: fixed;
+    width: 960px;
+    /* top: 0; */
+    opacity: 50%;
+    background-color: #f0f0f0;
+    /* padding: 10px; */
+    /* box-sizing: border-box; */
+    /* text-align: center; */
+}
+
+.progress-bar {
+    top: 40px; /* Adjust according to your label height */
+    height: 40px;
+    background-color: #f0f0f0;
+    outline: 1px solid #000;
+}
+
+.progress {
+    width: 0%;
+    height: 100%;
+    background-color: #4caf50;
+}

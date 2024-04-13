@@ -3,6 +3,9 @@ function update_progress(status_url, count) {
     $.get(status_url, function (data) {
         if (data["state"] == "SUCCESS") {
             $("#status").text("");
+	    document.getElementById('progress').style.width = '100%';
+	    document.getElementById('progress-bar-container').style.display = 'none';
+	    document.getElementById('progress').style.width = '0%';
 	    window.open(data["presigned_url"], "_blank"); // support multiple files
             return;
         } else if (data["state"] == "FAILURE") {
@@ -10,15 +13,21 @@ function update_progress(status_url, count) {
 		"There was an unknown error with your memo. I know this isn't super helpful, but fix the issue and try again."
             );
         } else {
-            let rerun_freq = 2000;
+	    document.getElementById('progress-bar-container').style.display = 'block';
+
+            let rerun_freq = 1000;        
             count += 1;
-            // rerun in 2 seconds
-            if (count < 50) {
-		$("#status").text(
-		    "Waiting for your memo pdf to be generated! Please be patient! It's only been " +
-			count * 2 +
-			" seconds."
-		);
+	    const averageSeconds = 20;
+            // rerun in 1 seconds
+            if (count < 80) {
+		// $("#status").text(
+		//     "Waiting for your memo pdf to be generated! Please be patient! It's only been " +
+		// 	count * 2 +
+		// 	" seconds."
+		// );
+		let progress = count / averageSeconds * 100;
+		document.getElementById('progress').style.width = progress + '%';
+        
 		setTimeout(function () {
 		    update_progress(status_url, count);
 		}, rerun_freq);
