@@ -37,12 +37,11 @@
   <hr>
 
   <div class="row">
-    <div class="three columns"></div>
-    <div class="three columns offset-by-six" id="suspense">
+    <div class="three columns offset-by-nine" id="suspense">
       {% if suspense_date is defined %}
         <div id="suspenseDiv">
-          <label for="SUSPENSE">Suspense Date</label>
-          <input type="text" value="{{suspense_date}}" id="SUSPENSE" name="SUSPENSE" class="u-full-width">
+          <label class="u-full-width center" for="SUSPENSE">Suspense Date</label>
+          <input type="text" value="{{suspense_date}}" id="SUSPENSE" name="SUSPENSE" class="u-full-width center">
           <input class="u-full-width center" type="button" id="removeSuspense" value="Remove Suspense">
         </div>
         {% else %}
@@ -134,6 +133,21 @@
 - Point of contact is the undersigned.' )}}</textarea>
   </div>
 
+  <div class="row">
+    <div class="three columns offset-by-nine" id="authority">
+      {% if authority is defined %}
+        <div id="authorityDiv">
+          <label class="u-full-width center" for="AUTHORITY">Authority</label>
+          <input type="text" value="{{authority}}" id="AUTHORITY" name="AUTHORITY" class="u-full-width center">
+          <input class="u-full-width center" type="button" id="removeAuthority" value="Remove Authority">
+        </div>
+        {% else %}
+        <input class="u-full-width center" type="button" id="addAuthority" value="Add Authority">      
+        {% endif %}
+    </div>
+  </div>
+
+  
   <hr>
 
   
@@ -155,15 +169,15 @@
 
       <div class="three columns offset-by-six" id="signature">
         <label for="AUTHOR">Your Name</label>
-        <input type="text" value="{{ author_name | default('James F. Ryan') }}" name="AUTHOR" id="AUTHOR" class="u-full-width">
+        <input type="text" value="{{ author_name | default('James F. Ryan') }}" name="AUTHOR" id="AUTHOR" class="u-full-width center">
         <label for="RANK">Rank</label>
-        <input type="text" value="{{ author_rank | default('PVT') }}" id="RANK" name="RANK" class="u-full-width">
+        <input type="text" value="{{ author_rank | default('PVT') }}" id="RANK" name="RANK" class="u-full-width center">
         <label for="BRANCH">Branch</label>
-        <input type="text" value="{{ author_branch | default('IN') }}" id="BRANCH" name="BRANCH" class="u-full-width">
+        <input type="text" value="{{ author_branch | default('IN') }}" id="BRANCH" name="BRANCH" class="u-full-width center">
         {% if author_title is defined %}
         <div id="titleDiv">
           <label for="TITLE">Title</label>
-          <input type="text" value="{{ author_title}}" id="TITLE" name="TITLE" class="u-full-width">
+          <input type="text" value="{{ author_title}}" id="TITLE" name="TITLE" class="u-full-width center">
           <input class="u-full-width center" type="button" id="removeTitle" value="Remove Title">
         </div>
         {% else %}
@@ -296,6 +310,15 @@
    document.getElementById(whereToAdd).prepend(newRow);
 
  }
+
+ function addAuthority(){
+   addSingleField("Authority", "AUTHORITY", "GEN Milley", "authority", "removeAuthority", removeAuthority, "authorityDiv", "addAuthority");   
+ }
+
+ function removeAuthority(){
+   removeSingleField("authorityDiv", "authority", "addAuthority", "Add Authority", addAuthority);
+ }
+
 
  function addSuspense(){
    addSingleField("Suspense Date", "SUSPENSE", "08 May 2026", "suspense", "removeSuspense", removeSuspense, "suspenseDiv", "addSuspense");   
@@ -449,6 +472,12 @@
    }
    if (document.getElementById('addSuspense')) {
      document.getElementById('addSuspense').addEventListener('click', addSuspense);     
+   }
+   if (document.getElementById('removeAuthority')) {
+     document.getElementById('removeAuthority').addEventListener('click', removeAuthority);
+   }
+   if (document.getElementById('addAuthority')) {
+     document.getElementById('addAuthority').addEventListener('click', addAuthority);     
    }
 
  });

@@ -66,6 +66,7 @@ optional_keys = set(
         "distros",
         "cfs",
         "document_mark",
+        "authority",
         "todays_date",
     ]
 )
