@@ -134,7 +134,7 @@
   </div>
 
   <div class="row">
-    <div class="three columns offset-by-nine" id="authority">
+    <div class="three columns" id="authority">
       {% if authority is defined %}
         <div id="authorityDiv">
           <label class="u-full-width center" for="AUTHORITY">Authority</label>
@@ -167,7 +167,7 @@
           <input class="u-full-width center" type="button" id="addEnclosure" value="Add Enclosure">
       </div>
 
-      <div class="three columns offset-by-six" id="signature">
+      <div class="three columns offset-by-three" id="signature">
         <label for="AUTHOR">Your Name</label>
         <input type="text" value="{{ author_name | default('James F. Ryan') }}" name="AUTHOR" id="AUTHOR" class="u-full-width center">
         <label for="RANK">Rank</label>
