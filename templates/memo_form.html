@@ -128,7 +128,8 @@
         <div id="enc{{enclosures|length - loop.index0}}">
           <label class="u-full-width center"  for="ENCLOSURE{{enclosures|length - loop.index0}}">Enclosure</label>
           <input type="text" id="ENCLOSURE{{enclosures|length - loop.index0}}" name="ENCLOSURE{{enclosures|length - loop.index0}}" value="{{enc}}" class="u-full-width center">
-          <input type="button" value="Remove Enclosure" onclick="deleteElement('enc{{enclosures|length - loop.index0 }}')">      
+          <input type="button" value="Remove Enclosure" onclick="deleteElement('enc{{enclosures|length - loop.index0 }}')">
+          <hr>
         </div>
         {% endfor %}
           <input class="button" type="button" id="addEnclosure" value="Add Enclosure">
@@ -192,6 +193,7 @@
 
  var forCount = findHighest("for");
  var thruCount = findHighest("thru");
+ var encCount = findHighest("enc");
  
  function addAddress(fields, is_for) {
    // reuse this for thru and for address buttons
@@ -282,7 +284,36 @@
  }
 
  function addEnclosure() {
-     var fields = [{ id: "FOR_ORGANIZATION_NAME", placeholder: "U.S. Army Command and General Staff College (ATZL)", label: "FOR Organization Name"}];
+   var enc = document.createElement('div');
+   var label = document.createElement('label');
+   encCount++;
+   
+   label.textContent = "Enclosure";
+   label.classList.add("u-full-width");
+   label.classList.add("center");
+
+   var input = document.createElement('input');
+   input.type = 'text';
+   input.id = "ENC" + encCount;
+   input.name = "ENC" + encCount;
+   input.value = "Enclosure Name";
+   input.classList.add("u-full-width");
+   input.classList.add("center");
+
+   enc.append(label);
+   enc.append(input);
+
+   var deleteButton = document.createElement('button');
+   deleteButton.classList.add("u-full-width");
+   deleteButton.classList.add("center");
+   deleteButton.type = 'text';
+   deleteButton.textContent = 'Remove Enclosure';
+   deleteButton.addEventListener('click', function() {
+     enc.remove();
+   });
+   enc.append(deleteButton);
+   enc.append(document.createElement('hr'));
+   document.getElementById('enclosures').prepend(enc);      
  }
  
  function addForAddress() {
@@ -320,6 +351,7 @@
  document.addEventListener('DOMContentLoaded', function() {
    document.getElementById('addFOR').addEventListener('click', addForAddress);
    document.getElementById('addTHRU').addEventListener('click', addThruAddress);
+   document.getElementById('addEnclosure').addEventListener('click', addEnclosure);
    if (document.getElementById('removeTitle')) {
      document.getElementById('removeTitle').addEventListener('click', removeTitle);
    }
