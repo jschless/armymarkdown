@@ -10,7 +10,7 @@ from flask_login import (
     current_user,
 )
 from forms import LoginForm, RegistrationForm
-
+from armymarkdown import memo_model
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -90,7 +90,14 @@ def history():
 @login_required
 def get_document(document_id):
     document = Document.query.get_or_404(document_id)
-    return render_template("index.html", memo_text=document.content)
+    use_form_editor = request.args.get("form_editor", type=bool)
+
+    if use_form_editor == "True":
+        m = memo_model.MemoModel.from_text(document.content)
+        d = m.to_form()
+        return render_template("memo_form.html", **d)
+    else:
+        return render_template("index.html", memo_text=document.content)
 
 
 def save_document(text):
