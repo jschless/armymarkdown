@@ -40,7 +40,7 @@ function button_press(endpoint, polling_function) {
 $(function () {
     $("#start-bg-job").click(function() {
 	button_press("/process", update_progress);
-    }
+    });
 });
 
 function saveData() {
