@@ -38,11 +38,11 @@
 
   <div class="row">
     <div class="three columns">
-      <label for="OFFICE_SYMBOL" class="center">Office Symbol</label>
+      <label for="OFFICE_SYMBOL" class="u-full-width center" class="center">Office Symbol</label>
       <input type="text" value="{{ office_symbol | default('ABC-DEF-GHIJ')}}" name="OFFICE_SYMBOL" id="OFFICE_SYMBOL" class="u-full-width center">
     </div>
     <div  class="three columns offset-by-six">
-      <label for="DATE" class="center">Date</label>
+      <label for="DATE" class="u-full-width center" class="center">Date</label>
       <input type="text" value="24 January 2006" id="DATE" name="DATE" class="u-full-width center">
     </div>    
   </div>
@@ -62,14 +62,14 @@
         <br>
         <label class="u-full-width center" for="THRU_ORGANIZATION_CITY_STATE_ZIP{{  zipped_thru|length - loop.index0 }}">THRU City, State Zip</label>
         <input type="text" id="THRU_ORGANIZATION_CITY_STATE_ZIP{{ zipped_thru|length - loop.index0 }}" name="THRU_ORGANIZATION_CITY_STATE_ZIP{{ zipped_thru|length - loop.index0 }}" value="{{ city }}" class="u-full-width center">
-        <input type="button" value="Remove Thru Address" onclick="deleteElement('thru{{ zipped_thru|length - loop.index0 }}')">
+        <input type="button" class="u-full-width center" value="Remove Thru Address" onclick="deleteElement('thru{{ zipped_thru|length - loop.index0 }}')">
         <hr>
       </div>
     </div>
     {% endfor %}
 
     <div class="row">
-      <input class="button" type="button" id="addTHRU" value="Add THRU address">
+      <input class="u-full-width center" type="button" id="addTHRU" value="Add THRU address">
     </div>
   </div>
   
@@ -87,14 +87,14 @@
         <label class="u-full-width center" for="FOR_ORGANIZATION_CITY_STATE_ZIP{{ zipped_for|length - loop.index0 }}">FOR City, State Zip</label>
         <input type="text" id="FOR_ORGANIZATION_CITY_STATE_ZIP{{ zipped_for|length - loop.index0 }}" name="FOR_ORGANIZATION_CITY_STATE_ZIP{{ zipped_for|length - loop.index0 }}" value="{{ city }}" class="u-full-width center">
         <br>
-        <input type="button" value="Remove For Address" onclick="deleteElement('for{{ zipped_for|length - loop.index0 }}')">      
+        <input type="button" class="u-full-width center" value="Remove For Address" onclick="deleteElement('for{{ zipped_for|length - loop.index0 }}')">      
         <hr>
       </div>
     </div>
     {% endfor %}
 
     <div class="row">
-      <input class="button" type="button" id="addFOR"  value="Add FOR address">
+      <input class="u-full-width center" class="button" type="button" id="addFOR"  value="Add FOR address">
     </div>    
   </div>
 
@@ -128,11 +128,11 @@
         <div id="enc{{enclosures|length - loop.index0}}">
           <label class="u-full-width center"  for="ENCLOSURE{{enclosures|length - loop.index0}}">Enclosure</label>
           <input type="text" id="ENCLOSURE{{enclosures|length - loop.index0}}" name="ENCLOSURE{{enclosures|length - loop.index0}}" value="{{enc}}" class="u-full-width center">
-          <input type="button" value="Remove Enclosure" onclick="deleteElement('enc{{enclosures|length - loop.index0 }}')">
+          <input class="u-full-width center" type="button" value="Remove Enclosure" onclick="deleteElement('enc{{enclosures|length - loop.index0 }}')">
           <hr>
         </div>
         {% endfor %}
-          <input class="button" type="button" id="addEnclosure" value="Add Enclosure">
+          <input class="u-full-width center" type="button" id="addEnclosure" value="Add Enclosure">
       </div>
       
       <div class="three columns offset-by-six" id="signature">
@@ -146,10 +146,10 @@
         <div id="titleDiv">
           <label for="TITLE">Title</label>
           <input type="text" value="{{ author_title}}" id="TITLE" name="TITLE" class="u-full-width">
-          <input class="button" type="button" id="removeTitle" value="Remove Title">
+          <input class="u-full-width center" type="button" id="removeTitle" value="Remove Title">
         </div>
         {% else %}
-        <input class="button" type="button" id="addTitle" value="Add Title">      
+        <input class="u-full-width center" type="button" id="addTitle" value="Add Title">      
         {% endif %}
       </div>
     </div>    
@@ -157,13 +157,13 @@
 
   <div class="row">    
       <div class="three columns" id="distributions">
-        <input class="button" type="button" id="addDistribution" value="Add Distribution">
+        <input class="u-full-width center" class="button" type="button" id="addDistribution" value="Add Distribution">
       </div>
   </div>
 
     <div class="row">    
       <div class="three columns" id="cf">
-        <input class="button" type="button" id="addCF" value="Add Copies Furnished">
+        <input class="u-full-width center" type="button" id="addCF" value="Add Copies Furnished">
       </div>
   </div>
 
@@ -237,6 +237,9 @@
 
    var deleteButton = document.createElement('button');
    deleteButton.textContent = is_for ? 'Delete FOR address' : 'Delete THRU address';
+   deleteButton.classList.add("u-full-width");
+   deleteButton.classList.add("center");
+
    deleteButton.addEventListener('click', function() {
      newRow.remove();
    });
@@ -255,6 +258,7 @@
    var label = document.createElement('label');
    label.textContent = "Title";
    label.classList.add("u-full-width");
+   label.classList.add("center");
    label.setAttribute('for', "TITLE");
    
    
@@ -265,6 +269,7 @@
    input.placeholder = "Lost Private";
    input.value = "Lost Private";
    input.classList.add("u-full-width");
+   input.classList.add("center");
 
      
    title.append(label);
@@ -278,6 +283,9 @@
    addButton.remove();
 
    deleteButton.textContent = 'Remove title';
+   deleteButton.classList.add("u-full-width");
+   deleteButton.classList.add("center");
+
    deleteButton.addEventListener('click', function() {
      title.remove();
      document.getElementById('signature').append(savedButton);
