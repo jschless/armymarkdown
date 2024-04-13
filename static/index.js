@@ -50,10 +50,6 @@ function button_press(endpoint, polling_function) {
     });
 }
 
-function generate_memo() {
-    button_press("/process", update_progress);
-}
-
 
 function update_progress(status_url, count) {
     // send GET request to status URL
@@ -85,7 +81,9 @@ function update_progress(status_url, count) {
 }
 
 $(function () {
-    $("#start-bg-job").click(generate_memo);
+    $("#start-bg-job").click(function() {
+	button_press("/process", update_progress);
+    }
 });
 
 function saveData() {
