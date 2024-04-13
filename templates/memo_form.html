@@ -1,0 +1,417 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="row">
+  Here's a more intuitive form builder. You can load the same examples into the form builder.
+</div>
+
+<div class="row">
+  <div class="nine columns">
+    <label for="examples">Example List</label>
+    <select id="linkSelector" onchange="changeHref()">
+      <option value="{{url_for('form', example_file='tutorial.Amd')}}" id="tutorial.Amd">Tutorial</option>
+      <option value="{{url_for('form', example_file='long_memo.Amd')}}" id="long_memo.Amd">Long Memorandum (Figure 2-2 from AR 25-50)</option>
+      <option value="{{url_for('form', example_file='basic_mfr.Amd')}}" id="basic_mfr.Amd">Memorandum for Record</option>
+      <option value="{{url_for('form', example_file='basic_mfr_w_table.Amd')}}" id="basic_mfr_w_table.Amd">Memorandum for Record with Table</option>
+      <option value="{{url_for('form', example_file='memo_for.Amd')}}" id="memo_for.Amd">Memorandum For</option>
+      <option value="{{url_for('form', example_file='memo_multi_for.Amd')}}" id="memo_multi_for.Amd">Memorandum For Multiple</option>
+      <option value="{{url_for('form', example_file='memo_thru.Amd')}}" id="memo_thru.Amd">Memorandum Thru</option>
+      <option value="{{url_for('form', example_file='memo_extra_features.Amd')}}" id="memo_extra_features.Amd">Memorandum with Enclosures, Distros, Suspense Dates, and Classification Markings</option>
+    </select>
+  </div> 
+</div>
+
+<form id="memo" method="post">
+  <div class="twelve columns">
+    <div class="six columns offset-by-three">
+      <label for="ORGANIZATION_NAME" class="center">Organization Name / Title</label>
+      <input type="text" value="{{ unit_name | default('36th Engineer Brigade') }}" name="ORGANIZATION_NAME" id="ORGANIZATION_NAME" class="u-full-width center">
+      <label for="ORGANIZATION_STREET_ADDRESS" class="center">Street Address</label>
+      <input type="text" value="{{ unit_street_address | default('1234 Washington Road')}}" id="ORGANIZATION_STREET_ADDRESS" name="ORGANIZATION_STREET_ADDRESS" class="u-full-width center">
+      <label for="ORGANIZATION_CITY_STATE_ZIP" class="center">City, State, Zip</label>
+      <input type="text" value="{{ unit_city_state_zip | default('Fort Cavazos, TX 01234')}}" id="ORGANIZATION_CITY_STATE_ZIP" name="ORGANIZATION_CITY_STATE_ZIP" class="u-full-width center">
+    </div>
+  </div>
+
+  <hr>
+
+  <div class="row">
+    <div class="three columns">
+      <label for="OFFICE_SYMBOL" class="center">Office Symbol</label>
+      <input type="text" value="{{ office_symbol | default('ABC-DEF-GHIJ')}}" name="OFFICE_SYMBOL" id="OFFICE_SYMBOL" class="u-full-width center">
+    </div>
+    <div  class="three columns offset-by-six">
+      <label for="DATE" class="center">Date</label>
+      <input type="text" value="24 January 2006" id="DATE" name="DATE" class="u-full-width center">
+    </div>    
+  </div>
+
+  <hr>
+
+  <div id="thruFieldContainer">
+    {% for name, add, city in zipped_thru %}
+    
+    <div class="row" id="thru{{ zipped_thru|length - loop.index0 }}">
+      <div class="six columns">
+        <label class="u-full-width center" for="THRU_ORGANIZATION_NAME{{ zipped_thru|length - loop.index0 }}">THRU Organization Name</label>
+        <input type="text" id="THRU_ORGANIZATION_NAME {{  zipped_thru|length - loop.index0 }}" name="THRU_ORGANIZATION_NAME{{  zipped_thru|length - loop.index0}}" value="{{ name }}" class="u-full-width center">
+        <br>
+        <label class="u-full-width center" for="THRU_ORGANIZATION_STREET_ADDRESS{{ zipped_thru|length - loop.index0 }}">THRU Street Address</label>
+        <input type="text" id="THRU_ORGANIZATION_STREET_ADDRESS{{ zipped_thru|length - loop.index0}}" name="THRU_ORGANIZATION_STREET_ADDRESS{{ zipped_thru|length - loop.index0 }}" value="{{ add }}" class="u-full-width center">
+        <br>
+        <label class="u-full-width center" for="THRU_ORGANIZATION_CITY_STATE_ZIP{{  zipped_thru|length - loop.index0 }}">THRU City, State Zip</label>
+        <input type="text" id="THRU_ORGANIZATION_CITY_STATE_ZIP{{ zipped_thru|length - loop.index0 }}" name="THRU_ORGANIZATION_CITY_STATE_ZIP{{ zipped_thru|length - loop.index0 }}" value="{{ city }}" class="u-full-width center">
+        <input type="button" value="Remove Thru Address" onclick="deleteElement('thru{{ zipped_thru|length - loop.index0 }}')">
+        <hr>
+      </div>
+    </div>
+    {% endfor %}
+
+    <div class="row">
+      <input class="button" type="button" id="addTHRU" value="Add THRU address">
+    </div>
+  </div>
+  
+  <div id="forFieldContainer">
+    {% for name, add, city in zipped_for %}
+
+    <div class="row" id="for{{ zipped_for|length - loop.index0 }}">
+      <div class="six columns">
+        <label class="u-full-width center" for="FOR_ORGANIZATION_NAME{{ zipped_for|length - loop.index0}}">FOR Organization Name</label>
+        <input type="text" id="FOR_ORGANIZATION_NAME{{ zipped_for|length - loop.index0 }}" name="FOR_ORGANIZATION_NAME{{ zipped_for|length - loop.index0 }}" value="{{ name }}" class="u-full-width center">
+        <br>
+        <label class="u-full-width center" for="FOR_ORGANIZATION_STREET_ADDRESS{{ zipped_for|length - loop.index0 }}">FOR Street Address</label>
+        <input type="text" id="FOR_ORGANIZATION_STREET_ADDRESS{{ zipped_for|length - loop.index0 }}" name="FOR_ORGANIZATION_STREET_ADDRESS{{ zipped_for|length - loop.index0 }}" value="{{ add }}" class="u-full-width center">
+        <br>
+        <label class="u-full-width center" for="FOR_ORGANIZATION_CITY_STATE_ZIP{{ zipped_for|length - loop.index0 }}">FOR City, State Zip</label>
+        <input type="text" id="FOR_ORGANIZATION_CITY_STATE_ZIP{{ zipped_for|length - loop.index0 }}" name="FOR_ORGANIZATION_CITY_STATE_ZIP{{ zipped_for|length - loop.index0 }}" value="{{ city }}" class="u-full-width center">
+        <br>
+        <input type="button" value="Remove For Address" onclick="deleteElement('for{{ zipped_for|length - loop.index0 }}')">      
+        <hr>
+      </div>
+    </div>
+    {% endfor %}
+
+    <div class="row">
+      <input class="button" type="button" id="addFOR"  value="Add FOR address">
+    </div>    
+  </div>
+
+
+
+  <div class="row">
+    <label for="SUBJECT">Subject</label>
+    <input class="u-full-width" type="text" value="{{ subject | default('This is your memo subject') }}" name="SUBJECT" id="SUBJECT">
+  </div>
+
+  
+  <div class="row">
+    <label for="MEMO_TEXT">Memo Text</label>
+    <textarea class="u-full-width u-half-height" name="MEMO_TEXT" id="MEMO_TEXT">{{text | default('- This memo is a demo.
+
+- This item contains sub items.
+    - Thing one.
+    - Thing two.
+        - Here is a sub sub item
+
+- Point of contact is the undersigned.' )}}</textarea>
+  </div>
+
+  <hr>
+
+  
+  <div class="row">    
+    <div class="twelve columns">
+      <div class="three columns" id="enclosures">
+        <input class="button" type="button" id="addEnclosure" value="Add Enclosure">
+      </div>
+      
+      <div class="three columns offset-by-six" id="signature">
+        <label for="AUTHOR">Your Name</label>
+        <input type="text" value="{{ author_name | default('James F. Ryan') }}" name="AUTHOR" id="AUTHOR" class="u-full-width">
+        <label for="RANK">Rank</label>
+        <input type="text" value="{{ author_rank | default('PVT') }}" id="RANK" name="RANK" class="u-full-width">
+        <label for="BRANCH">Branch</label>
+        <input type="text" value="{{ author_branch | default('IN') }}" id="BRANCH" name="BRANCH" class="u-full-width">
+        {% if author_title is defined %}
+        <div id="titleDiv">
+          <label for="TITLE">Title</label>
+          <input type="text" value="{{ author_title}}" id="TITLE" name="TITLE" class="u-full-width">
+          <input class="button" type="button" id="removeTitle" value="Remove Title">
+        </div>
+        {% else %}
+        <input class="button" type="button" id="addTitle" value="Add Title">      
+        {% endif %}
+      </div>
+    </div>    
+  </div>
+
+  <div class="row">    
+      <div class="three columns" id="distributions">
+        <input class="button" type="button" id="addDistribution" value="Add Distribution">
+      </div>
+  </div>
+
+    <div class="row">    
+      <div class="three columns" id="cf">
+        <input class="button" type="button" id="addCF" value="Add Copies Furnished">
+      </div>
+  </div>
+
+  
+  <div class="row">
+    <input class="button-primary" type="submit" value="Submit">
+    {% if current_user.is_authenticated %}
+    <input class="button" type="submit" value="Save Progress">
+    {% endif %}   
+  </div>
+
+
+</form>
+<script>
+ function findHighest(prefix) {
+   var highestNumber = 0;
+
+   document.querySelectorAll("[id^='" + prefix + "']").forEach(function(element) {
+    var idNumber = parseInt(element.id.replace(prefix, ""));
+    if (idNumber > highestNumber) {
+        highestNumber = idNumber;
+    }
+   });
+
+   return highestNumber;
+ }
+
+ var forCount = findHighest("for");
+ var thruCount = findHighest("thru");
+ 
+ function addAddress(fields, is_for) {
+   // reuse this for thru and for address buttons
+   var newRow = document.createElement('div');
+   newRow.classList.add("row")
+   var newDiv = document.createElement('div');
+   newDiv.classList.add("six");
+   newDiv.classList.add("columns");
+   console.log(forCount, thruCount);
+   is_for ? forCount++ : thruCount++; 
+
+   var suffix = is_for ? forCount : thruCount;
+   
+   fields.forEach(function(field) {
+     var label = document.createElement('label');
+     label.textContent = field.label;
+     label.classList.add("u-full-width");
+     label.classList.add("center");
+     label.setAttribute('for', field.id + suffix);
+
+     
+     var input = document.createElement('input');
+     input.type = 'text';
+     input.id = field.id + suffix;
+     input.name = field.id + suffix;
+     input.placeholder = field.placeholder;
+     input.value = field.placeholder;
+     input.classList.add("u-full-width");
+     input.classList.add("center");
+
+     
+     newDiv.append(label);
+     newDiv.append(input);
+     newDiv.append(document.createElement('br')); // Add line break
+
+   });
+
+   var deleteButton = document.createElement('button');
+   deleteButton.textContent = is_for ? 'Delete FOR address' : 'Delete THRU address';
+   deleteButton.addEventListener('click', function() {
+     newRow.remove();
+   });
+   newDiv.append(deleteButton);
+
+   newDiv.append(document.createElement('hr'));
+   newRow.append(newDiv);
+   console.log("trying to add", newDiv);
+   whereToAdd = is_for ? "forFieldContainer" : "thruFieldContainer";
+   document.getElementById(whereToAdd).prepend(newRow);
+
+ }
+ 
+ function addTitle() {
+   var title = document.createElement('div');
+   var label = document.createElement('label');
+   label.textContent = "Title";
+   label.classList.add("u-full-width");
+   label.setAttribute('for', "TITLE");
+   
+   
+   var input = document.createElement('input');
+   input.type = 'text';
+   input.id = "TITLE";
+   input.name = "TITLE";
+   input.placeholder = "Lost Private";
+   input.value = "Lost Private";
+   input.classList.add("u-full-width");
+
+     
+   title.append(label);
+   title.append(input);
+
+   
+   var deleteButton = document.createElement('button');
+
+   var addButton = document.getElementById('addTitle');
+   var savedButton = addButton.cloneNode(true);
+   addButton.remove();
+
+   deleteButton.textContent = 'Remove title';
+   deleteButton.addEventListener('click', function() {
+     title.remove();
+     document.getElementById('signature').append(savedButton);
+     savedButton.addEventListener('click', addTitle);
+   });
+   title.append(deleteButton);
+   document.getElementById('signature').append(title);
+ }
+
+ function addEnclosure() {
+     var fields = [{ id: "FOR_ORGANIZATION_NAME", placeholder: "U.S. Army Command and General Staff College (ATZL)", label: "FOR Organization Name"}];
+ }
+ 
+ function addForAddress() {
+   var fields = [
+    { id: "FOR_ORGANIZATION_NAME", placeholder: "U.S. Army Command and General Staff College (ATZL)", label: "FOR Organization Name"},
+    { id: "FOR_ORGANIZATION_STREET_ADDRESS", placeholder: "100 Stimson Avenue", label: "FOR Street Address"},
+    { id: "FOR_ORGANIZATION_CITY_STATE_ZIP", placeholder: "Ft Leavenworth, KS 66027-1352", label: "FOR City, State Zip"}
+   ];
+
+   addAddress(fields, true);
+ }
+
+ function addThruAddress() {
+   var fields = [
+    { id: "THRU_ORGANIZATION_NAME", placeholder: "U.S. Army Command and General Staff College (ATZL)", label: "THRU Organization Name"},
+    { id: "THRU_ORGANIZATION_STREET_ADDRESS", placeholder: "100 Stimson Avenue", label: "THRU Street Address"},
+    { id: "THRU_ORGANIZATION_CITY_STATE_ZIP", placeholder: "Ft Leavenworth, KS 66027-1352", label: "THRU City, State Zip"}
+   ];
+
+   addAddress(fields, false);
+ }
+
+ function removeTitle() {
+   document.getElementById('titleDiv').remove();
+   var targetDiv = document.getElementById('signature');
+   var inputElement = document.createElement('input');
+   inputElement.setAttribute('type', 'button');
+   inputElement.setAttribute('id', 'addTitle');
+   inputElement.setAttribute('value', 'Add Title');
+   inputElement.classList.add('button');
+   inputElement.addEventListener('click', addTitle);
+   targetDiv.append(inputElement);
+ }
+ 
+ document.addEventListener('DOMContentLoaded', function() {
+   document.getElementById('addFOR').addEventListener('click', addForAddress);
+   document.getElementById('addTHRU').addEventListener('click', addThruAddress);
+   if (document.getElementById('removeTitle')) {
+     document.getElementById('removeTitle').addEventListener('click', removeTitle);
+   }
+   if (document.getElementById('addTitle')) {
+     document.getElementById('addTitle').addEventListener('click', addTitle);     
+   }
+
+ });
+
+ 
+ function button_press(endpoint, polling_function) {
+   var formData = new FormData(document.getElementById('memo')); 
+   $.ajax({
+     type: "POST",
+     url: endpoint,
+     data: formData,
+     processData: false, // Prevent jQuery from processing the data
+     contentType: false, // Prevent jQuery from setting the Content-Type header
+     success: function (data, status, request) {
+       status_url = request.getResponseHeader("Location");
+       polling_function(status_url, 0);
+     },
+     error: function (XMLHttpRequest, text, e) {
+       alert("ERROR WHEN PARSING INPUT\n\n" + XMLHttpRequest.responseText);
+     },
+   });
+ }
+
+ function update_progress(status_url, count) {
+   // send GET request to status URL
+   $.get(status_url, function (data) {
+     if (data["state"] == "SUCCESS") {
+       $("#status").text("");
+       window.open(data["presigned_url"], "_blank"); // support multiple files
+       return;
+     } else if (data["state"] == "FAILURE") {
+       $("#status").text(
+		     "There was an unknown error with your memo. I know this isn't super helpful, but fix the issue and try again."
+       );
+     } else {
+       let rerun_freq = 2000;
+       count += 1;
+       // rerun in 2 seconds
+       if (count < 50) {
+		     $("#status").text(
+		       "Waiting for your memo pdf to be generated! Please be patient! It's only been " +
+			     count * 2 +
+			     " seconds."
+		     );
+		     setTimeout(function () {
+		       update_progress(status_url, count);
+		     }, rerun_freq);
+       }
+     }
+   });
+ }
+
+ function deleteElement(elementId) {
+  var element = document.getElementById(elementId);
+  if (element) {
+    element.remove();
+  } else {
+    console.log("Element with ID " + elementId + " not found.");
+  }
+}
+
+ $('#memo').submit(function(e){
+   e.preventDefault();
+   button_press("/form", update_progress);
+ });
+
+ function changeHref() {
+    var selectElement = document.getElementById("linkSelector");
+    var selectedValue = selectElement.options[selectElement.selectedIndex].value;     
+    window.location.href = selectedValue;
+}
+
+ document.addEventListener('DOMContentLoaded', function() {
+   var urlParams = new URLSearchParams(window.location.search);
+   var exampleFile = urlParams.get('example_file');
+
+   // Loop through the options and find the one that matches the current URL
+   var linkSelector = document.getElementById('linkSelector');
+   for (var i = 0; i < linkSelector.options.length; i++) {       
+	   var option = linkSelector.options[i];
+	   if (option.id === exampleFile) {
+       option.selected = true;
+       break;
+	   }
+   }
+
+   // Update date
+   var currentDate = new Date();
+   
+   var options = { day: 'numeric', month: 'long', year: 'numeric' };
+   
+   var formattedDate = currentDate.toLocaleDateString('en-GB', options);
+   document.getElementById('DATE').value = formattedDate;
+ });
+ 
+</script>
+{% endblock %}

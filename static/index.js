@@ -35,27 +35,6 @@ textarea.addEventListener("keydown", function(event) {
     }
 });
 
-function saveData() {
-    var inputData = document.getElementById('editor').value;
-    fetch('/save_data', {
-	method: 'POST',
-	headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-	},
-	body: 'input_data=' + encodeURIComponent(inputData)
-    })
-	.then(response => {
-            console.log('Data saved successfully');
-	})
-	.catch(error => {
-            console.error('Error saving data:', error);
-	});
-}
-
-// Save data every 5 seconds (adjust as needed)
-setInterval(saveData, 5000);
-
-
 function button_press(endpoint, polling_function) {
     $.ajax({
         type: "POST",
@@ -76,33 +55,15 @@ function generate_memo() {
 }
 
 
-$("#myForm").submit(function (event) {
-    event.preventDefault();
-    var form_data = new FormData($('#myForm')[0]);
-    $.ajax({
-        type: 'POST',
-        url: '/process_files',
-        data: form_data,
-        contentType: false,
-        cache: false,
-        processData: false,
-        success: function (data, status, request) {
-            data.split(",").forEach(function (task_id) {
-		update_progress("/status/" + task_id, 0);
-            });
-        },
-    });
-});
-
-
 function update_progress(status_url, count) {
     // send GET request to status URL
     $.get(status_url, function (data) {
         if (data["state"] == "SUCCESS") {
-            window.open(data["presigned_url"], "_blank"); // support multiple files
+            $("#status").text("");
+	    window.open(data["presigned_url"], "_blank"); // support multiple files
             return;
         } else if (data["state"] == "FAILURE") {
-            $("#editor").val(
+            $("#status").text(
 		"There was an unknown error with your memo. I know this isn't super helpful, but fix the issue and try again."
             );
         } else {
@@ -110,7 +71,7 @@ function update_progress(status_url, count) {
             count += 1;
             // rerun in 2 seconds
             if (count < 50) {
-		$("#editor").val(
+		$("#status").text(
 		    "Waiting for your memo pdf to be generated! Please be patient! It's only been " +
 			count * 2 +
 			" seconds."
@@ -127,8 +88,28 @@ $(function () {
     $("#start-bg-job").click(generate_memo);
 });
 
+function saveData() {
+    var inputData = document.getElementById('editor').value;
+    fetch('/save_progress', {
+	method: 'POST',
+	headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+	},
+	body: 'input_data=' + encodeURIComponent(inputData)
+    })
+	.then(response => {
+            console.log('Data saved successfully');
+	    location.reload();	   
+            $("#editor").val(inputData);
+	    
+	})
+	.catch(error => {
+            console.error('Error saving data:', error);
+	});
+}
+
 $(function () {
-    $("#load-last-file").click(function() {
-        window.location.href = window.location.origin + "/autosave";
-    });
+    $("#save-progress").click(saveData);
 });
+
+

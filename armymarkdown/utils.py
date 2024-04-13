@@ -34,6 +34,7 @@ key_converter = {
     "BRANCH": "author_branch",
     "TITLE": "author_title",
     "MEMO_TYPE": "memo_type",
+    "MEMO_TEXT": "text",
     "SUBJECT": "subject",
     "FOR_ORGANIZATION_NAME": "for_unit_name",
     "FOR_ORGANIZATION_STREET_ADDRESS": "for_unit_street_address",
