@@ -430,7 +430,7 @@
 \parbox{\textwidth}{\centering \textbf{\getnthelement{1}}}}%
 \put(0, 4.95){%
 \parbox{\textwidth}{\centering \textbf{\getnthelement{2}}}}%
-\put(0, 4.27){%
+\put(0, 4.3){%
 \parbox{\textwidth}{\centering \textbf{\getnthelement{3}}}}%
 \end{picture} 
 
