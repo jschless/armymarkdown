@@ -74,11 +74,27 @@ textarea.u-half-height {
 .progress-bar-container {
     display: none;
     position: fixed;
-    max-width: 400px;
+    max-width: 960px;
     width: 100%;
-    top: 10%;
+    top: 15%;
     opacity: 50%;
     background-color: #f0f0f0;
-    /* padding: 10px; */
-    /* box-sizing: border-box; */
+    margin: 0 auto;
+    font-weight: bold;
+    padding: 10px;    /* box-sizing: border-box; */
     /* text-align: center; */
+}
+
+@media (min-width: 400px) {
+  .progress-bar-container {
+    width: 85%;
+    padding: 0; }
+}
+
+/* For devices larger than 550px */
+@media (min-width: 550px) {
+  .progress-bar-container {
+      width: 80%; }
+}
+
+    
