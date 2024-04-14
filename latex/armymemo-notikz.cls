@@ -428,9 +428,9 @@
 \fontsize{8pt}{5pt}\selectfont % Set font size here
 \put(0, 5.6){%
 \parbox{\textwidth}{\centering \textbf{\getnthelement{1}}}}%
-\put(0, 4.95){%
+\put(0, 5.05){%
 \parbox{\textwidth}{\centering \textbf{\getnthelement{2}}}}%
-\put(0, 4.3){%
+\put(0, 4.4){%
 \parbox{\textwidth}{\centering \textbf{\getnthelement{3}}}}%
 \end{picture} 
 
