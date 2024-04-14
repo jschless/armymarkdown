@@ -66,5 +66,3 @@ function saveData() {
 $(function () {
     $("#save-progress").click(saveData);
 });
-
-
