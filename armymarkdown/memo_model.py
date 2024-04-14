@@ -124,6 +124,66 @@ class MemoModel:
 
         return form_dict
 
+    def to_amd(self):
+        lines = []
+        present_fields = fields(self)
+        for write_key, attrib in [
+            ("ORGANIZATION_NAME", "unit_name"),
+            ("ORGANIZATION_STREET_ADDRESS", "unit_street_address"),
+            ("ORGANIZATION_CITY_STATE_ZIP", "unit_city_state_zip"),
+            ("OFFICE_SYMBOL", "office_symbol"),
+            ("DATE", "todays_date"),
+            ("AUTHOR", "author_name"),
+            ("RANK", "author_rank"),
+            ("BRANCH", "author_branch"),
+            ("TITLE", "author_title"),
+            ("SUSPENSE", "suspense_date"),
+            ("AUTHORITY", "authority"),
+        ]:
+            if getattr(self, attrib, None):
+                lines.append(f"{write_key} = {getattr(self, attrib)}")
+
+        lines.append("\n")
+
+        if getattr(self, "for_unit_name", None):
+            for a, b, c in zip(
+                self.for_unit_name,
+                self.for_unit_street_address,
+                self.for_unit_city_state_zip,
+            ):
+                lines.append(f"FOR_ORGANIZATION_NAME = {a}")
+                lines.append(f"FOR_ORGANIZATION_STREET_ADDRESS = {b}")
+                lines.append(f"FOR_ORGANIZATION_CITY_STATE_ZIP = {c}")
+                lines.append("\n")
+
+        if getattr(self, "thru_unit_name", None):
+            for a, b, c in zip(
+                self.thru_unit_name,
+                self.thru_unit_street_address,
+                self.thru_unit_city_state_zip,
+            ):
+                lines.append(f"THRU_ORGANIZATION_NAME = {a}")
+                lines.append(f"THRU_ORGANIZATION_STREET_ADDRESS = {b}")
+                lines.append(f"THRU_ORGANIZATION_CITY_STATE_ZIP = {c}")
+                lines.append("\n")
+
+        lines.append("\n")
+        for write_key, attrib in [
+            ("ENCLOSURE", "enclosures"),
+            ("DISTRO", "distros"),
+            ("CF", "cfs"),
+        ]:
+            if getattr(self, attrib, None):
+                for v in getattr(self, attrib):
+                    lines.append(f"{write_key} = {v}")
+
+        lines.append("\n")
+        lines.append(f"SUBJECT = {self.subject}")
+        lines.append("\n")
+        lines.append(f"{nested_list_to_string(self.text)}")
+
+        return "\n".join(lines)
+
     @classmethod
     def from_dict(cls, memo_dict):
         # creates the class given a dictionary of keys
