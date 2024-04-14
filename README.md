@@ -1,7 +1,7 @@
 # Project Overview
 The Army relies on memorandums to operate. The guidelines for these memorandums are fairly simple, but they can be tedious to implement in Microsoft Word, which sucks, or is susceptible to fat finger errors. I am tired of both making mistakes and noticing the mistakes of others. For a document standard that is so rigid, WYSIWYG is not the solution.
 
-While some brilliant soul has already created a [latex class for Army memos](https://github.com/glallen01/army-memorandum-class), latex is intimidating and inaccessible to the average soldier. By writing a *hopefully* easy-to-use markdown-inspired language, I hope to bring the reliability of latex to a less technical audience. The website can be found at [http://www.armymemomaker.com]. 
+While some brilliant soul has already created a [latex class for Army memos](https://github.com/glallen01/army-memorandum-class), latex is intimidating and inaccessible to the average soldier. By writing a *hopefully* easy-to-use markdown-inspired language, I hope to bring the reliability of latex to a less technical audience. The website can be found at http://www.armymemomaker.com. 
 
 The goal of this project is two-fold:
 
@@ -21,9 +21,8 @@ The goal of this project is two-fold:
 - [x] Add user database so organizational information will auto-fill (could use cookies or account login, maybe save previous documents...)
 - [x] Add SSL support
 - [x] Allow form-based submission alternatives.
-- [ ] Optimize latex compilation so it doesn't take so dang long
+- [x] Optimize latex compilation so it doesn't take so dang long, (worked around using tikz for header/signature and now you only have to run lualatex once)
 - [ ] Add examples of common memos
-- [ ] Upload list of files (if you have a bunch of command memos to generate, for example) and receive list of PDFs.
   
 ### Stack / How to Run
 This web app is fully containerized. I use ```docker-compose``` to run three containers: 
