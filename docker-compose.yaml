@@ -10,7 +10,7 @@ services:
       dockerfile: Dockerfile.production
     ports:
       - "443:8443"
-      - "8000:8000"
+      - "80:8000"
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt
       - db-data:/data
