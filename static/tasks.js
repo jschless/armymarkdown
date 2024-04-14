@@ -17,7 +17,7 @@ function update_progress(status_url, count) {
 
             let rerun_freq = 1000;        
             count += 1;
-	    const averageSeconds = 20;
+	    const averageSeconds = 10;
             // rerun in 1 seconds
             if (count < 80) {
 		// $("#status").text(
