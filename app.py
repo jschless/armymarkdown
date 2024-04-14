@@ -106,7 +106,13 @@ def form(example_file="./tutorial.Amd"):
 
 @app.route("/save_progress", methods=["POST"])
 def save_progress():
-    text = request.form.get("input_data")
+    if "input_data" in request.form:
+        # came from the text page
+        text = request.form.get("input_data")
+    else:
+        m = memo_model.MemoModel.from_form(request.form.to_dict())
+        text = m.to_amd()
+
     res = save_document(text)
     flash(res)
     return jsonify({"message": "OK", "flash": {"category": "success", "message": res}})
@@ -124,17 +130,6 @@ def check_memo(text):
         return "\n".join([f"Error with {k}: {v}" for k, v in errors])
 
     return None
-
-
-@app.route("/process_files", methods=["POST"])
-def process_files():
-    print("Processing files", request.files)
-    task_ids = []
-    for uploaded_file in request.files.getlist("file"):
-        text = uploaded_file.read().decode()
-        task = create_memo.delay(text)
-        task_ids.append(task.id)
-    return (",".join(task_ids), 200, {"File_list": task_ids})
 
 
 @app.route("/process", methods=["POST"])

@@ -302,6 +302,31 @@ function button_press(endpoint, polling_function) {
     });
 }
 
+function saveData() {
+    var formData = new FormData(document.getElementById('memo'));
+    $.ajax({
+	type: "POST",
+	url: "/save_progress",
+	data: formData,
+	processData: false, // Prevent jQuery from processing the data
+	contentType: false, // Prevent jQuery from setting the Content-Type header
+	success: function (data, status, request) {
+            console.log('Data saved successfully');
+	    location.reload();	   
+	},
+	error: function (XMLHttpRequest, text, e) {
+	    alert("ERROR WHEN PARSING INPUT\n\n" + XMLHttpRequest.responseText);
+	},
+    });
+}
+
+$(function () {
+    $("#save-progress").click(function(e){
+	e.preventDefault();
+	saveData();
+    });
+});
+
 $('#memo').submit(function(e){
     e.preventDefault();
     button_press("/form", update_progress);
