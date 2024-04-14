@@ -77,12 +77,17 @@ def history():
     )
     processed_documents = []
     for document in documents:
-        start_index = document.content.find("SUBJECT") + 8  # go to end of subject
-        end_index = document.content.find("\n", start_index)
-        processed_content = document.content[start_index:end_index].strip(" =")
+        try:
+            start_index = document.content.find("SUBJECT") + 8  # go to end of subject
+            end_index = document.content.find("\n", start_index)
+            processed_content = document.content[start_index:end_index].strip(" =")
 
-        processed_documents.append({"id": document.id, "content": processed_content})
-
+            processed_documents.append(
+                {"id": document.id, "content": processed_content}
+            )
+        except Exception as e:
+            app.logger.error("Received following error when trying to render history")
+            app.logger.error(e)
     return render_template("history.html", documents=processed_documents)
 
 
