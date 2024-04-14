@@ -28,7 +28,7 @@
       <option value="{{url_for('form', example_file='memo_for.Amd')}}" id="memo_for.Amd">Memorandum For</option>
       <option value="{{url_for('form', example_file='memo_multi_for.Amd')}}" id="memo_multi_for.Amd">Memorandum For Multiple</option>
       <option value="{{url_for('form', example_file='memo_thru.Amd')}}" id="memo_thru.Amd">Memorandum Thru</option>
-      <option value="{{url_for('form', example_file='memo_extra_features.Amd')}}" id="memo_extra_features.Amd">Memorandum with Enclosures, Distros, Suspense Dates, and Classification Markings</option>
+      <option value="{{url_for('form', example_file='memo_extra_features.Amd')}}" id="memo_extra_features.Amd">Memorandum with Enclosures, Distros, Suspense Dates</option>
     </select>
   </div> 
 </div>
@@ -243,21 +243,6 @@
         <input class="u-full-width center" type="button" id="addCF" value="Add Copies Furnished">
       </div>
     </div>
-
-  <div class="row">
-    <div class="six columns offset-by-three" id="document_mark">
-      {% if document_mark is defined and document_mark is not none %}
-        <div id="documentMarkDiv">
-          <label class="u-full-width center" for="DOCUMENT_MARK">Classification</label>
-          <input type="text" value="{{document_mark}}" id="DOCUMENT_MARK" name="DOCUMENT_MARK" class="u-full-width center">
-          <input class="u-full-width center" type="button" id="removeDocumentMark" value="Remove Document Mark">
-        </div>
-        {% else %}
-        <input class="u-full-width center" type="button" id="addDocumentMark" value="Add Classification">      
-        {% endif %}
-
-    </div>
-  </div>
 
     
   <hr>
