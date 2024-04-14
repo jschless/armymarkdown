@@ -10,7 +10,7 @@ class MemoWriter:
     def write(self, output_file=None):
         self.output_file = output_file
 
-        self.lines.append("\\documentclass{armymemo-notikz}")
+        self.lines.append("\\documentclass{./latex/armymemo-notikz}")
         self._write_admin()
         self._write_body()
         self.temp_dir = os.path.join(os.getcwd(), "assets")
