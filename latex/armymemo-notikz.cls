@@ -17,9 +17,10 @@
 
 \AtBeginDocument{%
   \ifstrempty{\am@documentmark}{}{%
-    \backgroundsetup{opacity=1, scale=1, angle=0,contents={\am@classmark{\am@documentmark}}}\BgThispage
+%    \backgroundsetup{opacity=1, scale=1, angle=0,contents={\am@classmark{\am@documentmark}}}\BgThispage
+    \backgroundsetup{opacity=1, scale=1, angle=0,contents={\am@documentmark}}\BgThispage
   }
-  \am@putlogo%
+%  \am@putlogo%
   \dodheader%
   \vspace*{1\baselineskip}
 }
@@ -27,23 +28,17 @@
 % \typeout{===========>}\show\@enddocumenthook
 % https://tex.stackexchange.com/a/212214
 % BUG: something is messing with this, so for now moving it to the top
+
 \AtEndDocument{%
   \setlength{\parskip}{0pt}
   \vspace*{\baselineskip}
   \noindent\am@authorityline\\
   \vspace*{4\baselineskip}
-  \begin{tikzpicture}[overlay]
-    %% to draw a grid for debugging
-    % \draw[style=help lines] (0,0) grid (15,5);
-    \node [align=left, anchor=west, inner sep=0, outer sep=0] at (0.5\textwidth,-10pt){% TODO BUG - why a 10pt offset? I don't know.
-      {\MakeUppercase \am@author}\\ 
-      \am@rank, \am@branch\\
-      \am@title
-    };
-  \end{tikzpicture}%
-  \am@encls%
+   \noindent\parbox[t]{3in}{\noindent \am@encls}
+  \hfill \parbox[t]{.5\textwidth} { {\MakeUppercase \am@author} \\ \am@rank, \am@branch \\ \am@title}
   \am@distro%
   \am@cf%
+
 %
 %   % since minipages can't break, and this may happen near the bottom of a page,
 %   % only encls and signature block go in the first mini-page
@@ -87,16 +82,8 @@
 \RequirePackage{fontspec}
 \RequirePackage[english]{babel}
 % AR 25-50 recommends Arial as of 17 May 2013.  1-17b
-\setmainfont[Path = /usr/share/fonts/truetype/msttcorefonts/,
-  Extension = .ttf,
-  BoldFont=Arial_Bold,
-  ItalicFont = Arial_Italic
-]{Arial}
-\setsansfont[Path = /usr/share/fonts/truetype/msttcorefonts/,
-  Extension = .ttf,
-  BoldFont=Arial_Bold,
-  ItalicFont = Arial_Italic
-]{Arial}
+ \setmainfont{Arial}
+ \setsansfont{Arial}
 \defaultfontfeatures{Mapping=tex-text} % To support LaTeX ``" quotes.
 
 % used to change date format
@@ -108,7 +95,7 @@
 % for future use of colors in classification markings
 \RequirePackage[dvipsnames]{xcolor}
 % required for graphics placement
-\RequirePackage{tikz}
+%\RequirePackage{tikz}
 % for overlay of classification markings without affecting layout
 \RequirePackage[pages=all,color=black]{background}
 % required to enable high-depth nested lists, and custom numbering
@@ -388,19 +375,19 @@
 
 
 
-\newcommand{\am@classmark}[1]{%
-  \begin{tikzpicture}[remember picture, overlay]
-    \node[align=center,anchor=north,yshift=-24pt] at (current page.north) {#1};
-    \node[align=center,anchor=south,yshift=36pt] at (current page.south) {#1};
-  \end{tikzpicture}
-}
-
-\newcommand{\am@putlogo}{%
-  \begin{tikzpicture}[remember picture, overlay]%
-    \node[anchor=north west,inner sep=0pt,xshift=0.5in, yshift=-0.5in]%
-      at (current page.north west) {\includegraphics[width=1in]{\am@logo}};%
-  \end{tikzpicture}%
-}
+%\newcommand{\am@classmark}[1]{%
+%  \begin{tikzpicture}[remember picture, overlay]
+%    \node[align=center,anchor=north,yshift=-24pt] at (current page.north) {#1};
+%    \node[align=center,anchor=south,yshift=36pt] at (current page.south) {#1};
+%  \end{tikzpicture}
+%}
+%
+%\newcommand{\am@putlogo}{%
+%  \begin{tikzpicture}[remember picture, overlay]%
+%    \node[anchor=north west,inner sep=0pt,xshift=0.5in, yshift=-0.5in]%
+%      at (current page.north west) {\includegraphics[width=1in]{\am@logo}};%
+%  \end{tikzpicture}%
+%}
 
 
 % \dodheader alternate implementation possibility:
@@ -410,7 +397,16 @@
 \newcounter{am@address@count}
 \newcommand{\department}[1]{\def\am@department{\ifstrempty{#1}{DEPARTMENT OF THE ARMY}{\uppercase{#1}}}}\department{}
 \newcommand{\address}[1]{\stepcounter{am@address@count}\listadd{\am@list@address}{#1}}
-\newcommand{\am@do@address}[1]{\fontsize{8pt}{5pt}\selectfont\textbf{\uppercase{#1}}\\}
+
+\newcounter{mylistcounter}
+\def\getnthelement#1{%
+   \setcounter{mylistcounter}{1}%
+   \renewcommand*\do[1]{%
+      \ifnumequal{\value{mylistcounter}}{#1}{##1\listbreak}\relax
+      \stepcounter{mylistcounter}%
+   }%
+   \dolistloop{\am@list@address}
+}%
 \newcommand{\dodheader}{%
   \ifnumcomp{\value{am@address@count}}{<}{2}{
     \address{Organizational Name/Title}
@@ -418,13 +414,26 @@
 	 \address{City, State, 12345-1234}
   }{}
   \thispagestyle{plain}%
-  \begin{tikzpicture}[remember picture, overlay]%
-    \setstretch{0.7}\fontfamily\sfdefault\selectfont%
-    \node[align=center,anchor=north,inner sep=0pt,yshift=-0.625in] at (current page.north) {%
-      \fontsize{10pt}{10pt}\selectfont\textbf{\am@department}\\
-      \forlistloop{\am@do@address}{\am@list@address}
-    };%%
-  \end{tikzpicture}%%
+\begin{picture}(0,0)
+\setlength{\unitlength}{1pc}    	
+\put(-2.8,2.8){\includegraphics[height=1in]{./latex/DA_LOGO}}
+\end{picture}
+\begin{picture}(0,0)
+\setstretch{0.7}\fontfamily\sfdefault\selectfont%
+\setlength\unitlength{5mm}%
+\fontsize{10pt}{10pt}\selectfont % Set font size here
+\put(0, 6.3){
+\makebox[\textwidth]{%
+\parbox{\textwidth}{\centering \textbf{\am@department}}}}
+\fontsize{8pt}{5pt}\selectfont % Set font size here
+\put(0, 5.6){%
+\parbox{\textwidth}{\centering \textbf{\getnthelement{1}}}}%
+\put(0, 4.95){%
+\parbox{\textwidth}{\centering \textbf{\getnthelement{2}}}}%
+\put(0, 4.3){%
+\parbox{\textwidth}{\centering \textbf{\getnthelement{3}}}}%
+\end{picture} 
+
   \par%there must be a \par here, or things break!
   \vspace{-2\baselineskip}
   %conditional block for optional suspense date:
