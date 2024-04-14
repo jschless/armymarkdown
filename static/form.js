@@ -85,15 +85,6 @@ function addAddress(fields, is_for) {
 
 }
 
-function addDocumentMark(){
-    addSingleField("Document Mark", "DOCUMENT_MARK", "CUI", "document_mark", "removeDocumentMark", removeDocumentMark, "documentMarkDiv", "addDocumentMark");   
-}
-
-function removeDocumentMark(){
-    removeSingleField("documentMarkDiv", "document_mark", "addDocumentMark", "Add Document Mark", addDocumentMark);
-}
-
-
 function addAuthority(){
     addSingleField("Authority", "AUTHORITY", "GEN Milley", "authority", "removeAuthority", removeAuthority, "authorityDiv", "addAuthority");   
 }
@@ -289,13 +280,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (document.getElementById('addAuthority')) {
 	document.getElementById('addAuthority').addEventListener('click', addAuthority);     
     }
-    if (document.getElementById('removeDocumentMark')) {
-	document.getElementById('removeDocumentMark').addEventListener('click', removeDocumentMark);
-    }
-    if (document.getElementById('addDocumentMark')) {
-	document.getElementById('addDocumentMark').addEventListener('click', addDocumentMark);     
-    }
-
 });
 
 makeTabsWork("MEMO_TEXT");
