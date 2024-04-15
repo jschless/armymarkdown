@@ -35,7 +35,8 @@
   \noindent\am@authorityline\\
   \vspace*{4\baselineskip}
    \noindent\parbox[t]{3in}{\noindent \am@encls}
-  \hfill \parbox[t]{.5\textwidth} { {\MakeUppercase \am@author} \\ \am@rank, \am@branch \\ \am@title}
+   \hfill \parbox[t]{.5\textwidth} { {\MakeUppercase \am@author} \\ \am@rank, \am@branch \\ \am@title}
+   \par
   \am@distro%
   \am@cf%
 
