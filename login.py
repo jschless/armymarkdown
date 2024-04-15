@@ -83,12 +83,30 @@ def history():
             processed_content = document.content[start_index:end_index].strip(" =")
 
             processed_documents.append(
-                {"id": document.id, "content": processed_content}
+                {
+                    "id": document.id,
+                    "content": processed_content,
+                    "preview": document.content[end_index : end_index + 300].strip(),
+                }
             )
         except Exception as e:
             app.logger.error("Received following error when trying to render history")
             app.logger.error(e)
     return render_template("history.html", documents=processed_documents)
+
+
+@app.route("/delete/<int:document_id>")
+@login_required
+def delete_document(document_id):
+    document = Document.query.get_or_404(document_id)
+    if document.user_id != current_user.id:
+        flash("This is not your file, so you can't view it")
+        return redirect(url_for("index", example_file="tutorial.Amd"))
+
+    db.session.delete(document)
+    db.session.commit()
+    flash("Deleted file")
+    return redirect(url_for("history"))
 
 
 @app.route("/<int:document_id>")
