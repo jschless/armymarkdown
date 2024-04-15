@@ -2,15 +2,26 @@
 
 {% block content %}
 <div class="row">
-  <h2>Previous Documents</h2>
-  <ol>
-    {% for document in documents %}
-    <li> {{ document.content }}
-      <ul>
-        <li> <a href="{{ url_for('get_document', document_id=document.id, form_editor=false) }}">View in classic editor</a></li>
-        <li> <a href="{{ url_for('get_document', document_id=document.id, form_editor=true) }}">View in form editor</a></li>        
-      </ul>
-    {% endfor %}
-  </ol>
+  <h2 class=""center">Previous Documents</h2>
+  {% for document in documents %}
+
+  <div class="row">
+    <h4 onclick="window.location.href='{{ url_for('get_document', document_id=document.id, form_editor=true) }}'"> {{ document.content }} </h4>      
+  </div>
+ 
+  <div class="row">
+    <p> {{ document.preview }} </p>      
+  </div>
+
+  <div class="row">    
+    <div class="four columns">
+      <input class="button u-full-width center" onclick="window.location.href='{{ url_for('get_document', document_id=document.id, form_editor=false) }}'" value="View in classic editor">
+      <input class="button u-full-width center" onclick="window.location.href='{{ url_for('get_document', document_id=document.id, form_editor=true) }}'" value="View in form editor">
+      <input class="button u-full-width center" onclick="window.location.href='{{ url_for('delete_document', document_id=document.id) }}'" value="Delete document">   
+    </div>
+  </div>
+  <hr>
+
+  {% endfor %}  
 </div>
 {% endblock %}
