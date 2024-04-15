@@ -125,7 +125,7 @@ class MemoModel:
         return form_dict
 
     def to_amd(self):
-        lines = []
+        str_builder = ""
         present_fields = fields(self)
         for write_key, attrib in [
             ("ORGANIZATION_NAME", "unit_name"),
@@ -141,9 +141,7 @@ class MemoModel:
             ("AUTHORITY", "authority"),
         ]:
             if getattr(self, attrib, None):
-                lines.append(f"{write_key} = {getattr(self, attrib)}")
-
-        lines.append("\n")
+                str_builder += f"{write_key} = {getattr(self, attrib)}\n"
 
         if getattr(self, "for_unit_name", None):
             for a, b, c in zip(
@@ -151,10 +149,10 @@ class MemoModel:
                 self.for_unit_street_address,
                 self.for_unit_city_state_zip,
             ):
-                lines.append(f"FOR_ORGANIZATION_NAME = {a}")
-                lines.append(f"FOR_ORGANIZATION_STREET_ADDRESS = {b}")
-                lines.append(f"FOR_ORGANIZATION_CITY_STATE_ZIP = {c}")
-                lines.append("\n")
+                str_builder += "\n"
+                str_builder += f"FOR_ORGANIZATION_NAME = {a}\n"
+                str_builder += f"FOR_ORGANIZATION_STREET_ADDRESS = {b}\n"
+                str_builder += f"FOR_ORGANIZATION_CITY_STATE_ZIP = {c}\n"
 
         if getattr(self, "thru_unit_name", None):
             for a, b, c in zip(
@@ -162,27 +160,26 @@ class MemoModel:
                 self.thru_unit_street_address,
                 self.thru_unit_city_state_zip,
             ):
-                lines.append(f"THRU_ORGANIZATION_NAME = {a}")
-                lines.append(f"THRU_ORGANIZATION_STREET_ADDRESS = {b}")
-                lines.append(f"THRU_ORGANIZATION_CITY_STATE_ZIP = {c}")
-                lines.append("\n")
+                str_builder += "\n"
+                str_builder += f"THRU_ORGANIZATION_NAME = {a}\n"
+                str_builder += f"THRU_ORGANIZATION_STREET_ADDRESS = {b}\n"
+                str_builder += f"THRU_ORGANIZATION_CITY_STATE_ZIP = {c}\n"
 
-        lines.append("\n")
         for write_key, attrib in [
             ("ENCLOSURE", "enclosures"),
             ("DISTRO", "distros"),
             ("CF", "cfs"),
         ]:
             if getattr(self, attrib, None):
+                str_builder += "\n"
                 for v in getattr(self, attrib):
-                    lines.append(f"{write_key} = {v}")
+                    str_builder += f"{write_key} = {v}\n"
 
-        lines.append("\n")
-        lines.append(f"SUBJECT = {self.subject}")
-        lines.append("\n")
-        lines.append(f"{nested_list_to_string(self.text)}")
+        str_builder += "\n"
+        str_builder += f"SUBJECT = {self.subject}\n\n"
+        str_builder += f"{nested_list_to_string(self.text)}"
 
-        return "\n".join(lines)
+        return str_builder
 
     @classmethod
     def from_dict(cls, memo_dict):
