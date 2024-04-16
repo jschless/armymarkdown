@@ -181,8 +181,8 @@ function addField(suffix, labelText, inputValue, divId) {
 
     var input = document.createElement('input');
     input.type = 'text';
-    input.id = suffix + count;
-    input.name = suffix + count;
+    input.id = suffix.toUpperCase() + count;
+    input.name = suffix.toUpperCase() + count;
     input.value = inputValue;
     input.classList.add("u-full-width");
     input.classList.add("center");
