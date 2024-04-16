@@ -1,4 +1,49 @@
-function update_progress(status_url, count) {
+function changeHref() {
+    var selectElement = document.getElementById("linkSelector");
+    var selectedValue = selectElement.options[selectElement.selectedIndex].value;     
+    window.location.href = selectedValue;
+}
+
+function saveData() {
+    var formData = new FormData(document.getElementById('memo'));
+    $.ajax({
+	type: "POST",
+	url: "/save_progress",
+	data: formData,
+	processData: false, // Prevent jQuery from processing the data
+	contentType: false, // Prevent jQuery from setting the Content-Type header
+	success: function (data, status, request) {
+            console.log('Data saved successfully');
+	    location.reload();	   
+	},
+	error: function (XMLHttpRequest, text, e) {
+	    alert("ERROR WHEN PARSING INPUT\n\n" + XMLHttpRequest.responseText);
+	},
+    });
+}
+
+function buttonPress(endpoint, polling_function) {
+    var formData = new FormData(document.getElementById('memo'));
+    console.log("Sending formData", formData);
+    $.ajax({
+	type: "POST",
+	url: endpoint,
+	data: formData,
+	processData: false, // Prevent jQuery from processing the data
+	contentType: false, // Prevent jQuery from setting the Content-Type header
+	success: function (data, status, request) {
+	    status_url = request.getResponseHeader("Location");
+	    polling_function(status_url, 0);
+	},
+	error: function (XMLHttpRequest, text, e) {
+	    alert("ERROR WHEN PARSING INPUT\n\n" + XMLHttpRequest.responseText);
+	},
+    });
+}
+
+
+
+function updateProgress(status_url, count) {
     // send GET request to status URL
     $.get(status_url, function (data) {
         if (data["state"] == "SUCCESS") {
@@ -53,7 +98,7 @@ function update_progress(status_url, count) {
 		document.getElementById('progress').style.width = progress + '%';
         
 		setTimeout(function () {
-		    update_progress(status_url, count);
+		    updateProgress(status_url, count);
 		}, rerun_freq);
             }
         }
