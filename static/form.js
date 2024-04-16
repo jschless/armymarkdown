@@ -234,18 +234,6 @@ function deleteElement(elementId) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    var urlParams = new URLSearchParams(window.location.search);
-    var exampleFile = urlParams.get('example_file');
-    // Loop through the options and find the one that matches the current URL
-    var linkSelector = document.getElementById('linkSelector');
-    for (var i = 0; i < linkSelector.options.length; i++) {       
-	var option = linkSelector.options[i];
-	if (option.id === exampleFile) {
-	    option.selected = true;
-	    break;
-	}
-    }
-
     var currentDate = new Date();    
     var options = { day: 'numeric', month: 'long', year: 'numeric' };    
     var formattedDate = currentDate.toLocaleDateString('en-GB', options);
@@ -287,5 +275,5 @@ $(function () {
 
 $('#memo').submit(function(e){
     e.preventDefault();
-    buttonPress("/form", updateProgress);
+    buttonPress("/process", updateProgress);
 });
