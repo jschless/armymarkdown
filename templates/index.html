@@ -8,7 +8,11 @@
 
   <br><br>
   The tutorial example explains how to create your memo. You can also view other example memos to see other supported features. If you make an account, you can save documents and load recently created ones. If you are confused, try the <a href="https://armymemomaker.com/form">Form Editor</a>, which is more intuitive.
+  <br>
+  <br>
 
+
+  
   <br><br>
 </div>  
 <div class="row progress-bar-container" id="progress-bar-container">
@@ -33,16 +37,24 @@
       <option value="{{url_for('index', example_file='memo_thru.Amd')}}">Memorandum Thru</option>
       <option value="{{url_for('index', example_file='memo_extra_features.Amd')}}">Memorandum with Enclosures, Distros, Suspense Dates</option>
     </select>
-  </div> 
+  </div>
+  <div class="three columns">
+    <label>Toggle Memo View</label>
+    <label class="switch">
+      <input type="checkbox" checked>
+      <span class="slider round"></span>
+    </label>
+  </div>
 </div>
 
-<div class="row">
-  <textarea id="editor" spellcheck="true" class="u-full-width u-full-height">{{memo_text}}</textarea>
+
+<form id="memo" method="post">
+  <textarea name="memo_text" id="editor" spellcheck="true" class="u-full-width u-full-height">{{memo_text}}</textarea>
   <button class="button-primary" id="start-bg-job">Create Memo PDF</button>
   {% if current_user.is_authenticated %}
   <button class="button.u-pull-right" id="save-progress">Save Progress</button>
   {% endif %}
-</div>
+</form>
 
 <script src="{{ url_for('static', filename='tasks.js') }}"></script>
 <script src="{{ url_for('static', filename='index.js') }}"></script>

@@ -1,9 +1,3 @@
-function changeHref() {
-    var selectElement = document.getElementById("linkSelector");
-    var selectedValue = selectElement.options[selectElement.selectedIndex].value;     
-    window.location.href = selectedValue;
-}
-
 function findHighest(prefix) {
     var highestNumber = 0;
 
@@ -284,42 +278,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 makeTabsWork("MEMO_TEXT");
 
-function button_press(endpoint, polling_function) {
-    var formData = new FormData(document.getElementById('memo')); 
-    $.ajax({
-	type: "POST",
-	url: endpoint,
-	data: formData,
-	processData: false, // Prevent jQuery from processing the data
-	contentType: false, // Prevent jQuery from setting the Content-Type header
-	success: function (data, status, request) {
-	    status_url = request.getResponseHeader("Location");
-	    polling_function(status_url, 0);
-	},
-	error: function (XMLHttpRequest, text, e) {
-	    alert("ERROR WHEN PARSING INPUT\n\n" + XMLHttpRequest.responseText);
-	},
-    });
-}
-
-function saveData() {
-    var formData = new FormData(document.getElementById('memo'));
-    $.ajax({
-	type: "POST",
-	url: "/save_progress",
-	data: formData,
-	processData: false, // Prevent jQuery from processing the data
-	contentType: false, // Prevent jQuery from setting the Content-Type header
-	success: function (data, status, request) {
-            console.log('Data saved successfully');
-	    location.reload();	   
-	},
-	error: function (XMLHttpRequest, text, e) {
-	    alert("ERROR WHEN PARSING INPUT\n\n" + XMLHttpRequest.responseText);
-	},
-    });
-}
-
 $(function () {
     $("#save-progress").click(function(e){
 	e.preventDefault();
@@ -329,6 +287,5 @@ $(function () {
 
 $('#memo').submit(function(e){
     e.preventDefault();
-    button_press("/form", update_progress);
+    buttonPress("/form", updateProgress);
 });
-
