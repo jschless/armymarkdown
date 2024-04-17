@@ -58,15 +58,9 @@ import login
 from login import save_document
 
 
-@app.route("/")
-def home():
-    return redirect(url_for("index", example_file="tutorial.Amd"))
-
-
-@app.route("/<example_file>")
-def index(example_file="./tutorial.Amd"):
-    if example_file not in os.listdir("./examples"):
-        example_file = "./tutorial.Amd"
+@app.route("/", methods=["GET"])
+def index():
+    example_file = process_example_file(request.args)
 
     return render_template(
         "index.html",
@@ -74,48 +68,39 @@ def index(example_file="./tutorial.Amd"):
     )
 
 
-@app.route("/form", methods=["GET", "POST"])
-def form(example_file="./tutorial.Amd"):
-    if request.method == "POST":
-        app.logger.info("Form fields:")
-        for key, value in request.form.items():
-            app.logger.info(f"{key}: {value}")
+def process_example_file(args):
+    example_file = args.get("example_file", "tutorial.Amd")
 
-        task = create_memo.delay("", dictionary=request.form.to_dict())
-        return (
-            "Hi, we're waiting for your PDF to be created.",
-            200,
-            {"Location": url_for("taskstatus", task_id=task.id)},
-        )
+    if example_file not in os.listdir("./examples"):
+        example_file = "./tutorial.Amd"
 
-    example_file = request.args.get("example_file", "tutorial.Amd")
+    return example_file
 
-    app.logger.debug("loading the following file")
-    app.logger.debug(example_file)
+
+@app.route("/form", methods=["GET"])
+def form():
+    example_file = process_example_file(request.args)
+
     m = memo_model.MemoModel.from_file(os.path.join("./examples", example_file))
-
-    app.logger.debug("loaded memo model")
-    app.logger.debug(m.to_dict())
-
     memo_dict = m.to_form()
-    app.logger.debug("passing the following to the form site")
-    app.logger.debug(memo_dict)
 
     return render_template("memo_form.html", **memo_dict)
 
 
 @app.route("/save_progress", methods=["POST"])
 def save_progress():
-    if "input_data" in request.form:
-        # came from the text page
-        text = request.form.get("input_data")
+    if "SUBJECT" not in request.form:
+        text = request.form.get("memo_text")
+        res = save_document(text)
+        flash(res)
+        return render_template("index.html", memo_text=text)
+
     else:
         m = memo_model.MemoModel.from_form(request.form.to_dict())
         text = m.to_amd()
-
-    res = save_document(text)
-    flash(res)
-    return jsonify({"message": "OK", "flash": {"category": "success", "message": res}})
+        res = save_document(text)
+        flash(res)
+        return render_template("memo_form.html", **m.to_form())
 
 
 def check_memo(text):
@@ -134,13 +119,21 @@ def check_memo(text):
 
 @app.route("/process", methods=["POST"])
 def process():
-    text = request.form["memo_text"]
-    memo_errors = check_memo(text)
-    if memo_errors is not None:
-        return memo_errors, 400
+    if "SUBJECT" not in request.form:
+        # came from the text page
+        text = request.form.get("memo_text")
+        task = create_memo.delay(text)
+    else:
+        m = memo_model.MemoModel.from_form(request.form.to_dict())
+        text = m.to_amd()
+        task = create_memo.delay("", request.form.to_dict())
 
-    save_document(text)
-    task = create_memo.delay(text)
+    res = save_document(text)
+    flash(res)
+
+    # memo_errors = check_memo(text)
+    # if memo_errors is not None:
+    #     return memo_errors, 400
     return (
         "Hi, we're waiting for your PDF to be created.",
         200,
@@ -177,7 +170,6 @@ def taskstatus(task_id):
 
 def get_aws_link(file_name):
     # https://boto3.amazonaws.com/v1/documentation/api/latest/guide/s3-presigned-urls.html
-
     try:
         response = s3.generate_presigned_url(
             "get_object",
@@ -185,7 +177,7 @@ def get_aws_link(file_name):
             ExpiresIn=3600,
         )
     except ClientError as e:
-        print(e)
+        app.logger.error(f"Something Happened: {e}")
         return None
     return response
 
@@ -207,7 +199,7 @@ def upload_file_to_s3(file, aws_path, acl="public-read"):
         )
         ret_val = file
     except Exception as e:
-        print("Something Happened: ", e)
+        app.logger.error(f"Something Happened: {e}")
         ret_val = e
     finally:
         # delete file after uploads
@@ -219,12 +211,8 @@ def upload_file_to_s3(file, aws_path, acl="public-read"):
 @celery.task(name="create_memo")
 def create_memo(text, dictionary=None):
     if dictionary:
-        app.logger.debug("Dictionary")
-        app.logger.debug(dictionary)
         m = memo_model.MemoModel.from_form(dictionary)
     else:
-        app.logger.debug("Memo text")
-        app.logger.debug(text)
         m = memo_model.MemoModel.from_text(text)
 
     app.logger.debug(m.to_dict())
@@ -240,6 +228,7 @@ def create_memo(text, dictionary=None):
     mw.write(output_file=file_path)
 
     mw.generate_memo()
+
     if os.path.exists(file_path[:-4] + ".pdf"):
         upload_file_to_s3(file_path[:-4] + ".pdf", temp_name[:-4] + ".pdf")
     else:

@@ -1,37 +1,19 @@
 {% extends "base.html" %}
 
+
+{% block top_info %}
+<div class="row">
+    <p> Here's a more intuitive way to make your memos. You'll see it resembles an actual memo. Simply fill out the appropriate parts and add the options you need for your purposes. You can view the same examples or, if you have an account, your past memos. As always, click the blue button to wait for your memo.</p>  
+  <br>
+  <br>
+</div>  
+
+{% from "example_list.html" import build_list %}
+{{ build_list("form") }}
+
+{% endblock %}
+
 {% block content %}
-
-<div class="row">
-  <h2 class="center">Form Builder</h2>
-
-  <p> Here's a more intuitive way to make your memos. You'll see it resembles an actual memo. Simply fill out the appropriate parts and add the options you need for your purposes. You can view the same examples or, if you have an account, your past memos. As always, click the blue button to wait for your memo.</p>
-</div>
-
-<div class="row progress-bar-container" id="progress-bar-container">
-  <div class="six columns offset-by-three">
-    <p class="u-full-width center">Memo Creation Progress</p>
-    <div class="progress-bar u-full-width center" id="progress-bar">
-      <div class="progress u-full-width center" id="progress"></div>
-    </div>
-  </div>
-</div>
-
-<div class="row">
-  <div class="nine columns">
-    <label for="examples">Example List</label>
-    <select id="linkSelector" onchange="changeHref()">
-      <option value="{{url_for('form', example_file='tutorial.Amd')}}" id="tutorial.Amd">Tutorial</option>
-      <option value="{{url_for('form', example_file='long_memo.Amd')}}" id="long_memo.Amd">Long Memorandum (Figure 2-2 from AR 25-50)</option>
-      <option value="{{url_for('form', example_file='basic_mfr.Amd')}}" id="basic_mfr.Amd">Memorandum for Record</option>
-      <option value="{{url_for('form', example_file='basic_mfr_w_table.Amd')}}" id="basic_mfr_w_table.Amd">Memorandum for Record with Table</option>
-      <option value="{{url_for('form', example_file='memo_for.Amd')}}" id="memo_for.Amd">Memorandum For</option>
-      <option value="{{url_for('form', example_file='memo_multi_for.Amd')}}" id="memo_multi_for.Amd">Memorandum For Multiple</option>
-      <option value="{{url_for('form', example_file='memo_thru.Amd')}}" id="memo_thru.Amd">Memorandum Thru</option>
-      <option value="{{url_for('form', example_file='memo_extra_features.Amd')}}" id="memo_extra_features.Amd">Memorandum with Enclosures, Distros, Suspense Dates</option>
-    </select>
-  </div> 
-</div>
 
 <form id="memo" method="post">
   <div class="twelve columns">
@@ -248,7 +230,7 @@
   <hr>
   
   <div class="row">
-    <input class="button-primary" type="submit" value="Create Memo PDF">
+    <input class="button-primary" type="submit" value="Create Memo PDF" id="start-bg-job">
     {% if current_user.is_authenticated %}
     <button class="button.u-pull-right" id="save-progress">Save Progress</button>
     {% endif %}   

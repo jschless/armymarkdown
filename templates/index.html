@@ -1,48 +1,29 @@
 {% extends 'base.html' %}
 
-{% block content %}
-
-
+{% block top_info %}
 <div class="row">
-  Welcome to Army Memo Maker, a simple webapp that helps you make memos formatted in perfect accordance with AR 25-50. Memos are guaranteed to have the right spacing and font. Note, generating your memo will take around 20 seconds (this website is currently running on a server less powerful than your phone).
-
+  Welcome to Army Memo Maker, a simple webapp that helps you make memos formatted in perfect accordance with AR 25-50. Memos are guaranteed to have the right spacing and font. Note, generating your memo will take a few seconds (this website is currently running on a server less powerful than your phone).
+  
   <br><br>
   The tutorial example explains how to create your memo. You can also view other example memos to see other supported features. If you make an account, you can save documents and load recently created ones. If you are confused, try the <a href="https://armymemomaker.com/form">Form Editor</a>, which is more intuitive.
-
-  <br><br>
+  <br>
+  <br>
 </div>  
-<div class="row progress-bar-container" id="progress-bar-container">
-  <div class="six columns offset-by-three">
-    <p class="u-full-width center">Memo Creation Progress</p>
-    <div class="progress-bar u-full-width center" id="progress-bar">
-      <div class="progress u-full-width center" id="progress"></div>
-    </div>
-  </div>
-</div>
 
-<div class="row">
-  <div class="nine columns">
-    <label for="examples">Example List</label>
-    <select id="linkSelector" onchange="changeHref()">
-      <option value="{{url_for('index', example_file='tutorial.Amd')}}">Tutorial</option>
-      <option value="{{url_for('index', example_file='long_memo.Amd')}}">Long Memorandum (Figure 2-2 from AR 25-50)</option>
-      <option value="{{url_for('index', example_file='basic_mfr.Amd')}}">Memorandum for Record</option>
-      <option value="{{url_for('index', example_file='basic_mfr_w_table.Amd')}}">Memorandum for Record with Table</option>
-      <option value="{{url_for('index', example_file='memo_for.Amd')}}">Memorandum For</option>
-      <option value="{{url_for('index', example_file='memo_multi_for.Amd')}}">Memorandum For Multiple</option>
-      <option value="{{url_for('index', example_file='memo_thru.Amd')}}">Memorandum Thru</option>
-      <option value="{{url_for('index', example_file='memo_extra_features.Amd')}}">Memorandum with Enclosures, Distros, Suspense Dates</option>
-    </select>
-  </div> 
-</div>
 
-<div class="row">
-  <textarea id="editor" spellcheck="true" class="u-full-width u-full-height">{{memo_text}}</textarea>
+{% from "example_list.html" import build_list %}
+{{ build_list('index') }}
+{% endblock %}
+
+{% block content %}
+
+<form id="memo" method="post">
+  <textarea name="memo_text" id="editor" spellcheck="true" class="u-full-width u-full-height">{{memo_text}}</textarea>
   <button class="button-primary" id="start-bg-job">Create Memo PDF</button>
   {% if current_user.is_authenticated %}
   <button class="button.u-pull-right" id="save-progress">Save Progress</button>
   {% endif %}
-</div>
+</form>
 
 <script src="{{ url_for('static', filename='tasks.js') }}"></script>
 <script src="{{ url_for('static', filename='index.js') }}"></script>

@@ -1,9 +1,3 @@
-function changeHref() {
-    var selectElement = document.getElementById("linkSelector");
-    var selectedValue = selectElement.options[selectElement.selectedIndex].value;     
-    window.location.href = selectedValue;
-}
-
 function findHighest(prefix) {
     var highestNumber = 0;
 
@@ -187,8 +181,13 @@ function addField(suffix, labelText, inputValue, divId) {
 
     var input = document.createElement('input');
     input.type = 'text';
-    input.id = suffix + count;
-    input.name = suffix + count;
+    if (suffix == "enc") {
+	input.id = "ENCLOSURE" + count;
+	input.name = "ENCLOSURE" + count;
+    } else {
+	input.id = suffix.toUpperCase() + count;
+	input.name = suffix.toUpperCase() + count;
+    }
     input.value = inputValue;
     input.classList.add("u-full-width");
     input.classList.add("center");
@@ -240,18 +239,6 @@ function deleteElement(elementId) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    var urlParams = new URLSearchParams(window.location.search);
-    var exampleFile = urlParams.get('example_file');
-    // Loop through the options and find the one that matches the current URL
-    var linkSelector = document.getElementById('linkSelector');
-    for (var i = 0; i < linkSelector.options.length; i++) {       
-	var option = linkSelector.options[i];
-	if (option.id === exampleFile) {
-	    option.selected = true;
-	    break;
-	}
-    }
-
     var currentDate = new Date();    
     var options = { day: 'numeric', month: 'long', year: 'numeric' };    
     var formattedDate = currentDate.toLocaleDateString('en-GB', options);
@@ -284,42 +271,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 makeTabsWork("MEMO_TEXT");
 
-function button_press(endpoint, polling_function) {
-    var formData = new FormData(document.getElementById('memo')); 
-    $.ajax({
-	type: "POST",
-	url: endpoint,
-	data: formData,
-	processData: false, // Prevent jQuery from processing the data
-	contentType: false, // Prevent jQuery from setting the Content-Type header
-	success: function (data, status, request) {
-	    status_url = request.getResponseHeader("Location");
-	    polling_function(status_url, 0);
-	},
-	error: function (XMLHttpRequest, text, e) {
-	    alert("ERROR WHEN PARSING INPUT\n\n" + XMLHttpRequest.responseText);
-	},
-    });
-}
-
-function saveData() {
-    var formData = new FormData(document.getElementById('memo'));
-    $.ajax({
-	type: "POST",
-	url: "/save_progress",
-	data: formData,
-	processData: false, // Prevent jQuery from processing the data
-	contentType: false, // Prevent jQuery from setting the Content-Type header
-	success: function (data, status, request) {
-            console.log('Data saved successfully');
-	    location.reload();	   
-	},
-	error: function (XMLHttpRequest, text, e) {
-	    alert("ERROR WHEN PARSING INPUT\n\n" + XMLHttpRequest.responseText);
-	},
-    });
-}
-
 $(function () {
     $("#save-progress").click(function(e){
 	e.preventDefault();
@@ -329,6 +280,5 @@ $(function () {
 
 $('#memo').submit(function(e){
     e.preventDefault();
-    button_press("/form", update_progress);
+    buttonPress("/process", updateProgress);
 });
-

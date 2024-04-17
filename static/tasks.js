@@ -1,8 +1,50 @@
-function update_progress(status_url, count) {
+function changeHref() {
+    var selectElement = document.getElementById("linkSelector");
+    var selectedValue = selectElement.options[selectElement.selectedIndex].value;     
+    window.location.href = selectedValue;
+}
+
+function saveData() {
+    var formData = new FormData(document.getElementById('memo'));    
+    fetch('/save_progress', {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => {
+            if (response.ok) {
+                console.log('Form data submitted successfully.');
+            } else {
+                console.error('Error submitting form data:', response.status);
+            }
+        })
+        .catch(error => {
+            console.error('Error submitting form data:', error);
+        });
+}
+
+function buttonPress(endpoint, polling_function) {
+    var formData = new FormData(document.getElementById('memo'));
+    console.log("Sending formData", formData);
+    $.ajax({
+	type: "POST",
+	url: endpoint,
+	data: formData,
+	processData: false, // Prevent jQuery from processing the data
+	contentType: false, // Prevent jQuery from setting the Content-Type header
+	success: function (data, status, request) {
+	    status_url = request.getResponseHeader("Location");
+	    polling_function(status_url, 0);
+	},
+	error: function (XMLHttpRequest, text, e) {
+	    alert("ERROR WHEN PARSING INPUT\n\n" + XMLHttpRequest.responseText);
+	},
+    });
+}
+
+function updateProgress(status_url, count) {
     // send GET request to status URL
     $.get(status_url, function (data) {
         if (data["state"] == "SUCCESS") {
-
 	    $("#status").text("");
 	    windowOpened = window.open(data["presigned_url"], "_blank");
 	    if (windowOpened == null ) {
@@ -17,7 +59,7 @@ function update_progress(status_url, count) {
 		    document.getElementById('progress').style.width = '0%';
 		    document.getElementById("temp_button").remove();
 		});
-		// button.classList.add("u-full-width");
+
 		button.style.margin = '20px';
 		button.classList.add("center");
 		button.setAttribute('id', "temp_button");
@@ -45,20 +87,32 @@ function update_progress(status_url, count) {
 	    const averageSeconds = 10;
             // rerun in 1 seconds
             if (count < 80) {
-		// newWindow.document.write(
-		//      "Waiting for your memo pdf to be generated! Please be patient! It's only been " +
-		//  	count +	" seconds."
-		// );
 		let progress = Math.min(count / averageSeconds * 100, 100);
 		document.getElementById('progress').style.width = progress + '%';
         
 		setTimeout(function () {
-		    update_progress(status_url, count);
+		    updateProgress(status_url, count);
 		}, rerun_freq);
             }
         }
     });
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    var exampleFile = window.location.pathname + window.location.search;
+    // Loop through the options and find the one that matches the current URL
+    var linkSelector = document.getElementById('linkSelector');
+    for (var i = 0; i < linkSelector.options.length; i++) {       
+	var option = linkSelector.options[i];
+	if (option.value === exampleFile) {
+            // Set the text of the option to the current URL
+            option.selected = true;
+            break;
+	}
+    }
+});
+
+
 
 function makeTabsWork(textAreaId) {
     var textarea = document.getElementById(textAreaId);
