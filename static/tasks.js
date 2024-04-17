@@ -99,12 +99,12 @@ function updateProgress(status_url, count) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    var currentUrl = window.location.pathname;
+    var exampleFile = window.location.pathname + window.location.search;
     // Loop through the options and find the one that matches the current URL
     var linkSelector = document.getElementById('linkSelector');
     for (var i = 0; i < linkSelector.options.length; i++) {       
 	var option = linkSelector.options[i];
-	if (option.value === currentUrl) {
+	if (option.value === exampleFile) {
             // Set the text of the option to the current URL
             option.selected = true;
             break;
