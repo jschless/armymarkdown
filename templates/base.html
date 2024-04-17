@@ -43,11 +43,8 @@
 </div>
 
 <section class="content">
-  <header>
-    {% block header %}{% endblock %}
-  </header>
-
   <div class="container">
+    {% block top_info %}{% endblock %}
     <h4 class="flash" id="status"></h4>
     {% with messages = get_flashed_messages() %}
     {% if messages %} 
