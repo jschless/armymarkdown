@@ -81,6 +81,7 @@ textarea.u-half-height {
     background-color: #f0f0f0;
     margin: 0 auto;
     font-weight: bold;
+    z-index: 999;
     padding: 10px;    /* box-sizing: border-box; */
     /* text-align: center; */
 }
