@@ -181,8 +181,13 @@ function addField(suffix, labelText, inputValue, divId) {
 
     var input = document.createElement('input');
     input.type = 'text';
-    input.id = suffix.toUpperCase() + count;
-    input.name = suffix.toUpperCase() + count;
+    if (suffix == "enc") {
+	input.id = "ENCLOSURE" + count;
+	input.name = "ENCLOSURE" + count;
+    } else {
+	input.id = suffix.toUpperCase() + count;
+	input.name = suffix.toUpperCase() + count;
+    }
     input.value = inputValue;
     input.classList.add("u-full-width");
     input.classList.add("center");
