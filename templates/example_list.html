@@ -1,28 +1,25 @@
 {% macro build_list(url) %}
-<div class="container">
-  <div class="row progress-bar-container" id="progress-bar-container">
-    <div class="six columns offset-by-three">
-      <p class="u-full-width center">Memo Creation Progress</p>
-      <div class="progress-bar u-full-width center" id="progress-bar">
-        <div class="progress u-full-width center" id="progress"></div>
-      </div>
+<div class="row progress-bar-container" id="progress-bar-container">
+  <div class="six columns offset-by-three">
+    <p class="u-full-width center">Memo Creation Progress</p>
+    <div class="progress-bar u-full-width center" id="progress-bar">
+      <div class="progress u-full-width center" id="progress"></div>
     </div>
   </div>
-
-  <div class="row">
-    <div class="nine columns">
-      <label for="examples">Example List</label>
-      <select id="linkSelector" onchange="changeHref()">
-        <option value="{{url_for(url, example_file='tutorial.Amd')}}">Tutorial</option>
-        <option value="{{url_for(url, example_file='long_memo.Amd')}}">Long Memorandum (Figure 2-2 from AR 25-50)</option>
-        <option value="{{url_for(url, example_file='basic_mfr.Amd')}}">Memorandum for Record</option>
-        <option value="{{url_for(url, example_file='basic_mfr_w_table.Amd')}}">Memorandum for Record with Table</option>
-        <option value="{{url_for(url, example_file='memo_for.Amd')}}">Memorandum For</option>
-        <option value="{{url_for(url, example_file='memo_multi_for.Amd')}}">Memorandum For Multiple</option>
-        <option value="{{url_for(url, example_file='memo_thru.Amd')}}">Memorandum Thru</option>
-        <option value="{{url_for(url, example_file='memo_extra_features.Amd')}}">Memorandum with Enclosures, Distros, Suspense Dates</option>
-      </select>
-    </div>
+</div>
+<div class="row">
+  <div class="nine columns">
+    <label for="examples">Example List</label>
+    <select id="linkSelector" onchange="changeHref()">
+      <option value="{{url_for(url, example_file='tutorial.Amd')}}">Tutorial</option>
+      <option value="{{url_for(url, example_file='long_memo.Amd')}}">Long Memorandum (Figure 2-2 from AR 25-50)</option>
+      <option value="{{url_for(url, example_file='basic_mfr.Amd')}}">Memorandum for Record</option>
+      <option value="{{url_for(url, example_file='basic_mfr_w_table.Amd')}}">Memorandum for Record with Table</option>
+      <option value="{{url_for(url, example_file='memo_for.Amd')}}">Memorandum For</option>
+      <option value="{{url_for(url, example_file='memo_multi_for.Amd')}}">Memorandum For Multiple</option>
+      <option value="{{url_for(url, example_file='memo_thru.Amd')}}">Memorandum Thru</option>
+      <option value="{{url_for(url, example_file='memo_extra_features.Amd')}}">Memorandum with Enclosures, Distros, Suspense Dates</option>
+    </select>
   </div>
 </div>
 {% endmacro %}
