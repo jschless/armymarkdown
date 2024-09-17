@@ -1,8 +1,9 @@
-function changeHref() {
+document.getElementById('linkSelector').addEventListener('change', function() {
     var selectElement = document.getElementById("linkSelector");
     var selectedValue = selectElement.options[selectElement.selectedIndex].value;     
-    window.location.href = selectedValue;
-}
+    window.location.assign(selectedValue); // Better than direct href manipulation
+});
+
 
 function saveData() {
     var formData = new FormData(document.getElementById('memo'));    
