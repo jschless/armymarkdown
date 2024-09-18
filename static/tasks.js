@@ -44,11 +44,6 @@ function buttonPress(endpoint, polling_function) {
     });
 }
 
-document.getElementById('start-bg-job').addEventListener('click', function(event){
-    event.preventDefault();
-    buttonPress("/process", updateProgress);
-});
-
 
 function updateProgress(status_url, count) {
     // send GET request to status URL
@@ -149,3 +144,4 @@ function makeTabsWork(textAreaId) {
 	}
     });    
 }
+
