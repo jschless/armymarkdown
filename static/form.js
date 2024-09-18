@@ -271,14 +271,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
 makeTabsWork("MEMO_TEXT");
 
-$(function () {
-    $("#save-progress").click(function(e){
-	e.preventDefault();
-	saveData();
-    });
-});
+document.addEventListener('DOMContentLoaded', function() {
+    const saveProgressButton = document.getElementById("save-progress");
+    
+    if (saveProgressButton) {
+        saveProgressButton.addEventListener("click", function(e) {
+            e.preventDefault(); 
+            saveData();
+        });
+    }
 
-$('#memo').submit(function(e){
-    e.preventDefault();
-    buttonPress("/process", updateProgress);
+    const memoForm = document.getElementById('memo');
+
+    if (memoForm) {
+        memoForm.addEventListener("submit", function(e) {
+            e.preventDefault(); 
+            buttonPress("/process", updateProgress); 
+        });
+    }
 });
