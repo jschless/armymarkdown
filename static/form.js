@@ -1,8 +1,8 @@
 function findHighest(prefix) {
-    var highestNumber = 0;
+    let highestNumber = 0;
 
     document.querySelectorAll("[id^='" + prefix + "']").forEach(function(element) {
-	var idNumber = parseInt(element.id.replace(prefix, ""));
+	const idNumber = parseInt(element.id.replace(prefix, ""));
 	if (idNumber > highestNumber) {
             highestNumber = idNumber;
 	}
@@ -11,13 +11,13 @@ function findHighest(prefix) {
     return highestNumber;
 }
 
-var forCount = findHighest("for");
-var thruCount = findHighest("thru");
-var encCount = findHighest("enc");
-var distroCount = findHighest("distro");
-var cfCount = findHighest("cf");
+const forCount = findHighest("for");
+const thruCount = findHighest("thru");
+const encCount = findHighest("enc");
+const distroCount = findHighest("distro");
+const cfCount = findHighest("cf");
 
-var suffixToVarMap = {
+const suffixToVarMap = {
     "for": forCount,
     "thru": thruCount,
     "enc": encCount,
@@ -27,25 +27,25 @@ var suffixToVarMap = {
 
 function addAddress(fields, is_for) {
     // reuse this for thru and for address buttons
-    var newRow = document.createElement('div');
+    let newRow = document.createElement('div');
     newRow.classList.add("row")
-    var newDiv = document.createElement('div');
+    let newDiv = document.createElement('div');
     newDiv.classList.add("six");
     newDiv.classList.add("columns");
     console.log(forCount, thruCount);
     is_for ? forCount++ : thruCount++; 
 
-    var suffix = is_for ? forCount : thruCount;
+    const suffix = is_for ? forCount : thruCount;
     
     fields.forEach(function(field) {
-	var label = document.createElement('label');
+	ket label = document.createElement('label');
 	label.textContent = field.label;
 	label.classList.add("u-full-width");
 	label.classList.add("center");
 	label.setAttribute('for', field.id + suffix);
 
 	
-	var input = document.createElement('input');
+	let input = document.createElement('input');
 	input.type = 'text';
 	input.id = field.id + suffix;
 	input.name = field.id + suffix;
@@ -61,7 +61,7 @@ function addAddress(fields, is_for) {
 
     });
 
-    var deleteButton = document.createElement('button');
+    let deleteButton = document.createElement('button');
     deleteButton.textContent = is_for ? 'Delete FOR address' : 'Delete THRU address';
     deleteButton.classList.add("u-full-width");
     deleteButton.classList.add("center");
@@ -87,7 +87,6 @@ function removeAuthority(){
     removeSingleField("authorityDiv", "authority", "addAuthority", "Add Authority", addAuthority);
 }
 
-
 function addSuspense(){
     addSingleField("Suspense Date", "SUSPENSE", "08 May 2026", "suspense", "removeSuspense", removeSuspense, "suspenseDiv", "addSuspense");   
 }
@@ -95,7 +94,6 @@ function addSuspense(){
 function removeSuspense(){
     removeSingleField("suspenseDiv", "suspense", "addSuspense", "Add Suspense", addSuspense);
 }
-
 
 function addTitle(){
     addSingleField("Title", "TITLE", "Lost Private", "signature", "removeTitle", removeTitle, "titleDiv", "addTitle");   
@@ -106,30 +104,27 @@ function removeTitle(){
 }
 
 function addSingleField(name, id, value, targetDivId, deleteId, removeFunc, divId, addId) {
-    var div = document.createElement('div');
+    let div = document.createElement('div');
     div.id = divId;
-    var label = document.createElement('label');
+    let label = document.createElement('label');
     label.textContent = name;
     label.classList.add("u-full-width");
     label.classList.add("center");
     label.setAttribute('for', "TITLE");
     
-    
-    var input = document.createElement('input');
+    let input = document.createElement('input');
     input.type = 'text';
     input.id = id;
     input.name = id;
     input.value = value;
     input.classList.add("u-full-width");
     input.classList.add("center");
-
     
     div.append(label);
     div.append(input);
-
     
-    var deleteButton = document.createElement('button');
-    var addButton = document.getElementById(addId);
+    let deleteButton = document.createElement('button');
+    let addButton = document.getElementById(addId);
 
     addButton.remove();
 
@@ -145,8 +140,8 @@ function addSingleField(name, id, value, targetDivId, deleteId, removeFunc, divI
 
 function removeSingleField(targetDivId, targetLocationId, buttonId, buttonText, buttonFunc) {
     document.getElementById(targetDivId).remove();
-    var targetDiv = document.getElementById(targetLocationId);
-    var inputElement = document.createElement('input');
+    let targetDiv = document.getElementById(targetLocationId);
+    let inputElement = document.createElement('input');
     inputElement.setAttribute('type', 'button');
     inputElement.setAttribute('id', buttonId);
     inputElement.setAttribute('value', buttonText);
@@ -170,16 +165,16 @@ function addCF() {
 }
 
 function addField(suffix, labelText, inputValue, divId) {
-    var div = document.createElement('div');
-    var label = document.createElement('label');
+    let div = document.createElement('div');
+    let label = document.createElement('label');
     suffixToVarMap[suffix]++;
-    var count = suffixToVarMap[suffix];
+    let count = suffixToVarMap[suffix];
     
     label.textContent = labelText;
     label.classList.add("u-full-width");
     label.classList.add("center");
 
-    var input = document.createElement('input');
+    let input = document.createElement('input');
     input.type = 'text';
     if (suffix == "enc") {
 	input.id = "ENCLOSURE" + count;
@@ -195,7 +190,7 @@ function addField(suffix, labelText, inputValue, divId) {
     div.append(label);
     div.append(input);
 
-    var deleteButton = document.createElement('button');
+    let deleteButton = document.createElement('button');
     deleteButton.classList.add("u-full-width");
     deleteButton.classList.add("center");
     deleteButton.type = 'text';
@@ -209,7 +204,7 @@ function addField(suffix, labelText, inputValue, divId) {
 }
 
 function addForAddress() {
-    var fields = [
+    const fields = [
 	{ id: "FOR_ORGANIZATION_NAME", placeholder: "U.S. Army Command and General Staff College (ATZL)", label: "FOR Organization Name"},
 	{ id: "FOR_ORGANIZATION_STREET_ADDRESS", placeholder: "100 Stimson Avenue", label: "FOR Street Address"},
 	{ id: "FOR_ORGANIZATION_CITY_STATE_ZIP", placeholder: "Ft Leavenworth, KS 66027-1352", label: "FOR City, State Zip"}
@@ -219,7 +214,7 @@ function addForAddress() {
 }
 
 function addThruAddress() {
-    var fields = [
+    const fields = [
 	{ id: "THRU_ORGANIZATION_NAME", placeholder: "U.S. Army Command and General Staff College (ATZL)", label: "THRU Organization Name"},
 	{ id: "THRU_ORGANIZATION_STREET_ADDRESS", placeholder: "100 Stimson Avenue", label: "THRU Street Address"},
 	{ id: "THRU_ORGANIZATION_CITY_STATE_ZIP", placeholder: "Ft Leavenworth, KS 66027-1352", label: "THRU City, State Zip"}
@@ -230,7 +225,7 @@ function addThruAddress() {
 
 
 function deleteElement(elementId) {
-    var element = document.getElementById(elementId);
+    let element = document.getElementById(elementId);
     if (element) {
 	element.remove();
     } else {
@@ -239,9 +234,9 @@ function deleteElement(elementId) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    var currentDate = new Date();    
-    var options = { day: 'numeric', month: 'long', year: 'numeric' };    
-    var formattedDate = currentDate.toLocaleDateString('en-GB', options);
+    const currentDate = new Date();    
+    const options = { day: 'numeric', month: 'long', year: 'numeric' };    
+    const formattedDate = currentDate.toLocaleDateString('en-GB', options);
     document.getElementById('DATE').value = formattedDate;
 
     document.getElementById('addFOR').addEventListener('click', addForAddress);
