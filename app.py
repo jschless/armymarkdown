@@ -58,6 +58,18 @@ import login
 from login import save_document
 
 
+@app.after_request
+def add_csp(response):
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self'; "  # Allow scripts from trusted sources
+        "style-src 'self' 'unsafe-inline'; "  # Allow inline styles if necessary
+        "img-src 'self'; "  # Only allow images from the same origin
+        "connect-src 'self';"  # Only allow AJAX/fetch calls to the same origin
+    )
+    return response
+
+
 @app.route("/", methods=["GET"])
 def index():
     example_file = process_example_file(request.args)
