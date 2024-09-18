@@ -52,59 +52,67 @@ document.getElementById('start-bg-job').addEventListener('click', function(event
 
 function updateProgress(status_url, count) {
     // send GET request to status URL
-    $.get(status_url, function (data) {
-        if (data["state"] == "SUCCESS") {
-	    $("#status").text("");
-	    windowOpened = window.open(data["presigned_url"], "_blank");
-	    if (windowOpened == null ) {
-		// Create a button to retrieve memo on user click
-		var button = document.createElement('button');
-		button.textContent = 'Click to open memo';
-		button.addEventListener('click', function() {
-		    window.open(data["presigned_url"], "_blank"); // support multiple files
-		    document.getElementById('progress-bar').style.width = '100%';
-		    document.getElementById('progress-bar-container').style.display = 'none';
-		    document.getElementById('progress-bar-container').style.opacity = '.5';
-		    document.getElementById('progress').style.width = '0%';
-		    document.getElementById("temp_button").remove();
-		});
-
-		button.style.margin = '20px';
-		button.classList.add("center");
-		button.setAttribute('id', "temp_button");
-
-		var container = document.getElementById('progress-bar-container');		
-		container.style.opacity ='1';
-		container.append(document.createElement('br'));
-		container.appendChild(button);	    	
-	    } else {
-		document.getElementById('progress-bar-container').style.display = 'none';
-		document.getElementById('progress-bar').style.width = '100%';
-		document.getElementById('progress').style.width = '0%';
-		
-	    }	    
-            return;
-        } else if (data["state"] == "FAILURE") {
-            $("#status").text(
-		"There was an unknown error with your memo. I know this isn't super helpful, but fix the issue and try again."
-            );
-        } else {
-	    document.getElementById('progress-bar-container').style.display = 'block';
-
-            let rerun_freq = 1000;        
-            count += 1;
-	    const averageSeconds = 10;
-            // rerun in 1 seconds
-            if (count < 80) {
-		let progress = Math.min(count / averageSeconds * 100, 100);
-		document.getElementById('progress').style.width = progress + '%';
-        
-		setTimeout(function () {
-		    updateProgress(status_url, count);
-		}, rerun_freq);
+    fetch(status_url)
+	.then(response => {
+            if (!response.ok) {
+		throw new Error(`HTTP error! status: ${response.status}`);
             }
-        }
-    });
+            return response.json(); 
+	})
+	.then(data => {
+            if (data["state"] === "SUCCESS") {
+		document.getElementById("status").textContent = ""; 
+		const windowOpened = window.open(data["presigned_url"], "_blank");
+		if (windowOpened === null) {
+                    // Create a button to retrieve memo on user click
+                    const button = document.createElement('button');
+                    button.textContent = 'Click to open memo';
+                    button.addEventListener('click', function() {
+			window.open(data["presigned_url"], "_blank"); // Support multiple files
+			document.getElementById('progress-bar').style.width = '100%';
+			document.getElementById('progress-bar-container').style.display = 'none';
+			document.getElementById('progress-bar-container').style.opacity = '0.5';
+			document.getElementById('progress').style.width = '0%';
+			document.getElementById("temp_button").remove();
+                    });
+
+                    button.style.margin = '20px';
+                    button.classList.add("center");
+                    button.setAttribute('id', "temp_button");
+
+                    const container = document.getElementById('progress-bar-container');		
+                    container.style.opacity = '1';
+                    container.append(document.createElement('br'));
+                    container.appendChild(button);	    	
+		} else {
+                    document.getElementById('progress-bar-container').style.display = 'none';
+                    document.getElementById('progress-bar').style.width = '100%';
+                    document.getElementById('progress').style.width = '0%';
+		}
+            } else if (data["state"] === "FAILURE") {
+		document.getElementById("status").textContent = 
+                    "There was an unknown error with your memo. I know this isn't super helpful, but fix the issue and try again.";
+            } else {
+		document.getElementById('progress-bar-container').style.display = 'block';
+
+		let rerun_freq = 1000;        
+		count += 1;
+		const averageSeconds = 10;
+
+		// Rerun in 1 second
+		if (count < 80) {
+                    let progress = Math.min(count / averageSeconds * 100, 100);
+                    document.getElementById('progress').style.width = progress + '%';
+		    
+                    setTimeout(function () {
+			updateProgress(status_url, count); 
+                    }, rerun_freq);
+		}
+            }
+	})
+	.catch(error => {
+            console.error('Error:', error); // Handle any errors
+	});
 }
 
 document.addEventListener('DOMContentLoaded', function() {
