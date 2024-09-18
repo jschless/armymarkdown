@@ -40,7 +40,6 @@ function buttonPress(endpoint, polling_function) {
 	polling_function(status_url, 0);
     }).catch(error => {
 	console.log(error);
-	alert("ERROR WHEN PARSING INPUT\n\n" + XMLHttpRequest.responseText);
     });
 }
 
@@ -57,33 +56,26 @@ function updateProgress(status_url, count) {
 	.then(data => {
             if (data["state"] === "SUCCESS") {
 		document.getElementById("status").textContent = ""; 
-		const windowOpened = window.open(data["presigned_url"], "_blank");
-		if (windowOpened === null) {
-                    // Create a button to retrieve memo on user click
-                    const button = document.createElement('button');
-                    button.textContent = 'Click to open memo';
-                    button.addEventListener('click', function() {
-			window.open(data["presigned_url"], "_blank"); // Support multiple files
-			document.getElementById('progress-bar').style.width = '100%';
-			document.getElementById('progress-bar-container').style.display = 'none';
-			document.getElementById('progress-bar-container').style.opacity = '0.5';
-			document.getElementById('progress').style.width = '0%';
-			document.getElementById("temp_button").remove();
-                    });
-
-                    button.style.margin = '20px';
-                    button.classList.add("center");
-                    button.setAttribute('id', "temp_button");
-
-                    const container = document.getElementById('progress-bar-container');		
-                    container.style.opacity = '1';
-                    container.append(document.createElement('br'));
-                    container.appendChild(button);	    	
-		} else {
-                    document.getElementById('progress-bar-container').style.display = 'none';
-                    document.getElementById('progress-bar').style.width = '100%';
-                    document.getElementById('progress').style.width = '0%';
-		}
+                // Create a button to retrieve memo on user click
+                const button = document.createElement('button');
+                button.textContent = 'Click to open memo';
+                button.addEventListener('click', function() {
+		    window.open(data["presigned_url"], "_blank"); // Support multiple files
+		    document.getElementById('progress-bar').style.width = '100%';
+		    document.getElementById('progress-bar-container').style.display = 'none';
+		    document.getElementById('progress-bar-container').style.opacity = '0.5';
+		    document.getElementById('progress').style.width = '0%';
+		    document.getElementById("temp_button").remove();
+                });
+		
+                button.style.margin = '20px';
+                button.classList.add("center");
+                button.setAttribute('id', "temp_button");
+		
+                const container = document.getElementById('progress-bar-container');		
+                container.style.opacity = '1';
+                container.append(document.createElement('br'));
+                container.appendChild(button);	    	
             } else if (data["state"] === "FAILURE") {
 		document.getElementById("status").textContent = 
                     "There was an unknown error with your memo. I know this isn't super helpful, but fix the issue and try again.";
