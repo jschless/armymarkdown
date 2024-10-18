@@ -38,7 +38,7 @@ function addAddress(fields, is_for) {
     const suffix = is_for ? forCount : thruCount;
     
     fields.forEach(function(field) {
-	ket label = document.createElement('label');
+	let label = document.createElement('label');
 	label.textContent = field.label;
 	label.classList.add("u-full-width");
 	label.classList.add("center");
