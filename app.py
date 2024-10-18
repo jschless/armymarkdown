@@ -65,6 +65,7 @@ def add_csp(response):
         "script-src 'self' https://www.google.com/recaptcha/api.js https://www.gstatic.com/recaptcha/; "  # Allow scripts from trusted sources
         "font-src 'self' https://fonts.gstatic.com https://fonts.google.com https://www.gstatic.com data:; "  # Allow data URIs for fonts
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "  # Allow inline styles if necessary
+        "frame-src https://www.google.com;"
         "img-src 'self'; "  # Only allow images from the same origin
         "connect-src 'self';"  # Only allow AJAX/fetch calls to the same origin
     )
