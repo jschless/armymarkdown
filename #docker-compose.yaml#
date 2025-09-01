@@ -5,13 +5,13 @@ services:
     image: redis:latest
 
   flask_app:
-    build:
+    build: 
       context: ./
-      dockerfile: Dockerfile.development
+      dockerfile: Dockerfile.production
     ports:
-      - "8000:8000"
+      - 8443:8443
+      - 8000:8000
     volumes:
-      - .:/app  # Mount current directory to /app in container
       - /etc/letsencrypt:/etc/letsencrypt
       - db-data:/data
     depends_on:
@@ -19,11 +19,11 @@ services:
       - sqlite_db
 
   celery:
-    build:
+    build: 
       context: ./
-      dockerfile: Dockerfile.development
+      dockerfile: Dockerfile.production
     volumes:
-      - .:/app  # Mount current directory to /app in container
+      - .:/src
       - db-data:/data
     container_name: cel01
     command: celery -A app.celery worker -l info
@@ -34,6 +34,18 @@ services:
     build: ./db
     volumes:
       - db-data:/data
+
+  proxy:
+    build: ./proxy
+    ports:
+      - 80:80
+      - 443:443  # Add HTTPS port forwarding
+    links:
+      - flask_app
+    depends_on:
+      - flask_app
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt  # Ensure SSL certificates are accessible
 
 volumes:
   db-data:
