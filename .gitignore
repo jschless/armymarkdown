@@ -19,3 +19,8 @@ top_level.txt
 temp_file.pdf
 local_config.py
 *.DS_Store
+
+# Temp files
+*#
+.ipynb_checkpoints/
+latex_sandbox/
