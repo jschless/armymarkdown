@@ -17,4 +17,17 @@ jobs:
         key: ${{ secrets.DO_SSH_KEY }}
         script: |
           cd /root/armymarkdown
-          ./deploy.sh
+          git pull origin main
+          
+          # Make deploy script executable if it exists
+          if [ -f "deploy.sh" ]; then
+            chmod +x deploy.sh
+            ./deploy.sh
+          else
+            # Fallback for first deployment
+            echo "🚀 Running initial deployment..."
+            docker-compose -f docker-compose.prod.yml down
+            docker-compose -f docker-compose.prod.yml up --build -d
+            docker image prune -f
+            echo "✅ Deployment complete!"
+          fi
