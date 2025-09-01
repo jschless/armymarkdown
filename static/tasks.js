@@ -30,6 +30,7 @@ function saveData() {
 function buttonPress(endpoint, polling_function) {
     const formData = new FormData(document.getElementById('memo'));
 
+    console.log("Calling buttonPress on endpoint");
     fetch(endpoint, {
         method: "POST",
         body: formData,
@@ -48,7 +49,9 @@ function buttonPress(endpoint, polling_function) {
         polling_function(status_url, 0);
     })
     .catch(error => {
-        console.error('Error:', error); // Handle any errors
+        console.error('Error submitting form:', error);
+        document.getElementById("status").textContent = 
+            "Error submitting your memo. Please check your connection and try again.";
     });
 }
 
@@ -84,28 +87,51 @@ function updateProgress(status_url, count) {
             container.append(document.createElement('br'));
             container.appendChild(button);	    	
         } else if (data["state"] === "FAILURE") {
-            document.getElementById("status").textContent = 
-                "There was an unknown error with your memo. I know this isn't super helpful, but fix the issue and try again.";
+            let errorMessage = "Error processing your memo. ";
+            if (data["status"]) {
+                // Try to provide more specific error information
+                if (data["status"].includes("VALIDATION ERROR")) {
+                    errorMessage += "Please check your memo format and required fields.";
+                } else if (data["status"].includes("LaTeX")) {
+                    errorMessage += "There was an issue generating the PDF. Please check your formatting.";
+                } else if (data["status"].includes("S3") || data["status"].includes("upload")) {
+                    errorMessage += "There was an issue saving your document. Please try again.";
+                } else {
+                    errorMessage += "Please check your memo format and try again.";
+                }
+            } else {
+                errorMessage += "Please check your memo format and try again.";
+            }
+            document.getElementById("status").textContent = errorMessage;
         } else {
             document.getElementById('progress-bar-container').style.display = 'block';
 
-            const rerun_freq = 1000;        
+            // Constants for polling
+            const POLLING_INTERVAL_MS = 1000;        
+            const AVERAGE_COMPLETION_SECONDS = 10;
+            const MAX_POLLING_ATTEMPTS = 80;
+            
             count += 1;
-            const averageSeconds = 10;
 
             // Rerun in 1 second
-            if (count < 80) {
-                const progress = Math.min(count / averageSeconds * 100, 100);
+            if (count < MAX_POLLING_ATTEMPTS) {
+                const progress = Math.min(count / AVERAGE_COMPLETION_SECONDS * 100, 100);
                 document.getElementById('progress').style.width = progress + '%';
                 
                 setTimeout(function () {
                     updateProgress(status_url, count); 
-                }, rerun_freq);
+                }, POLLING_INTERVAL_MS);
+            } else {
+                // Timeout after max attempts
+                document.getElementById("status").textContent = 
+                    "Processing is taking longer than expected. Please try again or contact support if the issue persists.";
             }
         }
     })
     .catch(error => {
-        console.error('Error:', error); // Handle any errors
+        console.error('Error polling task status:', error);
+        document.getElementById("status").textContent = 
+            "Connection error while checking status. Please refresh the page and try again.";
     });
 }
 

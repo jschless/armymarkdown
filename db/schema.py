@@ -26,6 +26,8 @@ class User(UserMixin, db.Model):
 
 
 class Document(db.Model):
+    from constants import MAX_DOCUMENT_CONTENT_LENGTH
+    
     id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.String(5000))
+    content = db.Column(db.String(MAX_DOCUMENT_CONTENT_LENGTH))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)

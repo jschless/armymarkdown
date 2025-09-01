@@ -5,7 +5,7 @@ from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, Length
 import sqlalchemy as sa
 from db.schema import User, db
-from local_config import config
+from constants import MIN_USERNAME_LENGTH, MAX_USERNAME_LENGTH, MIN_PASSWORD_LENGTH, MAX_PASSWORD_LENGTH
 
 
 class LoginForm(FlaskForm):
@@ -20,7 +20,9 @@ class RegistrationForm(FlaskForm):
         validators=[
             DataRequired(),
             Length(
-                min=6, max=14, message="Username must be between 6 and 14 characters."
+                min=MIN_USERNAME_LENGTH, 
+                max=MAX_USERNAME_LENGTH, 
+                message=f"Username must be between {MIN_USERNAME_LENGTH} and {MAX_USERNAME_LENGTH} characters."
             ),
         ],
     )
@@ -30,7 +32,9 @@ class RegistrationForm(FlaskForm):
         validators=[
             DataRequired(),
             Length(
-                min=6, max=14, message="Password must be between 6 and 14 characters."
+                min=MIN_PASSWORD_LENGTH, 
+                max=MAX_PASSWORD_LENGTH, 
+                message=f"Password must be between {MIN_PASSWORD_LENGTH} and {MAX_PASSWORD_LENGTH} characters."
             ),
         ],
     )

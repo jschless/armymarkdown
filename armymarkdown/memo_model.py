@@ -288,6 +288,63 @@ def parse_memo_body(lines):
     return master_list
 
 
+def validate_input_text(text):
+    """Validate input text for basic safety and format requirements."""
+    if not isinstance(text, str):
+        return "Input must be a string"
+    
+    if len(text.strip()) == 0:
+        return "Input cannot be empty"
+    
+    if len(text) > 50000:  # Reasonable limit to prevent DoS
+        return "Input text too long (maximum 50,000 characters)"
+    
+    # Check for potentially dangerous LaTeX commands
+    dangerous_patterns = [
+        r'\\input\s*{',
+        r'\\include\s*{', 
+        r'\\write\s*{',
+        r'\\immediate',
+        r'\\openout',
+        r'\\read',
+        r'\\catcode',
+        r'\\def\s*\\',
+        r'\\let\s*\\',
+        r'\\expandafter',
+    ]
+    
+    import re
+    for pattern in dangerous_patterns:
+        if re.search(pattern, text, re.IGNORECASE):
+            return f"Potentially unsafe LaTeX command detected: {pattern.replace('\\\\', '\\')}"
+    
+    return None  # No validation errors
+
+
+def validate_memo_fields(memo_dict):
+    """Validate required memo fields and their formats."""
+    required_fields = ['unit_name', 'office_symbol', 'subject', 'author_name', 'author_rank']
+    
+    for field in required_fields:
+        if field not in memo_dict or not memo_dict[field]:
+            return f"Required field missing: {field.replace('_', ' ').title()}"
+        
+        # Check field length limits
+        if len(str(memo_dict[field])) > 500:
+            return f"Field too long: {field.replace('_', ' ').title()} (maximum 500 characters)"
+    
+    # Validate subject line
+    if len(memo_dict['subject']) < 3:
+        return "Subject must be at least 3 characters long"
+    
+    # Validate office symbol format (basic check)
+    office_symbol = memo_dict['office_symbol'].strip()
+    if len(office_symbol) < 2 or not re.match(r'^[A-Z0-9-]+$', office_symbol):
+        return "Office symbol should contain only uppercase letters, numbers, and hyphens"
+    
+    return None  # No validation errors
+
+
 def parse_lines(file_lines):
     # processes a text block into a latex memo_model
 
@@ -301,6 +358,13 @@ def parse_lines(file_lines):
             file_lines,
         )
     )
+    
+    # Validate total input size
+    total_content = "\n".join(file_lines)
+    validation_error = validate_input_text(total_content)
+    if validation_error:
+        return f"INPUT VALIDATION ERROR: {validation_error}"
+    
     try:
         memo_begin_loc = [i for i, s in enumerate(file_lines) if "SUBJECT" in s][0]
     except IndexError:
@@ -313,25 +377,46 @@ def parse_lines(file_lines):
     for line in file_lines[:memo_begin_loc]:
         # parse all the admin info
         if "=" in line:
-            key, text = line.split("=")
+            # Split only on first equals sign to handle values with = in them
+            parts = line.split("=", 1)
+            if len(parts) != 2:
+                continue
+                
+            key, text = parts
+            key = key.strip()
+            text = text.strip()
 
-            if key.strip() not in key_converter:
+            if key not in key_converter:
                 return (
-                    f"ERROR: No such keyword as {key.strip()}, "
-                    "please remove or fix {line}"
+                    f"ERROR: No such keyword as '{key}', "
+                    f"please remove or fix line: {line}"
                 )
 
-            processed_text = add_latex_escape_chars(text.strip())
-            if key_converter[key.strip()] in list_keys:
-                memo_dict[key_converter[key.strip()]] = [
-                    *memo_dict.get(key_converter[key.strip()], []),
+            # Validate field content
+            if len(text) > 1000:
+                return f"ERROR: Field '{key}' is too long (maximum 1000 characters)"
+
+            processed_text = add_latex_escape_chars(text)
+            if key_converter[key] in list_keys:
+                memo_dict[key_converter[key]] = [
+                    *memo_dict.get(key_converter[key], []),
                     processed_text,
                 ]
 
             else:
-                memo_dict[key_converter[key.strip()]] = processed_text
+                memo_dict[key_converter[key]] = processed_text
 
-    memo_dict["text"] = parse_memo_body(file_lines[memo_begin_loc:])
+    # Parse memo body with validation
+    try:
+        memo_dict["text"] = parse_memo_body(file_lines[memo_begin_loc:])
+    except Exception as e:
+        return f"ERROR: Failed to parse memo body: {str(e)}"
+    
+    # Validate required fields before creating model
+    field_validation_error = validate_memo_fields(memo_dict)
+    if field_validation_error:
+        return f"FIELD VALIDATION ERROR: {field_validation_error}"
+    
     return MemoModel.from_dict(memo_dict)
 
 

@@ -139,8 +139,10 @@ def save_document(text):
         )
         return "Document is already saved."
 
+    from constants import MAX_DOCUMENTS_PER_USER
+    
     num_documents = Document.query.filter_by(user_id=user_id).count()
-    removed_oldest = num_documents >= 10
+    removed_oldest = num_documents >= MAX_DOCUMENTS_PER_USER
     if removed_oldest:
         oldest_document = (
             Document.query.filter_by(user_id=user_id)

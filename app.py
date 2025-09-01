@@ -183,87 +183,196 @@ def taskstatus(task_id):
 
 
 def get_aws_link(file_name):
-    # https://boto3.amazonaws.com/v1/documentation/api/latest/guide/s3-presigned-urls.html
+    """
+    Generate presigned URL for S3 object with proper error handling.
+    
+    Args:
+        file_name (str): S3 object key
+        
+    Returns:
+        str: Presigned URL or None on error
+    """
+    from constants import S3_BUCKET_NAME, PRESIGNED_URL_EXPIRY_SECONDS
+    
+    if not file_name:
+        app.logger.error("get_aws_link called with empty file_name")
+        return None
+        
     try:
         response = s3.generate_presigned_url(
             "get_object",
-            Params={"Bucket": "armymarkdown", "Key": file_name},
-            ExpiresIn=3600,
+            Params={"Bucket": S3_BUCKET_NAME, "Key": file_name},
+            ExpiresIn=PRESIGNED_URL_EXPIRY_SECONDS,
         )
+        app.logger.debug(f"Generated presigned URL for {file_name}")
+        return response
+        
     except ClientError as e:
-        app.logger.error(f"Something Happened: {e}")
+        error_code = e.response['Error']['Code']
+        app.logger.error(f"AWS S3 ClientError generating presigned URL ({error_code}): {e}")
         return None
-    return response
+        
+    except Exception as e:
+        app.logger.error(f"Unexpected error generating presigned URL: {e}")
+        return None
 
 
-def upload_file_to_s3(file, aws_path, acl="public-read"):
+def upload_file_to_s3(file_path, aws_path, acl="public-read"):
     """
-    Docs: http://boto3.readthedocs.io/en/latest/guide/s3.html
+    Upload file to S3 with proper error handling.
+    
+    Args:
+        file_path (str): Local path to file to upload
+        aws_path (str): S3 key/path for the file
+        acl (str): Access control level
+        
+    Returns:
+        str: The original file_path on success
+        
+    Raises:
+        FileNotFoundError: If local file doesn't exist
+        RuntimeError: If S3 upload fails
     """
-    ret_val = None
+    from constants import S3_BUCKET_NAME, ErrorMessages
+    
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"File not found: {file_path}")
+    
     try:
         s3.upload_file(
-            file,
-            "armymarkdown",
+            file_path,
+            S3_BUCKET_NAME,
             aws_path,
             ExtraArgs={
                 "ContentType": "application/pdf",
                 "ContentDisposition": "inline",
             },
         )
-        ret_val = file
+        app.logger.info(f"Successfully uploaded {file_path} to S3 as {aws_path}")
+        return file_path
+        
+    except ClientError as e:
+        error_code = e.response['Error']['Code']
+        app.logger.error(f"AWS S3 ClientError ({error_code}): {e}")
+        raise RuntimeError(f"S3 upload failed: {error_code}")
+        
     except Exception as e:
-        app.logger.error(f"Something Happened: {e}")
-        ret_val = e
+        app.logger.error(f"Unexpected error during S3 upload: {e}")
+        raise RuntimeError(ErrorMessages.FILE_UPLOAD_FAILED)
+        
     finally:
-        # delete file after uploads
-        if os.path.exists(file):
-            os.remove(file)
-        return ret_val
+        # Clean up local file after upload attempt
+        if os.path.exists(file_path):
+            try:
+                os.remove(file_path)
+                app.logger.debug(f"Cleaned up local file: {file_path}")
+            except OSError as e:
+                app.logger.warning(f"Failed to clean up local file {file_path}: {e}")
 
 
 @celery.task(name="create_memo")
 def create_memo(text, dictionary=None):
-    if dictionary:
-        m = memo_model.MemoModel.from_form(dictionary)
-    else:
-        m = memo_model.MemoModel.from_text(text)
-
-    app.logger.debug(m.to_dict())
-    mw = writer.MemoWriter(m)
-
-    temp_name = (
-        m.subject.replace(" ", "_").lower()[:15]
-        + "".join(random.choices("0123456789", k=4))
-        + ".tex"
+    from constants import (
+        MAX_SUBJECT_LENGTH_FOR_FILENAME, 
+        RANDOM_ID_LENGTH, 
+        TEX_EXTENSION,
+        PDF_EXTENSION,
+        LATEX_TEMP_EXTENSIONS,
+        ErrorMessages
     )
-    file_path = os.path.join(app.root_path, temp_name)
+    
+    try:
+        # Parse memo model with validation
+        if dictionary:
+            m = memo_model.MemoModel.from_form(dictionary)
+        else:
+            m = memo_model.MemoModel.from_text(text)
+        
+        # Check if parsing failed (returns string error message)
+        if isinstance(m, str):
+            app.logger.error(f"Memo parsing failed: {m}")
+            raise ValueError(ErrorMessages.MEMO_PARSING_ERROR)
 
-    mw.write(output_file=file_path)
+        app.logger.debug(m.to_dict())
+        
+        # Create memo writer with validation
+        try:
+            mw = writer.MemoWriter(m)
+        except Exception as e:
+            app.logger.error(f"Failed to create MemoWriter: {e}")
+            raise ValueError(ErrorMessages.INVALID_MEMO_FORMAT)
 
-    mw.generate_memo()
+        # Generate safe filename
+        safe_subject = "".join(c for c in m.subject if c.isalnum() or c in (' ', '-', '_')).rstrip()
+        temp_name = (
+            safe_subject.replace(" ", "_").lower()[:MAX_SUBJECT_LENGTH_FOR_FILENAME]
+            + "".join(random.choices("0123456789", k=RANDOM_ID_LENGTH))
+            + TEX_EXTENSION
+        )
+        file_path = os.path.join(app.root_path, temp_name)
 
-    if os.path.exists(file_path[:-4] + ".pdf"):
-        upload_file_to_s3(file_path[:-4] + ".pdf", temp_name[:-4] + ".pdf")
-    else:
-        raise Exception(f"PDF at path {file_path[:-4]}.pdf was not created")
+        # Write LaTeX file with error handling
+        try:
+            mw.write(output_file=file_path)
+        except Exception as e:
+            app.logger.error(f"Failed to write LaTeX file: {e}")
+            raise RuntimeError(ErrorMessages.PDF_GENERATION_FAILED)
 
-    # clean up temp files after upload to AWS
-    file_endings = [
-        ".aux",
-        ".fdb_latexmk",
-        ".fls",
-        ".log",
-        ".out",
-        ".tex",
-    ]
+        # Generate PDF with error handling
+        try:
+            mw.generate_memo()
+        except Exception as e:
+            app.logger.error(f"LaTeX compilation failed: {e}")
+            raise RuntimeError(ErrorMessages.PDF_GENERATION_FAILED)
 
-    for ending in file_endings:
-        temp = temp_name[:-4] + ending
-        if os.path.exists(temp):
-            os.remove(temp)
+        # Check if PDF was generated
+        pdf_path = file_path[:-len(TEX_EXTENSION)] + PDF_EXTENSION
+        if not os.path.exists(pdf_path):
+            app.logger.error(f"PDF not found at expected path: {pdf_path}")
+            raise FileNotFoundError(ErrorMessages.PDF_GENERATION_FAILED)
 
-    return temp_name
+        # Upload to S3 with error handling
+        try:
+            upload_result = upload_file_to_s3(
+                pdf_path, 
+                temp_name[:-len(TEX_EXTENSION)] + PDF_EXTENSION
+            )
+            if isinstance(upload_result, Exception):
+                raise upload_result
+        except Exception as e:
+            app.logger.error(f"S3 upload failed: {e}")
+            raise RuntimeError(ErrorMessages.FILE_UPLOAD_FAILED)
+
+        # Clean up temporary files
+        _cleanup_temp_files(temp_name, LATEX_TEMP_EXTENSIONS)
+
+        return temp_name
+
+    except (ValueError, RuntimeError, FileNotFoundError) as e:
+        # Clean up any partial files on error
+        if 'temp_name' in locals():
+            _cleanup_temp_files(temp_name, LATEX_TEMP_EXTENSIONS + [PDF_EXTENSION])
+        raise e
+    except Exception as e:
+        # Catch-all for unexpected errors
+        app.logger.error(f"Unexpected error in create_memo: {e}")
+        if 'temp_name' in locals():
+            _cleanup_temp_files(temp_name, LATEX_TEMP_EXTENSIONS + [PDF_EXTENSION])
+        raise RuntimeError(ErrorMessages.GENERIC_ERROR)
+
+
+def _cleanup_temp_files(temp_name, file_extensions):
+    """Helper function to clean up temporary files."""
+    from constants import TEX_EXTENSION
+    
+    for extension in file_extensions:
+        temp_file = temp_name[:-len(TEX_EXTENSION)] + extension
+        if os.path.exists(temp_file):
+            try:
+                os.remove(temp_file)
+                app.logger.debug(f"Cleaned up temp file: {temp_file}")
+            except OSError as e:
+                app.logger.warning(f"Failed to clean up temp file {temp_file}: {e}")
 
 
 if os.environ.get("DEVELOPMENT") is None:
