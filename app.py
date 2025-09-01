@@ -19,22 +19,27 @@ from armymarkdown import memo_model, writer
 from flask_talisman import Talisman
 from db.db import init_db
 
-if "REDIS_URL" not in os.environ:
-    # set os.environ from local_config
-    from local_config import config
+def get_required_env_var(var_name):
+    """Get required environment variable or raise error if missing."""
+    value = os.environ.get(var_name)
+    if not value:
+        raise ValueError(f"Required environment variable {var_name} is not set")
+    return value
 
-    for key, val in config.items():
-        os.environ[key] = val
+def get_optional_env_var(var_name, default=None):
+    """Get optional environment variable with default fallback."""
+    return os.environ.get(var_name, default)
 
+# Load configuration from environment variables
 app = Flask(__name__, static_url_path="/static")
-app.secret_key = os.environ["FLASK_SECRET"]
-app.config["RECAPTCHA_PUBLIC_KEY"] = os.environ["RECAPTCHA_PUBLIC_KEY"]
-app.config["RECAPTCHA_PRIVATE_KEY"] = os.environ["RECAPTCHA_PRIVATE_KEY"]
+app.secret_key = get_required_env_var("FLASK_SECRET")
+app.config["RECAPTCHA_PUBLIC_KEY"] = get_required_env_var("RECAPTCHA_PUBLIC_KEY")
+app.config["RECAPTCHA_PRIVATE_KEY"] = get_required_env_var("RECAPTCHA_PRIVATE_KEY")
 
 celery = Celery(
     app.name,
-    broker=os.environ["REDIS_URL"],
-    backend=os.environ["REDIS_URL"],
+    broker=get_required_env_var("REDIS_URL"),
+    backend=get_required_env_var("REDIS_URL"),
     broker_connection_retry_on_startup=True,
 )
 
@@ -49,8 +54,8 @@ init_db(app)
 
 s3 = boto3.client(
     "s3",
-    aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
-    aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
+    aws_access_key_id=get_required_env_var("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=get_required_env_var("AWS_SECRET_ACCESS_KEY"),
     config=boto3.session.Config(region_name="us-east-2", signature_version="s3v4"),
 )
 

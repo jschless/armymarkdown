@@ -5,7 +5,7 @@ from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, Length
 import sqlalchemy as sa
 from db.schema import User, db
-from local_config import config
+# Removed local_config import - using environment variables instead
 
 
 class LoginForm(FlaskForm):
