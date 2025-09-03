@@ -1,50 +1,4 @@
-.navbar {
-    background-color: #333;
-    color: white;
-    overflow: hidden;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-}
-
-.navbar-links {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    gap: 20px;
-}
-
-.navbar-links li {
-    display: inline;
-}
-
-.navbar-links li a {
-    color: white;
-    text-decoration: none;
-}
-
-.content {
-    margin-top: 20px; 
-    padding: 20px; 
-}
-
-.center {
-    text-align: center;
-}
-
-/* Responsive navigation menu */
-@media screen and (max-width: 600px) {
-    .navbar {
-        flex-direction: column;
-    }
-
-    .navbar-links {
-        margin-top: 10px;
-        justify-content: center;
-    }
-}
+/* Legacy styles - kept for backward compatibility */
 
 textarea.u-full-height {
     height: 75vh;
@@ -54,49 +8,6 @@ textarea.u-half-height {
     height: 50vh;
 }
 
-.flash {
-    color: green;
-}
-
-.progress-bar {
-    top: 40px; /* Adjust according to your label height */
-    height: 40px;
-    background-color: #f0f0f0;
-    outline: 1px solid #000;
-}
-
-.progress {
-    width: 0%;
-    height: 100%;
-    background-color: #4caf50;
-}
-
-.progress-bar-container {
-    display: none;
-    position: fixed;
-    max-width: 960px;
-    width: 100%;
-    top: 20%;
-    opacity: 50%;
-    background-color: #f0f0f0;
-    margin: 0 auto;
-    font-weight: bold;
-    z-index: 999;
-    padding: 10px;   
-}
-
-@media (min-width: 400px) {
-  .progress-bar-container {
-    width: 85%;
-    padding: 0;
-  }
-}
-
-/* For devices larger than 550px */
-@media (min-width: 550px) {
-  .progress-bar-container {
-      width: 80%;
-  }
-}
+/* Old progress bar and flash styles removed - now using modern equivalents */
 
     

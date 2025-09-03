@@ -9,11 +9,11 @@ git pull origin main
 
 # Stop existing containers
 echo "⏹️  Stopping existing containers..."
-docker-compose -f docker-compose.prod.yml down
+docker-compose down
 
 # Build and start containers
 echo "🏗️  Building and starting containers..."
-docker-compose -f docker-compose.prod.yml up --build -d
+docker-compose up --build -d
 
 # Clean up unused images
 echo "🧹 Cleaning up unused Docker images..."
@@ -24,4 +24,4 @@ echo "🌐 Application should be running at your domain"
 
 # Check container status
 echo "📊 Container Status:"
-docker-compose -f docker-compose.prod.yml ps
+docker-compose ps
