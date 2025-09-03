@@ -30,9 +30,6 @@ RUN tlmgr install koma-script etoolbox fontspec xkeyval \
 		  microtype pdftexcmds infwarerr everypage ragged2e || \
     echo "Some tlmgr packages failed to install, may already be available via system packages"
 
-# Verify koma-script is available
-RUN kpsewhich scrartcl.cls && echo "scrartcl.cls found!" || echo "WARNING: scrartcl.cls not found!"
-
 # Set up font directories and permissions
 RUN export OSFONTDIR=/usr/share/fonts
 RUN luaotfload-tool -vvv --update --force
