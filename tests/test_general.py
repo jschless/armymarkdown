@@ -2,7 +2,7 @@ from armymarkdown import memo_model, writer
 
 
 def test_memo_model_creation():
-    m = memo_model.parse("./tests/template.Amd")
+    m = memo_model.MemoModel.from_file("./tests/template.Amd")
     assert m == memo_model.MemoModel(
         unit_name="4th Engineer Battalion",
         unit_street_address="588 Wetzel Road",
@@ -30,7 +30,7 @@ def test_memo_model_creation():
 
 
 def test_latex_file():
-    m = memo_model.parse("./tests/template.Amd")
+    m = memo_model.MemoModel.from_file("./tests/template.Amd")
     mw = writer.MemoWriter(m)
     mw.write(output_file="./tests/test_tex_output_basic.tex")
 

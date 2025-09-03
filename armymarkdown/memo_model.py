@@ -62,7 +62,7 @@ class MemoModel:
 
     def _check_date(self, date_str):
         # form 08 May 2022
-        date_pattern = re.compile("\d\d [A-Z][a-z]+ \d\d\d\d")
+        date_pattern = re.compile(r"\d\d [A-Z][a-z]+ \d\d\d\d")
         if date_pattern.match(date_str) is None:
             return (
                 f"The entered date {date_str} does not conform to pattern"
