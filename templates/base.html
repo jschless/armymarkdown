@@ -107,10 +107,8 @@
 
   <!-- JavaScript -->
   <script>
-    console.log('Base template JavaScript loaded');
     // Mobile navigation toggle and dark mode functionality
     document.addEventListener('DOMContentLoaded', function() {
-      console.log('DOMContentLoaded fired');
       // Mobile nav
       const toggle = document.getElementById('mobile-nav-toggle');
       const navLinks = document.getElementById('nav-links');
@@ -155,18 +153,12 @@
 
     // Dark mode functionality
     function initTheme() {
-      console.log('initTheme called');
       const themeToggle = document.getElementById('theme-toggle');
       const themeIcon = document.querySelector('.theme-icon');
-      
-      console.log('Elements found:', { themeToggle, themeIcon });
-      console.log('Theme toggle innerHTML:', themeToggle ? themeToggle.innerHTML : 'null');
       
       // Check for saved theme preference or default to light mode
       const savedTheme = localStorage.getItem('theme') || 'light';
       const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-      
-      console.log('Theme state:', { savedTheme, currentTheme });
       
       // Apply saved theme
       if (savedTheme !== currentTheme) {
@@ -176,31 +168,19 @@
       
       // Theme toggle event listener
       if (themeToggle) {
-        console.log('Adding click listener to theme toggle');
         themeToggle.addEventListener('click', () => {
-          console.log('Theme toggle clicked!');
           const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
           const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-          
-          console.log('Switching theme from', currentTheme, 'to', newTheme);
           
           document.documentElement.setAttribute('data-theme', newTheme);
           localStorage.setItem('theme', newTheme);
           updateThemeIcon(newTheme);
-          
-          console.log('Theme switched. HTML element now has:', document.documentElement.getAttribute('data-theme'));
         });
-      } else {
-        console.error('Theme toggle button not found!');
       }
       
       function updateThemeIcon(theme) {
-        console.log('Updating icon for theme:', theme);
         if (themeIcon) {
           themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
-          console.log('Icon updated to:', themeIcon.textContent);
-        } else {
-          console.error('Theme icon not found!');
         }
       }
       
