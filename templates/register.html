@@ -1,40 +1,87 @@
 {% extends "base.html" %}
 
+{% block title %}Create Account - Army Memo Maker{% endblock %}
+
 {% block content %}
-<div class="row center">
-  <h2>Register</h2>
-  <form action="" method="post">
+<div class="modern-card fade-in" style="max-width: 400px; margin: var(--spacing-16) auto;">
+  <div class="modern-card-header text-center">
+    <h2 class="modern-card-title">Create Account</h2>
+    <p class="modern-card-description">Join Army Memo Maker to save and manage your documents</p>
+  </div>
+
+  <form action="" method="post" novalidate class="modern-form">
     {{ form.hidden_tag() }}
-    <p>
-      {{ form.username.label }}<br>
-      {{ form.username(size=32) }}<br>
+    
+    <div class="modern-form-group">
+      <label for="{{ form.username.id }}" class="modern-form-label">{{ form.username.label.text }}</label>
+      {{ form.username(class="modern-form-input", placeholder="Choose a username (6-14 characters)") }}
       {% for error in form.username.errors %}
-      <span style="color: red;">[{{ error }}]</span>
+      <div class="modern-alert modern-alert-error" style="margin-top: var(--spacing-2);">
+        {{ error }}
+      </div>
       {% endfor %}
-    </p>
-    <p>
-      {{ form.email.label }}<br>
-      {{ form.email(size=64) }}<br>
+    </div>
+
+    <div class="modern-form-group">
+      <label for="{{ form.email.id }}" class="modern-form-label">{{ form.email.label.text }}</label>
+      {{ form.email(class="modern-form-input", placeholder="Enter your email address") }}
       {% for error in form.email.errors %}
-      <span style="color: red;">[{{ error }}]</span>
+      <div class="modern-alert modern-alert-error" style="margin-top: var(--spacing-2);">
+        {{ error }}
+      </div>
       {% endfor %}
-    </p>
-    <p>
-      {{ form.password.label }}<br>
-      {{ form.password(size=32) }}<br>
+    </div>
+
+    <div class="modern-form-group">
+      <label for="{{ form.password.id }}" class="modern-form-label">{{ form.password.label.text }}</label>
+      {{ form.password(class="modern-form-input", placeholder="Choose a password (6-14 characters)") }}
       {% for error in form.password.errors %}
-      <span style="color: red;">[{{ error }}]</span>
+      <div class="modern-alert modern-alert-error" style="margin-top: var(--spacing-2);">
+        {{ error }}
+      </div>
       {% endfor %}
-    </p>
-    <p>
-      {{ form.password2.label }}<br>
-      {{ form.password2(size=32) }}<br>
+    </div>
+
+    <div class="modern-form-group">
+      <label for="{{ form.password2.id }}" class="modern-form-label">{{ form.password2.label.text }}</label>
+      {{ form.password2(class="modern-form-input", placeholder="Confirm your password") }}
       {% for error in form.password2.errors %}
-      <span style="color: red;">[{{ error }}]</span>
+      <div class="modern-alert modern-alert-error" style="margin-top: var(--spacing-2);">
+        {{ error }}
+      </div>
       {% endfor %}
-    </p>
-    <p> {{ form.recaptcha }} </p>
-    <p>{{ form.submit() }}</p>
+    </div>
+
+    {% if not config.DISABLE_CAPTCHA and config.RECAPTCHA_PUBLIC_KEY %}
+    <div class="modern-form-group">
+      {{ form.recaptcha }}
+    </div>
+    {% endif %}
+
+    <div class="modern-form-group">
+      {{ form.submit(class="modern-btn modern-btn-primary", style="width: 100%;") }}
+    </div>
   </form>
+
+  <div class="text-center" style="margin-top: var(--spacing-6); padding-top: var(--spacing-6); border-top: 1px solid var(--color-gray-200);">
+    <p style="color: var(--color-gray-600);">
+      Already have an account? 
+      <a href="{{ url_for('login') }}" style="color: var(--color-primary); text-decoration: none; font-weight: 500;">
+        Sign in
+      </a>
+    </p>
+  </div>
+</div>
+
+<div class="modern-card fade-in fade-in-delay-1" style="max-width: 400px; margin: var(--spacing-8) auto; background: linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-gray-100) 100%);">
+  <div class="text-center">
+    <h3 class="font-semibold mb-4">Account Benefits</h3>
+    <div class="text-sm" style="color: var(--color-gray-600); line-height: var(--line-height-relaxed);">
+      <div style="margin-bottom: var(--spacing-3);">💾 Save memos for future reference</div>
+      <div style="margin-bottom: var(--spacing-3);">📚 Access complete document history</div>
+      <div style="margin-bottom: var(--spacing-3);">🏛️ Store organizational details</div>
+      <div>🚀 Streamline memo creation process</div>
+    </div>
+  </div>
 </div>
 {% endblock %}
