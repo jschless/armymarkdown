@@ -37,7 +37,6 @@ services:
     build: ./db
     volumes:
       - db-data:/data
-    restart: unless-stopped
 
   proxy:
     build: ./proxy

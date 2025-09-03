@@ -21,7 +21,7 @@ class MemoWriter:
             print("\n".join(self.lines), file=f)
 
     def generate_memo(self):
-        subprocess.run(["lualatex", self.output_file])
+        subprocess.run(["lualatex", "-interaction=batchmode", "-halt-on-error", self.output_file])
 
     def _write_for_lines(self) -> list:
         ans = []
