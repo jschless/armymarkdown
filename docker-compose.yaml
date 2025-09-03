@@ -10,6 +10,7 @@ services:
       context: ./
       dockerfile: Dockerfile.production
     ports:
+      - "8443:8443"
       - "8000:8000"
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt
