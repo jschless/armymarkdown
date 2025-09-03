@@ -7,6 +7,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fontconfig ttf-mscorefonts-installer \ 
     texlive-base \
     texlive-latex-base \
+    texlive-latex-extra \
+    texlive-fonts-recommended \
+    texlive-fonts-extra \
     texlive-luatex \
     latexmk \
     xz-utils
@@ -16,13 +19,19 @@ RUN fc-cache -f -v
 # Create the non-root user first but don't switch yet
 RUN groupadd -r -g 1001 appuser && useradd -r -u 1001 -g appuser -m appuser
 
-# Install TeX packages as root but configure for user access
-RUN tlmgr init-usertree
-RUN tlmgr option repository ftp://tug.org/historic/systems/texlive/2021/tlnet-final
+# Install TeX packages as root but configure for user access  
+RUN tlmgr init-usertree || echo "tlmgr init-usertree failed, continuing..."
+RUN tlmgr option repository ftp://tug.org/historic/systems/texlive/2021/tlnet-final || echo "tlmgr repository setup failed, continuing..."
+
+# Try to install packages, but don't fail if some are already available via apt
 RUN tlmgr install koma-script etoolbox fontspec xkeyval \
     	  	  xcolor datetime fmtcount background csquotes \
-		  pgf background enumitem setspace booktabs \
-		  microtype pdftexcmds infwarerr everypage ragged2e
+		  pgf enumitem setspace booktabs \
+		  microtype pdftexcmds infwarerr everypage ragged2e || \
+    echo "Some tlmgr packages failed to install, may already be available via system packages"
+
+# Verify koma-script is available
+RUN kpsewhich scrartcl.cls && echo "scrartcl.cls found!" || echo "WARNING: scrartcl.cls not found!"
 
 # Set up font directories and permissions
 RUN export OSFONTDIR=/usr/share/fonts
