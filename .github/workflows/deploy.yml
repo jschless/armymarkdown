@@ -26,8 +26,8 @@ jobs:
           else
             # Fallback for first deployment
             echo "🚀 Running initial deployment..."
-            docker-compose -f docker-compose.prod.yml down
-            docker-compose -f docker-compose.prod.yml up --build -d
+            docker-compose down
+            docker-compose up --build -d
             docker image prune -f
             echo "✅ Deployment complete!"
           fi
