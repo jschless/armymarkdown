@@ -6,10 +6,99 @@ import pytest
 import tempfile
 import os
 import shutil
-from unittest.mock import Mock, patch
+import sys
+from unittest.mock import Mock, patch, MagicMock
 from flask import Flask
 from armymarkdown import memo_model
 import sqlite3
+
+
+# Mock the database and login modules before they get imported
+def mock_database_modules():
+    """Mock database-related modules that may not be available in test environment."""
+    # Mock db.schema module
+    mock_db_schema = MagicMock()
+    mock_db_schema.User = MagicMock()
+    mock_db_schema.Document = MagicMock()
+    mock_db_schema.db = MagicMock()
+    sys.modules['db.schema'] = mock_db_schema
+    sys.modules['db'] = MagicMock()
+    sys.modules['db.db'] = MagicMock()
+    
+    # Mock flask-login components
+    mock_flask_login = MagicMock()
+    mock_flask_login.LoginManager = MagicMock
+    mock_flask_login.login_user = MagicMock()
+    mock_flask_login.logout_user = MagicMock()
+    mock_flask_login.login_required = lambda f: f  # Pass-through decorator
+    
+    # Create a configurable mock user for current_user
+    mock_user = MagicMock()
+    mock_user.is_authenticated = False
+    mock_user.is_active = False
+    mock_user.is_anonymous = True
+    mock_user.get_id.return_value = None
+    mock_user.id = None
+    mock_user.username = None
+    
+    # Add method to authenticate user for testing
+    def authenticate_test_user(user_id=1, username='testuser'):
+        mock_user.is_authenticated = True
+        mock_user.is_active = True
+        mock_user.is_anonymous = False
+        mock_user.get_id.return_value = str(user_id)
+        mock_user.id = user_id
+        mock_user.username = username
+    
+    def logout_test_user():
+        mock_user.is_authenticated = False
+        mock_user.is_active = False
+        mock_user.is_anonymous = True
+        mock_user.get_id.return_value = None
+        mock_user.id = None
+        mock_user.username = None
+    
+    mock_user.authenticate_for_test = authenticate_test_user
+    mock_user.logout_for_test = logout_test_user
+    mock_flask_login.current_user = mock_user
+    
+    sys.modules['flask_login'] = mock_flask_login
+    
+    # Mock Celery to prevent Redis connection attempts
+    mock_celery = MagicMock()
+    mock_celery_class = MagicMock()
+    
+    def task_decorator(f=None, **kwargs):
+        """Mock Celery task decorator that adds delay and AsyncResult methods."""
+        def decorator(func):
+            # Add delay method that returns a mock result
+            def delay(*args, **kwargs):
+                result = Mock()
+                result.id = "test-task-id"
+                result.get = Mock(return_value="Mocked task result")
+                return result
+            
+            # Add AsyncResult method for status checking
+            def async_result(task_id):
+                result = Mock()
+                result.id = task_id
+                result.state = "SUCCESS"
+                result.result = "Mocked task result"
+                result.get = Mock(return_value="Mocked task result")
+                return result
+            
+            func.delay = delay
+            func.AsyncResult = async_result
+            return func
+        return decorator(f) if f else decorator
+    
+    mock_celery_class.task = task_decorator
+    mock_celery.Celery = lambda *args, **kwargs: mock_celery_class
+    sys.modules['celery'] = mock_celery
+
+
+# Set up mocks before any imports
+mock_database_modules()
 
 
 @pytest.fixture(scope="session")
@@ -28,12 +117,28 @@ def test_app():
     }
     
     with patch.dict(os.environ, test_env):
-        # Import app after setting environment variables
-        from app import app
-        app.config["TESTING"] = True
-        app.config["WTF_CSRF_ENABLED"] = False
-        app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
-        yield app
+        try:
+            # Import app after setting environment variables and mocks
+            from app import app
+            app.config["TESTING"] = True
+            app.config["WTF_CSRF_ENABLED"] = False
+            app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
+            
+            # Add current_user to template context for testing
+            @app.context_processor
+            def inject_user():
+                from flask_login import current_user
+                return dict(current_user=current_user)
+                
+            yield app
+        except ImportError as e:
+            # If app import fails, create a minimal Flask app for testing
+            app = Flask(__name__)
+            app.config["TESTING"] = True
+            app.config["WTF_CSRF_ENABLED"] = False
+            app.config["SECRET_KEY"] = "test-secret-key"
+            app.config["DISABLE_CAPTCHA"] = True
+            yield app
 
 
 @pytest.fixture
@@ -50,6 +155,49 @@ def app_context(test_app):
 
 
 @pytest.fixture
+def auth_user():
+    """Fixture to control user authentication in tests with proper isolation."""
+    from flask_login import current_user
+    
+    class AuthController:
+        def __init__(self):
+            # Store original state to restore later
+            self.original_authenticated = getattr(current_user, 'is_authenticated', False)
+            self.original_active = getattr(current_user, 'is_active', False) 
+            self.original_anonymous = getattr(current_user, 'is_anonymous', True)
+            self.original_id = getattr(current_user, 'id', None)
+            self.original_username = getattr(current_user, 'username', None)
+            
+        def login(self, user_id=1, username='testuser'):
+            current_user.authenticate_for_test(user_id, username)
+            
+        def logout(self):
+            current_user.logout_for_test()
+            
+        def restore_original_state(self):
+            # Restore the original state
+            current_user.is_authenticated = self.original_authenticated
+            current_user.is_active = self.original_active
+            current_user.is_anonymous = self.original_anonymous
+            current_user.id = self.original_id
+            current_user.username = self.original_username
+            if hasattr(current_user, 'get_id'):
+                current_user.get_id.return_value = str(self.original_id) if self.original_id else None
+            
+    controller = AuthController()
+    # Start with logged out user
+    controller.logout()
+    
+    try:
+        yield controller
+    finally:
+        # Always restore original state after test, regardless of what happened
+        controller.restore_original_state()
+
+
+
+
+@pytest.fixture
 def temp_dir():
     """Create a temporary directory for test files."""
     temp_dir = tempfile.mkdtemp()
@@ -59,7 +207,7 @@ def temp_dir():
 
 @pytest.fixture
 def sample_memo_dict():
-    """Sample memo data as a dictionary."""
+    """Sample memo data as a dictionary with all required fields."""
     return {
         "unit_name": "4th Engineer Battalion",
         "unit_street_address": "588 Wetzel Road",

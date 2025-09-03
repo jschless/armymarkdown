@@ -4,6 +4,8 @@ Tests for all example memo files to ensure comprehensive coverage of features.
 
 import pytest
 import os
+from unittest.mock import patch
+from datetime import date
 from armymarkdown import memo_model, writer
 
 
@@ -29,6 +31,12 @@ class TestExampleMemos:
         assert isinstance(memo, memo_model.MemoModel)
         assert memo.subject is not None
         assert len(memo.text) > 0
+        
+        # Override the date to match expected files for consistent test results
+        # Only override if the memo is using today's date (not explicitly set in file)
+        current_date_pattern = date.today().strftime("%d %B %Y")
+        if memo.todays_date == current_date_pattern:
+            memo.todays_date = "02 September 2025"
         
         # Generate LaTeX output
         writer_obj = writer.MemoWriter(memo)

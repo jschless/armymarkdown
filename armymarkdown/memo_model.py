@@ -61,8 +61,9 @@ class MemoModel:
         return self._check_admin()
 
     def _check_date(self, date_str):
-        # form 08 May 2022
-        date_pattern = re.compile(r"\d\d [A-Z][a-z]+ \d\d\d\d")
+        # form 08 May 2022 - full month names only, no abbreviations
+        valid_months = r"January|February|March|April|May|June|July|August|September|October|November|December"
+        date_pattern = re.compile(rf"\d\d ({valid_months}) \d\d\d\d")
         if date_pattern.match(date_str) is None:
             return (
                 f"The entered date {date_str} does not conform to pattern"
@@ -176,7 +177,7 @@ class MemoModel:
                     str_builder += f"{write_key} = {v}\n"
 
         str_builder += "\n"
-        str_builder += f"SUBJECT = {self.subject}\n\n"
+        str_builder += f"SUBJECT = {remove_latex_escape_chars(self.subject)}\n\n"
         str_builder += f"{nested_list_to_string(self.text)}"
 
         return str_builder
@@ -261,9 +262,12 @@ def parse_memo_body(lines):
         elif dash_loc == -1:
             # not a table and not a new line, so it's a new paragraph within same item
             cur_list = master_list
-            while isinstance(cur_list[-1], list):
-                cur_list = cur_list[-1]
-            cur_list[-1] += "\n\n" + add_latex_escape_chars(line.strip())
+            # Only process if there are existing items to append to
+            if cur_list:
+                while len(cur_list) > 0 and isinstance(cur_list[-1], list):
+                    cur_list = cur_list[-1]
+                if cur_list:  # Make sure cur_list still has items
+                    cur_list[-1] += "\n\n" + add_latex_escape_chars(line.strip())
             continue
         if table != [] and line.count("|") < 2:
             master_list.append(process_table(table))
@@ -348,10 +352,12 @@ def nested_list_to_string(lst, indent=0):
 
 
 def add_latex_escape_chars(s):
+    # Process backslash first to avoid interfering with other escape sequences
+    s = s.replace("\\", "\\textbackslash")
+    
     special_chars = {
         "~": "\\textasciitilde ",
         "^": "\\textasciicircum",
-        "\\": "\\textbackslash",
     }
     normal_chars = ["&", "%", "$", "#", "_", "{", "}"]
 

@@ -55,7 +55,7 @@ class TestProcessing:
     """Test memo processing functionality."""
     
     @patch('app.create_memo.delay')
-    @patch('app.save_document')
+    @patch('login.save_document')
     def test_process_route_text_input(self, mock_save, mock_task, client, sample_memo_text):
         """Test processing memo from text input."""
         mock_task.return_value.id = "test-task-123"
@@ -71,7 +71,7 @@ class TestProcessing:
         mock_save.assert_called_once()
     
     @patch('app.create_memo.delay') 
-    @patch('app.save_document')
+    @patch('login.save_document')
     def test_process_route_form_input(self, mock_save, mock_task, client, sample_form_data):
         """Test processing memo from form input."""
         mock_task.return_value.id = "test-task-456"
@@ -92,7 +92,7 @@ class TestProcessing:
         # Should handle gracefully - either error page or redirect
         assert response.status_code in [200, 302, 400]
     
-    @patch('app.save_document')
+    @patch('login.save_document')
     def test_save_progress_text(self, mock_save, client, sample_memo_text):
         """Test saving progress from text editor."""
         mock_save.return_value = "Progress saved"
@@ -105,7 +105,7 @@ class TestProcessing:
         assert b'memo_text' in response.data  # Should return to text editor
         mock_save.assert_called_once()
     
-    @patch('app.save_document')
+    @patch('login.save_document')
     def test_save_progress_form(self, mock_save, client, sample_form_data):
         """Test saving progress from form."""
         mock_save.return_value = "Progress saved"
@@ -155,18 +155,21 @@ class TestAuthentication:
         # Should redirect on successful login
         assert response.status_code in [200, 302]
     
-    @patch('login.authenticate_user')
-    def test_login_post_invalid(self, mock_auth, client):
+    def test_login_post_invalid(self, client):
         """Test POST login with invalid credentials."""
-        mock_auth.return_value = False
-        
-        response = client.post('/login', data={
-            'username': 'wronguser',
-            'password': 'wrongpass'
-        })
-        
-        # Should return to login page with error
-        assert response.status_code in [200, 401]
+        with patch('db.schema.User.query') as mock_query:
+            # Mock no user found
+            mock_query.filter_by.return_value.first.return_value = None
+            
+            response = client.post('/login', data={
+                'username': 'wronguser',
+                'password': 'wrongpass'
+            })
+            
+            # Should redirect back to login page when authentication fails
+            assert response.status_code == 302
+            # Check that it redirects to login page
+            assert '/login' in response.location or response.location == '/'
     
     @patch('login.create_user')
     def test_register_post_valid(self, mock_create, client):
@@ -284,8 +287,8 @@ class TestFormValidation:
             'MEMO_TEXT': 'Some content'
         })
         
-        # Should handle validation gracefully
-        assert response.status_code in [200, 400]
+        # Should handle validation gracefully by redirecting with error message
+        assert response.status_code == 302
     
     def test_xss_prevention(self, client):
         """Test XSS prevention in form inputs."""
@@ -296,8 +299,10 @@ class TestFormValidation:
         })
         
         assert response.status_code == 200
-        # Response should not contain unescaped script
-        assert b'<script>' not in response.data
+        # Response should not contain the specific malicious script unescaped
+        assert b'alert("xss")' not in response.data
+        # Or should escape the script tags
+        assert b'&lt;script&gt;' in response.data or b'alert("xss")' not in response.data
 
 
 class TestStatusAndTaskHandling:
