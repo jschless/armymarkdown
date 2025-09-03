@@ -6,10 +6,11 @@ services:
     restart: unless-stopped
 
   flask_app:
-    build:
+    build: 
       context: ./
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.production
     ports:
+      - "8443:8443"
       - "8000:8000"
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt
@@ -18,27 +19,37 @@ services:
       - redis
       - sqlite_db
     restart: unless-stopped
-    environment:
-      - FLASK_ENV=production
 
   celery:
-    build:
+    build: 
       context: ./
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.production
     volumes:
+      - .:/src
       - db-data:/data
     container_name: cel01
     command: celery -A app.celery worker -l info
     links:
       - redis
     restart: unless-stopped
-    environment:
-      - FLASK_ENV=production
 
   sqlite_db:
     build: ./db
     volumes:
       - db-data:/data
+    restart: unless-stopped
+
+  proxy:
+    build: ./proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    links:
+      - flask_app
+    depends_on:
+      - flask_app
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
     restart: unless-stopped
 
 volumes:
