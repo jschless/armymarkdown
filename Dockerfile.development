@@ -33,8 +33,16 @@ ENV DEVELOPMENT=1
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-COPY . /app
+# Create a non-root user for running the application
+RUN groupadd -r -g 1001 appuser && useradd -r -u 1001 -g appuser appuser
 
+COPY . /app
 WORKDIR /app
+
+# Create data directory and set permissions
+RUN mkdir -p /data && chown -R appuser:appuser /app /data
+
+# Switch to non-root user
+USER appuser
 
 CMD gunicorn -w 3 -b 0.0.0.0:8000 -t 360 --reload app:app
