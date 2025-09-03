@@ -21,7 +21,53 @@ class MemoWriter:
             print("\n".join(self.lines), file=f)
 
     def generate_memo(self):
-        subprocess.run(["lualatex", "-interaction=batchmode", "-halt-on-error", self.output_file])
+        """Generate PDF from LaTeX file with robust error handling and timeout."""
+        import logging
+        import signal
+        
+        # Set up working directory (directory containing the .tex file)
+        work_dir = os.path.dirname(self.output_file)
+        tex_filename = os.path.basename(self.output_file)
+        
+        # LaTeX command with comprehensive flags for production reliability
+        cmd = [
+            "lualatex", 
+            "-interaction=nonstopmode",  # Never stop for user input
+            "-halt-on-error",            # Stop on first error
+            "-file-line-error",          # Include file and line in error messages  
+            "-synctex=0",                # Disable synctex for speed
+            "-output-directory=.",       # Output in working directory
+            tex_filename                 # Just the filename, not full path
+        ]
+        
+        try:
+            # Run with timeout and capture output
+            result = subprocess.run(
+                cmd,
+                cwd=work_dir,                    # Set working directory
+                timeout=60,                      # 60 second timeout
+                capture_output=True,             # Capture stdout/stderr
+                text=True,                       # Return strings not bytes
+                check=False                      # Don't raise on non-zero exit
+            )
+            
+            # Check if PDF was created successfully
+            pdf_path = self.output_file.replace('.tex', '.pdf')
+            if not os.path.exists(pdf_path):
+                error_msg = f"LaTeX compilation failed. Exit code: {result.returncode}\n"
+                if result.stderr:
+                    error_msg += f"STDERR: {result.stderr}\n"
+                if result.stdout:
+                    error_msg += f"STDOUT: {result.stdout}\n"
+                raise Exception(error_msg)
+                
+            logging.info(f"LaTeX compilation successful: {pdf_path}")
+            
+        except subprocess.TimeoutExpired:
+            raise Exception("LaTeX compilation timed out after 60 seconds")
+        except Exception as e:
+            logging.error(f"LaTeX compilation error: {e}")
+            raise
 
     def _write_for_lines(self) -> list:
         ans = []
