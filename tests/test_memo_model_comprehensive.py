@@ -45,21 +45,44 @@ class TestMemoModelCreation:
     
     def test_memo_type_detection(self):
         """Test automatic memo type detection."""
+        # Base memo with all required fields
+        base_dict = {
+            "unit_name": "Test Unit",
+            "unit_street_address": "123 Main St", 
+            "unit_city_state_zip": "City, ST 12345",
+            "office_symbol": "TEST-OPS",
+            "subject": "Test",
+            "text": [],
+            "author_name": "Test Author",
+            "author_rank": "CPT", 
+            "author_branch": "EN"
+        }
+        
         # Test MFR (default)
-        memo_dict = {"unit_name": "Test Unit", "subject": "Test", "text": [], 
-                    "author_name": "Test", "author_rank": "CPT", "author_branch": "EN"}
-        memo = MemoModel.from_dict(memo_dict)
+        memo = MemoModel.from_dict(base_dict.copy())
+        assert isinstance(memo, MemoModel)
         assert memo.memo_type == "MEMORANDUM FOR RECORD"
         
         # Test MEMORANDUM FOR
-        memo_dict["for_unit_name"] = ["Target Unit"]
-        memo = MemoModel.from_dict(memo_dict)
+        for_dict = base_dict.copy()
+        for_dict.update({
+            "for_unit_name": ["Target Unit"],
+            "for_unit_street_address": ["456 Oak St"],
+            "for_unit_city_state_zip": ["Other City, ST 67890"]
+        })
+        memo = MemoModel.from_dict(for_dict)
+        assert isinstance(memo, MemoModel)
         assert memo.memo_type == "MEMORANDUM FOR"
         
         # Test MEMORANDUM THRU
-        del memo_dict["for_unit_name"]
-        memo_dict["thru_unit_name"] = ["Routing Unit"]
-        memo = MemoModel.from_dict(memo_dict)
+        thru_dict = base_dict.copy()
+        thru_dict.update({
+            "thru_unit_name": ["Routing Unit"],
+            "thru_unit_street_address": ["789 Pine Ave"], 
+            "thru_unit_city_state_zip": ["Route City, ST 11111"]
+        })
+        memo = MemoModel.from_dict(thru_dict)
+        assert isinstance(memo, MemoModel)
         assert memo.memo_type == "MEMORANDUM THRU"
 
 
@@ -172,9 +195,13 @@ class TestTextProcessing:
     def test_nested_list_parsing(self):
         """Test parsing of nested bullet lists."""
         text = """ORGANIZATION_NAME=Test Unit
+ORGANIZATION_STREET_ADDRESS=123 Test St
+ORGANIZATION_CITY_STATE_ZIP=Test City, TS 12345
+OFFICE_SYMBOL=TST
 AUTHOR=Test Author
 RANK=CPT
 BRANCH=EN
+TITLE=Test Title
 SUBJECT=Test Subject
 
 - First level item
@@ -193,9 +220,13 @@ SUBJECT=Test Subject
     def test_paragraph_continuation(self):
         """Test multi-paragraph items."""
         text = """ORGANIZATION_NAME=Test Unit
+ORGANIZATION_STREET_ADDRESS=123 Test St
+ORGANIZATION_CITY_STATE_ZIP=Test City, TS 12345
+OFFICE_SYMBOL=TST
 AUTHOR=Test Author
 RANK=CPT
 BRANCH=EN
+TITLE=Test Title
 SUBJECT=Test Subject
 
 - This is the first paragraph of an item.
@@ -215,9 +246,13 @@ This is the second paragraph of the same item.
     def test_table_processing(self):
         """Test table parsing functionality."""
         text = """ORGANIZATION_NAME=Test Unit
+ORGANIZATION_STREET_ADDRESS=123 Test St
+ORGANIZATION_CITY_STATE_ZIP=Test City, TS 12345
+OFFICE_SYMBOL=TST
 AUTHOR=Test Author
 RANK=CPT
 BRANCH=EN
+TITLE=Test Title
 SUBJECT=Test Subject
 
 - Regular item before table
@@ -384,6 +419,9 @@ class TestComplexScenarios:
         
         memo_dict = {
             "unit_name": "Test Unit",
+            "unit_street_address": "123 Test St",
+            "unit_city_state_zip": "Test City, TS 12345",
+            "office_symbol": "TST",
             "subject": "Long Test Memo",
             "text": long_text_items,
             "author_name": "Test Author",
@@ -404,6 +442,9 @@ class TestComplexScenarios:
         """Test handling of unicode and special characters."""
         special_dict = {
             "unit_name": "Tëst Ünit with Spëcial Chars",
+            "unit_street_address": "123 Spëcial St",
+            "unit_city_state_zip": "Tëst City, TS 12345",
+            "office_symbol": "TST-SPL",
             "subject": "Tëst Sübject: $pecial & Unique",
             "text": [
                 "Content with émoji and spëcial chars: café, résumé",
@@ -418,9 +459,16 @@ class TestComplexScenarios:
         memo = MemoModel.from_dict(special_dict)
         assert isinstance(memo, MemoModel)
         
-        # Test that LaTeX escaping handles these appropriately
+        # Test that to_amd() produces correct Army Markdown format
         amd_text = memo.to_amd()
         assert isinstance(amd_text, str)
-        # Should contain escaped special chars but preserve unicode
-        assert "\\$" in amd_text  # $ should be escaped
-        assert "\\&" in amd_text  # & should be escaped
+        # AMD format should contain unescaped special chars and preserve unicode
+        assert "$pecial & Unique" in amd_text  # Special chars unescaped in AMD format
+        assert "café, résumé" in amd_text  # Unicode preserved
+        assert "José María González-Smith" in amd_text  # Unicode in author name
+        
+        # Test LaTeX escaping functionality separately
+        from armymarkdown.memo_model import add_latex_escape_chars
+        escaped_subject = add_latex_escape_chars(memo.subject)
+        assert "\\$" in escaped_subject  # $ should be escaped in LaTeX
+        assert "\\&" in escaped_subject  # & should be escaped in LaTeX
