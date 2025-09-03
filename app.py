@@ -28,8 +28,9 @@ if "REDIS_URL" not in os.environ:
 
 app = Flask(__name__, static_url_path="/static")
 app.secret_key = os.environ["FLASK_SECRET"]
-app.config["RECAPTCHA_PUBLIC_KEY"] = os.environ["RECAPTCHA_PUBLIC_KEY"]
-app.config["RECAPTCHA_PRIVATE_KEY"] = os.environ["RECAPTCHA_PRIVATE_KEY"]
+app.config["RECAPTCHA_PUBLIC_KEY"] = os.environ.get("RECAPTCHA_PUBLIC_KEY")
+app.config["RECAPTCHA_PRIVATE_KEY"] = os.environ.get("RECAPTCHA_PRIVATE_KEY")
+app.config["DISABLE_CAPTCHA"] = os.environ.get("DISABLE_CAPTCHA", "false").lower() == "true"
 
 celery = Celery(
     app.name,
