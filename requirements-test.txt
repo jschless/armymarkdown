@@ -1,0 +1,30 @@
+# Testing dependencies for Army Memo Maker
+pytest>=7.1.0
+pytest-cov>=4.0.0
+pytest-mock>=3.10.0
+pytest-flask>=1.2.0
+pytest-xdist>=3.0.0  # For parallel test execution
+coverage>=7.0.0
+
+# Additional testing utilities
+factory-boy>=3.2.0  # For test data generation
+faker>=18.0.0       # For fake data generation
+responses>=0.23.0   # For mocking HTTP requests
+freezegun>=1.2.0    # For mocking datetime
+
+# Dependencies that might be needed for testing
+flask-testing>=0.8.1
+werkzeug>=2.0.0
+markupsafe>=2.1.0
+
+# For testing LaTeX functionality
+python-dateutil>=2.8.0
+tabulate>=0.9.0
+pandas>=1.5.0
+
+# For form testing
+wtforms>=3.0.0
+flask-wtf>=1.1.0
+
+# Mock AWS services for testing
+moto>=4.0.0
