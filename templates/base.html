@@ -23,7 +23,9 @@
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
 
   <!-- reCAPTCHA -->
+  {% if config.RECAPTCHA_PUBLIC_KEY and not config.DISABLE_CAPTCHA %}
   <script src='https://www.google.com/recaptcha/api.js' async defer></script>
+  {% endif %}
 
   <!-- Theme color for mobile browsers -->
   <meta name="theme-color" content="#ff6b35">
@@ -56,6 +58,11 @@
         {% else %}
         <li><a href="/login" {% if request.endpoint == 'login' %}class="active"{% endif %}>Sign In</a></li>
         {% endif %}
+        <li>
+          <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
+            <span class="theme-icon">🌙</span>
+          </button>
+        </li>
       </ul>
     </nav>
   </header>
@@ -100,8 +107,9 @@
 
   <!-- JavaScript -->
   <script>
-    // Mobile navigation toggle
+    // Mobile navigation toggle and dark mode functionality
     document.addEventListener('DOMContentLoaded', function() {
+      // Mobile nav
       const toggle = document.getElementById('mobile-nav-toggle');
       const navLinks = document.getElementById('nav-links');
       
@@ -119,6 +127,9 @@
           }
         });
       }
+      
+      // Dark mode functionality
+      initTheme();
     });
 
     // Enhanced status message display - make it globally available
@@ -138,6 +149,43 @@
           }, 5000);
         }
       }
+    }
+
+    // Dark mode functionality
+    function initTheme() {
+      const themeToggle = document.getElementById('theme-toggle');
+      const themeIcon = document.querySelector('.theme-icon');
+      
+      // Check for saved theme preference or default to light mode
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+      
+      // Apply saved theme
+      if (savedTheme !== currentTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+      }
+      
+      // Theme toggle event listener
+      if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+          const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+          const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+          
+          document.documentElement.setAttribute('data-theme', newTheme);
+          localStorage.setItem('theme', newTheme);
+          updateThemeIcon(newTheme);
+        });
+      }
+      
+      function updateThemeIcon(theme) {
+        if (themeIcon) {
+          themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+      }
+      
+      // Initialize icon
+      updateThemeIcon(savedTheme);
     }
 
     // Progress functions moved to tasks.js

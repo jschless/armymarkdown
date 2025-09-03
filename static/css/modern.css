@@ -14,7 +14,7 @@
   --color-warning: #f59e0b;
   --color-error: #ef4444;
   
-  /* Neutral Colors */
+  /* Neutral Colors - Light Mode */
   --color-white: #ffffff;
   --color-gray-50: #f9fafb;
   --color-gray-100: #f3f4f6;
@@ -26,6 +26,14 @@
   --color-gray-700: #374151;
   --color-gray-800: #1f2937;
   --color-gray-900: #111827;
+  
+  /* Background Colors */
+  --bg-primary: var(--color-white);
+  --bg-secondary: var(--color-gray-50);
+  --text-primary: var(--color-gray-900);
+  --text-secondary: var(--color-gray-600);
+  --border-primary: var(--color-gray-200);
+  --border-secondary: var(--color-gray-300);
   
   /* Typography */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -98,6 +106,30 @@
   --max-width-7xl: 80rem;  /* 1280px */
 }
 
+/* Dark Mode */
+[data-theme="dark"] {
+  /* Neutral Colors - Dark Mode */
+  --color-white: #111827;
+  --color-gray-50: #1f2937;
+  --color-gray-100: #374151;
+  --color-gray-200: #4b5563;
+  --color-gray-300: #6b7280;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #d1d5db;
+  --color-gray-600: #e5e7eb;
+  --color-gray-700: #f3f4f6;
+  --color-gray-800: #f9fafb;
+  --color-gray-900: #ffffff;
+  
+  /* Background Colors - Dark Mode */
+  --bg-primary: #111827;
+  --bg-secondary: #1f2937;
+  --text-primary: #ffffff;
+  --text-secondary: #e5e7eb;
+  --border-primary: #374151;
+  --border-secondary: #4b5563;
+}
+
 /* Reset and Base Styles */
 *,
 *::before,
@@ -116,23 +148,25 @@ body {
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-normal);
   line-height: var(--line-height-normal);
-  color: var(--color-gray-900);
-  background-color: var(--color-white);
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
   margin: 0;
   padding: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Modern Header */
 .modern-header {
-  background: linear-gradient(135deg, var(--color-white) 0%, var(--color-gray-50) 100%);
-  border-bottom: 1px solid var(--color-gray-200);
+  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+  border-bottom: 1px solid var(--border-primary);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   position: sticky;
   top: 0;
   z-index: 50;
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .modern-nav {
@@ -209,6 +243,39 @@ body {
 .modern-nav-links .user-menu::before {
   content: "👤";
   font-size: var(--font-size-lg);
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--spacing-2);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+}
+
+.theme-toggle:hover {
+  background-color: var(--color-gray-100);
+  transform: scale(1.1);
+}
+
+.theme-icon {
+  font-size: var(--font-size-lg);
+  transition: transform var(--transition-normal);
+}
+
+.theme-toggle:hover .theme-icon {
+  transform: rotate(15deg);
+}
+
+[data-theme="dark"] .theme-toggle:hover {
+  background-color: var(--color-gray-700);
 }
 
 /* Mobile Navigation */
@@ -304,8 +371,8 @@ body {
 
 /* Modern Cards */
 .modern-card {
-  background-color: var(--color-white);
-  border: 1px solid var(--color-gray-200);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-primary);
   border-radius: var(--radius-xl);
   padding: var(--spacing-6);
   box-shadow: var(--shadow-sm);
@@ -315,24 +382,24 @@ body {
 .modern-card:hover {
   box-shadow: var(--shadow-md);
   transform: translateY(-2px);
-  border-color: var(--color-gray-300);
+  border-color: var(--border-secondary);
 }
 
 .modern-card-header {
   margin-bottom: var(--spacing-4);
   padding-bottom: var(--spacing-4);
-  border-bottom: 1px solid var(--color-gray-100);
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .modern-card-title {
   font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-semibold);
-  color: var(--color-gray-900);
+  color: var(--text-primary);
   margin: 0 0 var(--spacing-2);
 }
 
 .modern-card-description {
-  color: var(--color-gray-600);
+  color: var(--text-secondary);
   font-size: var(--font-size-base);
   margin: 0;
   line-height: var(--line-height-relaxed);
@@ -362,7 +429,7 @@ body {
   display: block;
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
-  color: var(--color-gray-700);
+  color: var(--text-secondary);
   margin-bottom: var(--spacing-2);
 }
 
@@ -372,9 +439,10 @@ body {
   width: 100%;
   padding: var(--spacing-3) var(--spacing-4);
   font-size: var(--font-size-base);
-  border: 1px solid var(--color-gray-300);
+  border: 1px solid var(--border-secondary);
   border-radius: var(--radius-lg);
-  background-color: var(--color-white);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   transition: all var(--transition-fast);
   font-family: inherit;
 }
