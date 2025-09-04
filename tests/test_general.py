@@ -1,8 +1,11 @@
+import os
 from armymarkdown import memo_model, writer
 
 
 def test_memo_model_creation():
-    m = memo_model.MemoModel.from_file("./tests/template.Amd")
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    template_path = os.path.join(project_root, "tests", "template.Amd")
+    m = memo_model.MemoModel.from_file(template_path)
     assert m == memo_model.MemoModel(
         unit_name="4th Engineer Battalion",
         unit_street_address="588 Wetzel Road",
@@ -30,12 +33,15 @@ def test_memo_model_creation():
 
 
 def test_latex_file():
-    m = memo_model.MemoModel.from_file("./tests/template.Amd")
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    template_path = os.path.join(project_root, "tests", "template.Amd")
+    output_path = os.path.join(project_root, "tests", "test_tex_output_basic.tex")
+    answer_path = os.path.join(project_root, "tests", "answer_test_tex_output_basic.tex")
+    
+    m = memo_model.MemoModel.from_file(template_path)
     mw = writer.MemoWriter(m)
-    mw.write(output_file="./tests/test_tex_output_basic.tex")
+    mw.write(output_file=output_path)
 
-    created_output = open("./tests/test_tex_output_basic.tex", "r").read()
-    answer_output = open(
-        "./tests/answer_test_tex_output_basic.tex", "r"
-    ).read()
+    created_output = open(output_path, "r").read()
+    answer_output = open(answer_path, "r").read()
     assert created_output == answer_output
