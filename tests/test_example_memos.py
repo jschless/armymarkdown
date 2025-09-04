@@ -8,19 +8,23 @@ from unittest.mock import patch
 from datetime import date
 from armymarkdown import memo_model, writer
 
+# Get the directory containing this test file
+TEST_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.dirname(TEST_DIR)
+
 
 class TestExampleMemos:
     """Test all example memo files for parsing and LaTeX generation."""
     
     @pytest.mark.parametrize("memo_file,expected_file", [
-        ("examples/basic_mfr.Amd", "tests/expected_basic_mfr.tex"),
-        ("examples/basic_mfr_w_table.Amd", "tests/expected_basic_mfr_w_table.tex"),
-        ("examples/long_memo.Amd", "tests/expected_long_memo.tex"),
-        ("examples/memo_extra_features.Amd", "tests/expected_memo_extra_features.tex"),
-        ("examples/memo_for.Amd", "tests/expected_memo_for.tex"),
-        ("examples/memo_multi_for.Amd", "tests/expected_memo_multi_for.tex"),
-        ("examples/memo_thru.Amd", "tests/expected_memo_thru.tex"),
-        ("examples/tutorial.Amd", "tests/expected_tutorial.tex"),
+        (os.path.join(ROOT_DIR, "examples/basic_mfr.Amd"), os.path.join(TEST_DIR, "expected_basic_mfr.tex")),
+        (os.path.join(ROOT_DIR, "examples/basic_mfr_w_table.Amd"), os.path.join(TEST_DIR, "expected_basic_mfr_w_table.tex")),
+        (os.path.join(ROOT_DIR, "examples/long_memo.Amd"), os.path.join(TEST_DIR, "expected_long_memo.tex")),
+        (os.path.join(ROOT_DIR, "examples/memo_extra_features.Amd"), os.path.join(TEST_DIR, "expected_memo_extra_features.tex")),
+        (os.path.join(ROOT_DIR, "examples/memo_for.Amd"), os.path.join(TEST_DIR, "expected_memo_for.tex")),
+        (os.path.join(ROOT_DIR, "examples/memo_multi_for.Amd"), os.path.join(TEST_DIR, "expected_memo_multi_for.tex")),
+        (os.path.join(ROOT_DIR, "examples/memo_thru.Amd"), os.path.join(TEST_DIR, "expected_memo_thru.tex")),
+        (os.path.join(ROOT_DIR, "examples/tutorial.Amd"), os.path.join(TEST_DIR, "expected_tutorial.tex")),
     ])
     def test_memo_parsing_and_latex_generation(self, memo_file, expected_file):
         """Test that each example memo parses correctly and generates expected LaTeX."""
@@ -40,7 +44,7 @@ class TestExampleMemos:
         
         # Generate LaTeX output
         writer_obj = writer.MemoWriter(memo)
-        test_output_file = f"tests/test_output_{os.path.basename(expected_file)}"
+        test_output_file = os.path.join(TEST_DIR, f"test_output_{os.path.basename(expected_file)}")
         writer_obj.write(output_file=test_output_file)
         
         # Compare with expected output
