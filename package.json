@@ -1,0 +1,23 @@
+{
+  "name": "armymarkdown",
+  "version": "1.0.0",
+  "description": "The Army relies on memorandums to operate. The guidelines for these memorandums are fairly simple, but they can be tedious to implement in Microsoft Word, which sucks, or is susceptible to fat finger errors. I am tired of both making mistakes and noticing the mistakes of others. For a document standard that is so rigid, WYSIWYG is not the solution.",
+  "main": "index.js",
+  "directories": {
+    "example": "examples",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^9.34.0",
+    "htmlhint": "^1.6.3",
+    "jshint": "^2.13.6",
+    "stylelint": "^16.23.1",
+    "stylelint-config-standard": "^39.0.0"
+  }
+}

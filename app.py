@@ -1,11 +1,14 @@
 import random
 import os
+import sys
 from flask import (
     Flask,
     render_template,
     request,
     url_for,
     jsonify,
+    redirect,
+    session,
     flash,
 )
 from celery import Celery
@@ -15,7 +18,6 @@ from botocore.exceptions import ClientError
 from armymarkdown import memo_model, writer
 from flask_talisman import Talisman
 from db.db import init_db
-from login import save_document
 
 if "REDIS_URL" not in os.environ:
     # set os.environ from local_config
@@ -26,14 +28,37 @@ if "REDIS_URL" not in os.environ:
 
 app = Flask(__name__, static_url_path="/static")
 app.secret_key = os.environ["FLASK_SECRET"]
-app.config["RECAPTCHA_PUBLIC_KEY"] = os.environ["RECAPTCHA_PUBLIC_KEY"]
-app.config["RECAPTCHA_PRIVATE_KEY"] = os.environ["RECAPTCHA_PRIVATE_KEY"]
+app.config["RECAPTCHA_PUBLIC_KEY"] = os.environ.get("RECAPTCHA_PUBLIC_KEY")
+app.config["RECAPTCHA_PRIVATE_KEY"] = os.environ.get("RECAPTCHA_PRIVATE_KEY")
+app.config["DISABLE_CAPTCHA"] = os.environ.get("DISABLE_CAPTCHA", "false").lower() == "true"
 
 celery = Celery(
     app.name,
     broker=os.environ["REDIS_URL"],
     backend=os.environ["REDIS_URL"],
     broker_connection_retry_on_startup=True,
+)
+
+# Configure Celery for production resilience
+celery.conf.update(
+    # Task execution settings
+    task_soft_time_limit=120,    # 2 minutes soft timeout
+    task_time_limit=180,         # 3 minutes hard timeout  
+    task_acks_late=True,         # Acknowledge after task completion
+    worker_prefetch_multiplier=1, # Process one task at a time
+    
+    # Retry and error handling
+    task_reject_on_worker_lost=True,
+    task_default_retry_delay=60,    # Wait 60s before retry
+    task_max_retries=2,             # Max 2 retries
+    
+    # Result backend settings
+    result_expires=3600,            # Results expire after 1 hour
+    result_persistent=True,         # Persist results across restarts
+    
+    # Worker settings for stability
+    worker_disable_rate_limits=True,
+    worker_send_task_events=True,
 )
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////data/users.db"
@@ -52,15 +77,15 @@ s3 = boto3.client(
     config=boto3.session.Config(region_name="us-east-2", signature_version="s3v4"),
 )
 
+import login
+
 
 @app.after_request
 def add_csp(response):
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
-        "script-src 'self' https://www.google.com/recaptcha/api.js "
-        "https://www.gstatic.com/recaptcha/; "  # Allow scripts from trusted sources
-        "font-src 'self' https://fonts.gstatic.com https://fonts.google.com "
-        "https://www.gstatic.com data:; "  # Allow data URIs for fonts
+        "script-src 'self' 'unsafe-inline' https://www.google.com/recaptcha/api.js https://www.gstatic.com/recaptcha/; "  # Allow scripts from trusted sources
+        "font-src 'self' https://fonts.gstatic.com https://fonts.google.com https://www.gstatic.com data:; "  # Allow data URIs for fonts
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "  # Allow inline styles if necessary
         "frame-src https://www.google.com;"
         "img-src 'self'; "  # Only allow images from the same origin
@@ -102,15 +127,27 @@ def form():
 def save_progress():
     if "SUBJECT" not in request.form:
         text = request.form.get("memo_text")
-        res = save_document(text)
-        flash(res)
+        try:
+            res = login.save_document(text)
+            flash(res)
+        except Exception as e:
+            app.logger.error(f"Error saving document: {e}")
+            flash("Error saving document. Please try again.")
         return render_template("index.html", memo_text=text)
 
     else:
         m = memo_model.MemoModel.from_form(request.form.to_dict())
+        if isinstance(m, str):
+            # MemoModel.from_form returned an error string
+            flash(f"Error creating memo: {m}")
+            return redirect(url_for("index"))
         text = m.to_amd()
-        res = save_document(text)
-        flash(res)
+        try:
+            res = login.save_document(text)
+            flash(res)
+        except Exception as e:
+            app.logger.error(f"Error saving document: {e}")
+            flash("Error saving document. Please try again.")
         return render_template("memo_form.html", **m.to_form())
 
 
@@ -130,26 +167,50 @@ def check_memo(text):
 
 @app.route("/process", methods=["POST"])
 def process():
-    if "SUBJECT" not in request.form:
-        # came from the text page
-        text = request.form.get("memo_text")
-        task = create_memo.delay(text)
-    else:
-        m = memo_model.MemoModel.from_form(request.form.to_dict())
-        text = m.to_amd()
-        task = create_memo.delay("", request.form.to_dict())
+    try:
+        if "SUBJECT" not in request.form:
+            # came from the text page
+            text = request.form.get("memo_text")
+            task = create_memo.delay(text)
+        else:
+            m = memo_model.MemoModel.from_form(request.form.to_dict())
+            if isinstance(m, str):
+                # MemoModel.from_form returned an error string
+                flash(f"Error creating memo: {m}")
+                return redirect(url_for("index"))
+            text = m.to_amd()
+            task = create_memo.delay("", request.form.to_dict())
 
-    res = save_document(text)
-    flash(res)
+        try:
+            res = login.save_document(text)
+            flash(res)
+        except Exception as e:
+            app.logger.error(f"Error saving document during processing: {e}")
+            flash("Document could not be saved, but processing continues.")
 
-    # memo_errors = check_memo(text)
-    # if memo_errors is not None:
-    #     return memo_errors, 400
-    return (
-        "Hi, we're waiting for your PDF to be created.",
-        200,
-        {"Location": url_for("taskstatus", task_id=task.id)},
-    )
+        # memo_errors = check_memo(text)
+        # if memo_errors is not None:
+        #     return memo_errors, 400
+        return (
+            "Hi, we're waiting for your PDF to be created.",
+            200,
+            {"Location": url_for("taskstatus", task_id=task.id)},
+        )
+    except Exception as e:
+        app.logger.error(f"Error processing memo: {e}")
+        flash("Error processing memo. Please try again.")
+        # Return to appropriate page based on input type
+        if "SUBJECT" not in request.form:
+            return render_template("index.html", memo_text=request.form.get("memo_text", ""))
+        else:
+            # Try to reconstruct the form data
+            try:
+                m = memo_model.MemoModel.from_form(request.form.to_dict())
+                if not isinstance(m, str):
+                    return render_template("memo_form.html", **m.to_form())
+            except:
+                pass
+            return redirect(url_for("index"))
 
 
 def process_task(task, result_func):
@@ -164,11 +225,31 @@ def process_task(task, result_func):
             "presigned_url": get_aws_link(result_func(result)),
         }
         task.forget()
-    else:
-        # something went wrong in the background job
+    elif task.state == "FAILURE":
+        # Task failed with an exception
         response = {
             "state": task.state,
-            "status": str(task.info),  # this is the exception raised
+            "status": f"Task failed: {str(task.info)}",
+            "error": str(task.info)
+        }
+        app.logger.error(f"Task {task.id} failed: {task.info}")
+    elif task.state == "RETRY":
+        # Task is being retried
+        response = {
+            "state": task.state,
+            "status": f"Task failed, retrying... ({str(task.info)})",
+        }
+    elif task.state == "REVOKED":
+        # Task was revoked/cancelled
+        response = {
+            "state": task.state,
+            "status": "Task was cancelled due to timeout or system issue",
+        }
+    else:
+        # Other states (STARTED, PROGRESS, etc.)
+        response = {
+            "state": task.state,
+            "status": str(task.info) if task.info else f"Task is {task.state.lower()}...",
         }
     return response
 
@@ -180,196 +261,125 @@ def taskstatus(task_id):
 
 
 def get_aws_link(file_name):
-    """
-    Generate presigned URL for S3 object with proper error handling.
-
-    Args:
-        file_name (str): S3 object key
-
-    Returns:
-        str: Presigned URL or None on error
-    """
-    from constants import S3_BUCKET_NAME, PRESIGNED_URL_EXPIRY_SECONDS
-
-    if not file_name:
-        app.logger.error("get_aws_link called with empty file_name")
-        return None
-
+    # https://boto3.amazonaws.com/v1/documentation/api/latest/guide/s3-presigned-urls.html
     try:
         response = s3.generate_presigned_url(
             "get_object",
-            Params={"Bucket": S3_BUCKET_NAME, "Key": file_name},
-            ExpiresIn=PRESIGNED_URL_EXPIRY_SECONDS,
+            Params={"Bucket": "armymarkdown", "Key": file_name},
+            ExpiresIn=3600,
         )
-        app.logger.debug(f"Generated presigned URL for {file_name}")
-        return response
-
     except ClientError as e:
-        error_code = e.response['Error']['Code']
-        app.logger.error(f"AWS S3 ClientError generating presigned URL ({error_code}): {e}")
+        app.logger.error(f"Something Happened: {e}")
         return None
-
-    except Exception as e:
-        app.logger.error(f"Unexpected error generating presigned URL: {e}")
-        return None
+    return response
 
 
-def upload_file_to_s3(file_path, aws_path, acl="public-read"):
+def upload_file_to_s3(file, aws_path, acl="public-read"):
     """
-    Upload file to S3 with proper error handling.
-
-    Args:
-        file_path (str): Local path to file to upload
-        aws_path (str): S3 key/path for the file
-        acl (str): Access control level
-
-    Returns:
-        str: The original file_path on success
-
-    Raises:
-        FileNotFoundError: If local file doesn't exist
-        RuntimeError: If S3 upload fails
+    Docs: http://boto3.readthedocs.io/en/latest/guide/s3.html
     """
-    from constants import S3_BUCKET_NAME, ErrorMessages
-
-    if not os.path.exists(file_path):
-        raise FileNotFoundError(f"File not found: {file_path}")
-
+    ret_val = None
     try:
         s3.upload_file(
-            file_path,
-            S3_BUCKET_NAME,
+            file,
+            "armymarkdown",
             aws_path,
             ExtraArgs={
                 "ContentType": "application/pdf",
                 "ContentDisposition": "inline",
             },
         )
-        app.logger.info(f"Successfully uploaded {file_path} to S3 as {aws_path}")
-        return file_path
-
-    except ClientError as e:
-        error_code = e.response['Error']['Code']
-        app.logger.error(f"AWS S3 ClientError ({error_code}): {e}")
-        raise RuntimeError(f"S3 upload failed: {error_code}")
-
+        ret_val = file
     except Exception as e:
-        app.logger.error(f"Unexpected error during S3 upload: {e}")
-        raise RuntimeError(ErrorMessages.FILE_UPLOAD_FAILED)
-
+        app.logger.error(f"Something Happened: {e}")
+        ret_val = e
     finally:
-        # Clean up local file after upload attempt
-        if os.path.exists(file_path):
-            try:
-                os.remove(file_path)
-                app.logger.debug(f"Cleaned up local file: {file_path}")
-            except OSError as e:
-                app.logger.warning(f"Failed to clean up local file {file_path}: {e}")
+        # delete file after uploads
+        if os.path.exists(file):
+            os.remove(file)
+        return ret_val
 
 
-@celery.task(name="create_memo")
-def create_memo(text, dictionary=None):
-    from constants import (
-        MAX_SUBJECT_LENGTH_FOR_FILENAME,
-        RANDOM_ID_LENGTH,
-        TEX_EXTENSION,
-        PDF_EXTENSION,
-        LATEX_TEMP_EXTENSIONS,
-        ErrorMessages
-    )
-
+@celery.task(name="create_memo", bind=True)
+def create_memo(self, text, dictionary=None):
+    """Create memo PDF with comprehensive error handling and timeout protection."""
+    temp_name = None
+    file_path = None
+    
     try:
-        # Parse memo model with validation
         if dictionary:
             m = memo_model.MemoModel.from_form(dictionary)
         else:
             m = memo_model.MemoModel.from_text(text)
 
-        # Check if parsing failed (returns string error message)
-        if isinstance(m, str):
-            app.logger.error(f"Memo parsing failed: {m}")
-            raise ValueError(ErrorMessages.MEMO_PARSING_ERROR)
-
         app.logger.debug(m.to_dict())
+        mw = writer.MemoWriter(m)
 
-        # Create memo writer with validation
-        try:
-            mw = writer.MemoWriter(m)
-        except Exception as e:
-            app.logger.error(f"Failed to create MemoWriter: {e}")
-            raise ValueError(ErrorMessages.INVALID_MEMO_FORMAT)
-
-        # Generate safe filename
-        safe_subject = "".join(c for c in m.subject if c.isalnum() or c in (' ', '-', '_')).rstrip()
         temp_name = (
-            safe_subject.replace(" ", "_").lower()[:MAX_SUBJECT_LENGTH_FOR_FILENAME]
-            + "".join(random.choices("0123456789", k=RANDOM_ID_LENGTH))
-            + TEX_EXTENSION
+            m.subject.replace(" ", "_").lower()[:15]
+            + "".join(random.choices("0123456789", k=4))
+            + ".tex"
         )
         file_path = os.path.join(app.root_path, temp_name)
 
-        # Write LaTeX file with error handling
-        try:
-            mw.write(output_file=file_path)
-        except Exception as e:
-            app.logger.error(f"Failed to write LaTeX file: {e}")
-            raise RuntimeError(ErrorMessages.PDF_GENERATION_FAILED)
+        # Write LaTeX file
+        app.logger.info(f"Writing LaTeX file: {file_path}")
+        mw.write(output_file=file_path)
 
-        # Generate PDF with error handling
-        try:
-            mw.generate_memo()
-        except Exception as e:
-            app.logger.error(f"LaTeX compilation failed: {e}")
-            raise RuntimeError(ErrorMessages.PDF_GENERATION_FAILED)
+        # Generate PDF with timeout protection
+        app.logger.info(f"Starting LaTeX compilation for: {temp_name}")
+        mw.generate_memo()
+        app.logger.info(f"LaTeX compilation completed for: {temp_name}")
 
-        # Check if PDF was generated
-        pdf_path = file_path[:-len(TEX_EXTENSION)] + PDF_EXTENSION
-        if not os.path.exists(pdf_path):
-            app.logger.error(f"PDF not found at expected path: {pdf_path}")
-            raise FileNotFoundError(ErrorMessages.PDF_GENERATION_FAILED)
+        pdf_path = file_path[:-4] + ".pdf"
+        if os.path.exists(pdf_path):
+            app.logger.info(f"PDF created successfully: {pdf_path}")
+            upload_file_to_s3(pdf_path, temp_name[:-4] + ".pdf")
+            app.logger.info(f"PDF uploaded to S3: {temp_name[:-4]}.pdf")
+        else:
+            raise Exception(f"PDF was not created at expected path: {pdf_path}")
 
-        # Upload to S3 with error handling
-        try:
-            upload_result = upload_file_to_s3(
-                pdf_path,
-                temp_name[:-len(TEX_EXTENSION)] + PDF_EXTENSION
-            )
-            if isinstance(upload_result, Exception):
-                raise upload_result
-        except Exception as e:
-            app.logger.error(f"S3 upload failed: {e}")
-            raise RuntimeError(ErrorMessages.FILE_UPLOAD_FAILED)
-
-        # Clean up temporary files
-        _cleanup_temp_files(temp_name, LATEX_TEMP_EXTENSIONS)
-
-        return temp_name
-
-    except (ValueError, RuntimeError, FileNotFoundError) as e:
-        # Clean up any partial files on error
-        if 'temp_name' in locals():
-            _cleanup_temp_files(temp_name, LATEX_TEMP_EXTENSIONS + [PDF_EXTENSION])
-        raise e
     except Exception as e:
-        # Catch-all for unexpected errors
-        app.logger.error(f"Unexpected error in create_memo: {e}")
-        if 'temp_name' in locals():
-            _cleanup_temp_files(temp_name, LATEX_TEMP_EXTENSIONS + [PDF_EXTENSION])
-        raise RuntimeError(ErrorMessages.GENERIC_ERROR)
+        error_msg = f"Memo creation failed: {str(e)}"
+        app.logger.error(error_msg)
+        
+        # Cleanup any partial files on error
+        if file_path:
+            cleanup_temp_files(file_path, temp_name)
+            
+        # Re-raise with more context
+        raise self.retry(exc=Exception(error_msg), countdown=60, max_retries=2)
+
+    # Clean up temp files after successful upload to AWS
+    cleanup_temp_files(file_path, temp_name)
+    return temp_name
 
 
-def _cleanup_temp_files(temp_name, file_extensions):
-    """Helper function to clean up temporary files."""
-    from constants import TEX_EXTENSION
+def cleanup_temp_files(file_path, temp_name):
+    """Clean up temporary LaTeX compilation files."""
+    if not file_path or not temp_name:
+        return
+        
+    file_endings = [
+        ".aux",
+        ".fdb_latexmk", 
+        ".fls",
+        ".log",
+        ".out",
+        ".tex",
+        ".synctex.gz"  # Added this common LaTeX artifact
+    ]
 
-    for extension in file_extensions:
-        temp_file = temp_name[:-len(TEX_EXTENSION)] + extension
-        if os.path.exists(temp_file):
-            try:
+    base_name = temp_name[:-4] if temp_name.endswith('.tex') else temp_name
+    
+    for ending in file_endings:
+        temp_file = os.path.join(os.path.dirname(file_path), base_name + ending)
+        try:
+            if os.path.exists(temp_file):
                 os.remove(temp_file)
                 app.logger.debug(f"Cleaned up temp file: {temp_file}")
-            except OSError as e:
-                app.logger.warning(f"Failed to clean up temp file {temp_file}: {e}")
+        except Exception as e:
+            app.logger.warning(f"Failed to cleanup {temp_file}: {e}")
 
 
 if os.environ.get("DEVELOPMENT") is None:

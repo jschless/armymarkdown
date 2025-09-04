@@ -11,6 +11,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
+      - .:/app  # Mount current directory to /app in container
       - /etc/letsencrypt:/etc/letsencrypt
       - db-data:/data
     depends_on:
@@ -22,7 +23,7 @@ services:
       context: ./
       dockerfile: Dockerfile.development
     volumes:
-      - .:/src
+      - .:/app  # Mount current directory to /app in container
       - db-data:/data
     container_name: cel01
     command: celery -A app.celery worker -l info

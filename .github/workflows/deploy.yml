@@ -1,0 +1,33 @@
+name: Deploy to DigitalOcean
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Deploy to DigitalOcean
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.DO_HOST }}
+        username: ${{ secrets.DO_USERNAME }}
+        key: ${{ secrets.DO_SSH_KEY }}
+        script: |
+          cd /root/armymarkdown
+          git pull origin main
+          
+          # Make deploy script executable if it exists
+          if [ -f "deploy.sh" ]; then
+            chmod +x deploy.sh
+            ./deploy.sh
+          else
+            # Fallback for first deployment
+            echo "🚀 Running initial deployment..."
+            docker-compose down
+            docker-compose up --build -d
+            docker image prune -f
+            echo "✅ Deployment complete!"
+          fi

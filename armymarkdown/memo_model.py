@@ -61,8 +61,9 @@ class MemoModel:
         return self._check_admin()
 
     def _check_date(self, date_str):
-        # form 08 May 2022
-        date_pattern = re.compile(r"\d\d [A-Z][a-z]+ \d\d\d\d")
+        # form 08 May 2022 - full month names only, no abbreviations
+        valid_months = r"January|February|March|April|May|June|July|August|September|October|November|December"
+        date_pattern = re.compile(rf"\d\d ({valid_months}) \d\d\d\d")
         if date_pattern.match(date_str) is None:
             return (
                 f"The entered date {date_str} does not conform to pattern"
@@ -126,6 +127,7 @@ class MemoModel:
 
     def to_amd(self):
         str_builder = ""
+        present_fields = fields(self)
         for write_key, attrib in [
             ("ORGANIZATION_NAME", "unit_name"),
             ("ORGANIZATION_STREET_ADDRESS", "unit_street_address"),
@@ -175,7 +177,7 @@ class MemoModel:
                     str_builder += f"{write_key} = {v}\n"
 
         str_builder += "\n"
-        str_builder += f"SUBJECT = {self.subject}\n\n"
+        str_builder += f"SUBJECT = {remove_latex_escape_chars(self.subject)}\n\n"
         str_builder += f"{nested_list_to_string(self.text)}"
 
         return str_builder
@@ -260,9 +262,12 @@ def parse_memo_body(lines):
         elif dash_loc == -1:
             # not a table and not a new line, so it's a new paragraph within same item
             cur_list = master_list
-            while isinstance(cur_list[-1], list):
-                cur_list = cur_list[-1]
-            cur_list[-1] += "\n\n" + add_latex_escape_chars(line.strip())
+            # Only process if there are existing items to append to
+            if cur_list:
+                while len(cur_list) > 0 and isinstance(cur_list[-1], list):
+                    cur_list = cur_list[-1]
+                if cur_list:  # Make sure cur_list still has items
+                    cur_list[-1] += "\n\n" + add_latex_escape_chars(line.strip())
             continue
         if table != [] and line.count("|") < 2:
             master_list.append(process_table(table))
@@ -287,64 +292,6 @@ def parse_memo_body(lines):
     return master_list
 
 
-def validate_input_text(text):
-    """Validate input text for basic safety and format requirements."""
-    if not isinstance(text, str):
-        return "Input must be a string"
-
-    if len(text.strip()) == 0:
-        return "Input cannot be empty"
-
-    if len(text) > 50000:  # Reasonable limit to prevent DoS
-        return "Input text too long (maximum 50,000 characters)"
-
-    # Check for potentially dangerous LaTeX commands
-    dangerous_patterns = [
-        r'\\input\s*{',
-        r'\\include\s*{',
-        r'\\write\s*{',
-        r'\\immediate',
-        r'\\openout',
-        r'\\read',
-        r'\\catcode',
-        r'\\def\s*\\',
-        r'\\let\s*\\',
-        r'\\expandafter',
-    ]
-
-    import re
-    for pattern in dangerous_patterns:
-        if re.search(pattern, text, re.IGNORECASE):
-            escaped_pattern = pattern.replace('\\\\', '\\')
-            return f"Potentially unsafe LaTeX command detected: {escaped_pattern}"
-
-    return None  # No validation errors
-
-
-def validate_memo_fields(memo_dict):
-    """Validate required memo fields and their formats."""
-    required_fields = ['unit_name', 'office_symbol', 'subject', 'author_name', 'author_rank']
-
-    for field in required_fields:
-        if field not in memo_dict or not memo_dict[field]:
-            return f"Required field missing: {field.replace('_', ' ').title()}"
-
-        # Check field length limits
-        if len(str(memo_dict[field])) > 500:
-            return f"Field too long: {field.replace('_', ' ').title()} (maximum 500 characters)"
-
-    # Validate subject line
-    if len(memo_dict['subject']) < 3:
-        return "Subject must be at least 3 characters long"
-
-    # Validate office symbol format (basic check)
-    office_symbol = memo_dict['office_symbol'].strip()
-    if len(office_symbol) < 2 or not re.match(r'^[A-Z0-9-]+$', office_symbol):
-        return "Office symbol should contain only uppercase letters, numbers, and hyphens"
-
-    return None  # No validation errors
-
-
 def parse_lines(file_lines):
     # processes a text block into a latex memo_model
 
@@ -358,13 +305,6 @@ def parse_lines(file_lines):
             file_lines,
         )
     )
-
-    # Validate total input size
-    total_content = "\n".join(file_lines)
-    validation_error = validate_input_text(total_content)
-    if validation_error:
-        return f"INPUT VALIDATION ERROR: {validation_error}"
-
     try:
         memo_begin_loc = [i for i, s in enumerate(file_lines) if "SUBJECT" in s][0]
     except IndexError:
@@ -377,46 +317,25 @@ def parse_lines(file_lines):
     for line in file_lines[:memo_begin_loc]:
         # parse all the admin info
         if "=" in line:
-            # Split only on first equals sign to handle values with = in them
-            parts = line.split("=", 1)
-            if len(parts) != 2:
-                continue
+            key, text = line.split("=")
 
-            key, text = parts
-            key = key.strip()
-            text = text.strip()
-
-            if key not in key_converter:
+            if key.strip() not in key_converter:
                 return (
-                    f"ERROR: No such keyword as '{key}', "
-                    f"please remove or fix line: {line}"
+                    f"ERROR: No such keyword as {key.strip()}, "
+                    "please remove or fix {line}"
                 )
 
-            # Validate field content
-            if len(text) > 1000:
-                return f"ERROR: Field '{key}' is too long (maximum 1000 characters)"
-
-            processed_text = add_latex_escape_chars(text)
-            if key_converter[key] in list_keys:
-                memo_dict[key_converter[key]] = [
-                    *memo_dict.get(key_converter[key], []),
+            processed_text = add_latex_escape_chars(text.strip())
+            if key_converter[key.strip()] in list_keys:
+                memo_dict[key_converter[key.strip()]] = [
+                    *memo_dict.get(key_converter[key.strip()], []),
                     processed_text,
                 ]
 
             else:
-                memo_dict[key_converter[key]] = processed_text
+                memo_dict[key_converter[key.strip()]] = processed_text
 
-    # Parse memo body with validation
-    try:
-        memo_dict["text"] = parse_memo_body(file_lines[memo_begin_loc:])
-    except Exception as e:
-        return f"ERROR: Failed to parse memo body: {str(e)}"
-
-    # Validate required fields before creating model
-    field_validation_error = validate_memo_fields(memo_dict)
-    if field_validation_error:
-        return f"FIELD VALIDATION ERROR: {field_validation_error}"
-
+    memo_dict["text"] = parse_memo_body(file_lines[memo_begin_loc:])
     return MemoModel.from_dict(memo_dict)
 
 
@@ -433,10 +352,12 @@ def nested_list_to_string(lst, indent=0):
 
 
 def add_latex_escape_chars(s):
+    # Process backslash first to avoid interfering with other escape sequences
+    s = s.replace("\\", "\\textbackslash")
+    
     special_chars = {
         "~": "\\textasciitilde ",
         "^": "\\textasciicircum",
-        "\\": "\\textbackslash",
     }
     normal_chars = ["&", "%", "$", "#", "_", "{", "}"]
 
@@ -495,5 +416,5 @@ def process_table(line_list):
             .iloc[1:]
         )
         return tabulate(table, table.columns, tablefmt="latex")
-    except Exception:
+    except Exception as e:
         return ""

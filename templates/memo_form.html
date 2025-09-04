@@ -2,14 +2,19 @@
 
 
 {% block top_info %}
-<div class="row">
-    <p> Here's a more intuitive way to make your memos. You'll see it resembles an actual memo. Simply fill out the appropriate parts and add the options you need for your purposes. You can view the same examples or, if you have an account, your past memos. As always, click the blue button to wait for your memo.</p>  
-  <br>
-  <br>
-</div>  
+<div class="modern-card fade-in" style="margin-bottom: var(--spacing-8);">
+  <div class="modern-card-header">
+    <h2 class="modern-card-title">Form Builder</h2>
+    <p class="modern-card-description">
+      Here's a more intuitive way to make your memos. Simply fill out the form fields below - it resembles an actual memo format. Add the sections you need for your purposes, then click the "Create Memo PDF" button to generate your document.
+    </p>
+  </div>
+</div>
 
 {% from "example_list.html" import build_list %}
-{{ build_list("form") }}
+<div class="fade-in">
+  {{ build_list("form") }}
+</div>
 
 {% endblock %}
 
@@ -38,7 +43,7 @@
           <input class="u-full-width center" type="button" id="removeSuspense" value="Remove Suspense">
         </div>
         {% else %}
-        <input class="u-full-width center" type="button" id="addSuspense" value="Add Suspense">      
+        <button type="button" class="modern-btn modern-btn-ghost u-full-width center" id="addSuspense">Add Suspense</button>      
         {% endif %}
 
     </div>
@@ -81,7 +86,7 @@
 
     <div class="row">
       <div class="three columns">
-        <input class="u-full-width center" type="button" id="addTHRU" value="Add THRU address">
+        <button type="button" class="modern-btn modern-btn-ghost u-full-width center" id="addTHRU">Add THRU address</button>
       </div>
     </div>
   </div>
@@ -100,7 +105,7 @@
         <label class="u-full-width center" for="FOR_ORGANIZATION_CITY_STATE_ZIP{{ zipped_for|length - loop.index0 }}">FOR City, State Zip</label>
         <input type="text" id="FOR_ORGANIZATION_CITY_STATE_ZIP{{ zipped_for|length - loop.index0 }}" name="FOR_ORGANIZATION_CITY_STATE_ZIP{{ zipped_for|length - loop.index0 }}" value="{{ city }}" class="u-full-width center">
         <br>
-        <input type="button" class="u-full-width center" value="Remove For Address" onclick="deleteElement('for{{ zipped_for|length - loop.index0 }}')">      
+        <input type="button" class="u-full-width center" value="Remove For Address" onclick="deleteElement('for{{ zipped_for|length - loop.index0 }}')">            
         <hr>
       </div>
     </div>
@@ -108,7 +113,7 @@
 
     <div class="row">
       <div class="three columns">
-        <input class="u-full-width center button" type="button" id="addFOR"  value="Add FOR address">
+        <button type="button" class="modern-btn modern-btn-ghost u-full-width center" id="addFOR">Add FOR address</button>
       </div>
     </div>
   </div>
@@ -142,7 +147,7 @@
           <input class="u-full-width center" type="button" id="removeAuthority" value="Remove Authority">
         </div>
         {% else %}
-        <input class="u-full-width center" type="button" id="addAuthority" value="Add Authority">      
+        <button type="button" class="modern-btn modern-btn-ghost u-full-width center" id="addAuthority">Add Authority</button>      
         {% endif %}
     </div>
   </div>
@@ -164,7 +169,7 @@
         </div>
         {% endfor %}
         {% endif %}
-          <input class="u-full-width center" type="button" id="addEnclosure" value="Add Enclosure">
+          <button type="button" class="modern-btn modern-btn-ghost u-full-width center" id="addEnclosure">Add Enclosure</button>
       </div>
 
       <div class="three columns offset-by-three" id="signature">
@@ -206,7 +211,7 @@
         </div>
         {% endfor %}
         {% endif %}
-        <input class="u-full-width center button" type="button" id="addDistro" value="Add Distribution">
+        <button type="button" class="modern-btn modern-btn-ghost u-full-width center" id="addDistro">Add Distribution</button>
       </div>
   </div>
 
@@ -217,22 +222,22 @@
         <div id="cf{{cfs|length - loop.index0}}">
           <label class="u-full-width center"  for="CF{{cfs|length - loop.index0}}">Copies Furnished</label>
           <input type="text" id="CF{{cfs|length - loop.index0}}" name="CF{{cfs|length - loop.index0}}" value="{{cf}}" class="u-full-width center">
-          <input class="u-full-width center" type="button" value="Remove Copies Furnished" onclick="deleteElement('cf{{cfs|length - loop.index0 }}')">
+          <input class="u-full-width center" type="button" value="Remove Copies Furnished" onclick="deleteElement('cf{{cfs|length - loop.index0 }}')"
           <hr>
         </div>
         {% endfor %}
         {% endif %}
-        <input class="u-full-width center" type="button" id="addCF" value="Add Copies Furnished">
+        <button type="button" class="modern-btn modern-btn-ghost u-full-width center" id="addCF">Add Copies Furnished</button>
       </div>
     </div>
 
     
   <hr>
   
-  <div class="row">
-    <input class="button-primary" type="submit" value="Create Memo PDF" id="start-bg-job">
+  <div class="row" style="display: flex; gap: var(--spacing-4); align-items: center;">
+    <button type="submit" class="modern-btn modern-btn-primary modern-btn-lg" id="start-bg-job">Create Memo PDF</button>
     {% if current_user.is_authenticated %}
-    <button class="button.u-pull-right" id="save-progress">Save Progress</button>
+    <button type="button" class="modern-btn modern-btn-outline" id="save-progress">Save Progress</button>
     {% endif %}   
   </div>
 
