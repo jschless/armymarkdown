@@ -37,6 +37,7 @@ prompt-toolkit
 py
 pytest
 python-dateutil
+python-dotenv
 pytz
 redis
 requests

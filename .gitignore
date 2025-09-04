@@ -18,6 +18,7 @@ SOURCES.txt
 top_level.txt
 temp_file.pdf
 local_config.py
+.env
 *.DS_Store
 
 # Temp files
