@@ -3,14 +3,15 @@ version: '3'
 services:
   redis:
     image: redis:latest
+    restart: unless-stopped
 
   flask_app:
     build: 
       context: ./
       dockerfile: Dockerfile.production
     ports:
-      - 8443:8443
-      - 8000:8000
+      - "8443:8443"
+      - "8000:8000"
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt
       - db-data:/data
@@ -24,6 +25,7 @@ services:
     depends_on:
       - redis
       - sqlite_db
+    restart: unless-stopped
 
   celery:
     build: 
@@ -43,6 +45,7 @@ services:
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
     links:
       - redis
+    restart: unless-stopped
 
   sqlite_db:
     build: ./db
@@ -52,14 +55,15 @@ services:
   proxy:
     build: ./proxy
     ports:
-      - 80:80
-      - 443:443  # Add HTTPS port forwarding
+      - "80:80"
+      - "443:443"
     links:
       - flask_app
     depends_on:
       - flask_app
     volumes:
-      - /etc/letsencrypt:/etc/letsencrypt  # Ensure SSL certificates are accessible
+      - /etc/letsencrypt:/etc/letsencrypt
+    restart: unless-stopped
 
 volumes:
   db-data:

@@ -1,3 +1,4 @@
+import os
 from flask_wtf import FlaskForm
 from flask_wtf.recaptcha import RecaptchaField
 
@@ -39,6 +40,15 @@ class RegistrationForm(FlaskForm):
     )
     recaptcha = RecaptchaField()
     submit = SubmitField("Register")
+    
+    def validate_recaptcha(self, field):
+        from flask import current_app
+        # Skip recaptcha validation if disabled or no keys configured
+        if (current_app.config.get("DISABLE_CAPTCHA") or 
+            not current_app.config.get("RECAPTCHA_PUBLIC_KEY")):
+            return
+        # Otherwise, let the RecaptchaField handle validation
+        return field.validate(self)
 
     def validate_username(self, username):
         user = User.query.filter_by(username=username.data).first()

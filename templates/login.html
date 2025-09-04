@@ -1,26 +1,60 @@
 {% extends "base.html" %}
 
+{% block title %}Sign In - Army Memo Maker{% endblock %}
+
 {% block content %}
-<div class="row center">
-  <h2 class="center">Sign In</h2>
-  <form action="" method="post" novalidate>
+<div class="modern-card fade-in" style="max-width: 400px; margin: var(--spacing-16) auto;">
+  <div class="modern-card-header text-center">
+    <h2 class="modern-card-title">Welcome Back</h2>
+    <p class="modern-card-description">Sign in to your Army Memo Maker account</p>
+  </div>
+
+  <form action="" method="post" novalidate class="modern-form">
     {{ form.hidden_tag() }}
-    <p>
-      {{ form.username.label }}<br>
-      {{ form.username(size=32) }}<br>
+    
+    <div class="modern-form-group">
+      <label for="{{ form.username.id }}" class="modern-form-label">{{ form.username.label.text }}</label>
+      {{ form.username(class="modern-form-input", placeholder="Enter your username") }}
       {% for error in form.username.errors %}
-      <span style="color: red;">[{{ error }}]</span>
+      <div class="modern-alert modern-alert-error" style="margin-top: var(--spacing-2);">
+        {{ error }}
+      </div>
       {% endfor %}
-    </p>
-    <p>
-      {{ form.password.label }}<br>
-      {{ form.password(size=32) }}<br>
+    </div>
+
+    <div class="modern-form-group">
+      <label for="{{ form.password.id }}" class="modern-form-label">{{ form.password.label.text }}</label>
+      {{ form.password(class="modern-form-input", placeholder="Enter your password") }}
       {% for error in form.password.errors %}
-      <span style="color: red;">[{{ error }}]</span>
+      <div class="modern-alert modern-alert-error" style="margin-top: var(--spacing-2);">
+        {{ error }}
+      </div>
       {% endfor %}
-    </p>
-    <p>{{ form.submit() }}</p>
+    </div>
+
+    <div class="modern-form-group">
+      {{ form.submit(class="modern-btn modern-btn-primary", style="width: 100%;") }}
+    </div>
   </form>
-  <p>New User? <a href="{{ url_for('register') }}">Click to Register!</a></p>
-    </row>
-    {% endblock %}
+
+  <div class="text-center" style="margin-top: var(--spacing-6); padding-top: var(--spacing-6); border-top: 1px solid var(--color-gray-200);">
+    <p style="color: var(--color-gray-600);">
+      New to Army Memo Maker? 
+      <a href="{{ url_for('register') }}" style="color: var(--color-primary); text-decoration: none; font-weight: 500;">
+        Create an account
+      </a>
+    </p>
+  </div>
+</div>
+
+<div class="modern-card fade-in fade-in-delay-1" style="max-width: 400px; margin: var(--spacing-8) auto; background: linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-gray-100) 100%);">
+  <div class="text-center">
+    <h3 class="font-semibold mb-4">Why create an account?</h3>
+    <div class="text-sm" style="color: var(--color-gray-600); line-height: var(--line-height-relaxed);">
+      <div style="margin-bottom: var(--spacing-3);">💾 Save and manage your memos</div>
+      <div style="margin-bottom: var(--spacing-3);">📚 Access document history</div>
+      <div>🚀 Auto-fill organizational information</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

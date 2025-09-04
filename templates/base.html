@@ -1,60 +1,206 @@
 <!DOCTYPE html>
+<html lang="en">
 <head>
-
   <meta charset="utf-8">
-  <title>Army Memo Maker</title>
-  <meta name="description" content="A website for making memos in the style of AR 25-50.">
+  <title>{% block title %}Army Memo Maker{% endblock %}</title>
+  <meta name="description" content="A modern webapp for creating professional Army memos in perfect accordance with AR 25-50. Fast, secure, and DoD network compatible.">
   <meta name="author" content="Joe Schlessinger">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Preload critical fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/normalize.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/modern.css') }}">
   
-  <link href="https://fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
+  <!-- Legacy fallback -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
 
-  <link rel="stylesheet" href="{{ url_for('static',filename='css/normalize.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static',filename='css/skeleton.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static',filename='css/custom.css') }}">
-
-
+  <!-- Icons -->
   <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" />
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
 
+  <!-- reCAPTCHA -->
+  {% if config.RECAPTCHA_PUBLIC_KEY and not config.DISABLE_CAPTCHA %}
   <script src='https://www.google.com/recaptcha/api.js' async defer></script>
+  {% endif %}
 
+  <!-- Theme color for mobile browsers -->
+  <meta name="theme-color" content="#ff6b35">
 </head>
 
-<div class="container">
-  <div class="row">
-    <nav class="navbar">  
-      <h1>Army Memo Maker</h1>
-      <ul class="navbar-links">
-        <li><a href="/">Home</a></li>
-        <li><a href="/form">Form Builder</a></li>
+<body>
+  <!-- Modern Header -->
+  <header class="modern-header">
+    <nav class="modern-nav">
+      <a href="/" class="logo">Army Memo Maker</a>
+      
+      <!-- Mobile menu toggle -->
+      <button class="mobile-nav-toggle" aria-label="Toggle navigation" id="mobile-nav-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <ul class="modern-nav-links" id="nav-links">
+        <li><a href="/" {% if request.endpoint == 'index' %}class="active"{% endif %}>Home</a></li>
+        <li><a href="/form" {% if request.endpoint == 'form' %}class="active"{% endif %}>Form Builder</a></li>
         {% if current_user.is_authenticated %}
-        <li><span>{{ current_user.username }}</span></li>
-        <li><a href="/logout">Log Out</a></li>
-        <li><a href="/history">View History</a></li>
+        <li><a href="/history" {% if request.endpoint == 'history' %}class="active"{% endif %}>History</a></li>
+        <li>
+          <div class="user-menu">
+            <span class="username">{{ current_user.username }}</span>
+          </div>
+        </li>
+        <li><a href="/logout">Sign Out</a></li>
         {% else %}
-        <li><a href="/login">Log In</a></li>
+        <li><a href="/login" {% if request.endpoint == 'login' %}class="active"{% endif %}>Sign In</a></li>
         {% endif %}
+        <li>
+          <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
+            <span class="theme-icon">🌙</span>
+          </button>
+        </li>
       </ul>
     </nav>
-  </div>
-</div>
+  </header>
 
-<section class="content">
-  <div class="container">
+  <!-- Main Content -->
+  <main class="modern-main">
+    <!-- Status Messages -->
+    <div id="alerts-container">
+      <div id="status-alert" class="modern-alert modern-alert-info" style="display: none;">
+        <span id="status"></span>
+      </div>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      {% for category, message in messages %}
+      <div class="modern-alert modern-alert-{{ 'error' if category == 'error' else 'success' }} fade-in">
+        {{ message }}
+      </div>
+      {% endfor %}
+      {% endif %}
+      {% endwith %}
+    </div>
+
+    {% block hero %}{% endblock %}
     {% block top_info %}{% endblock %}
-    <h4 class="flash" id="status"></h4>
-    {% with messages = get_flashed_messages() %}
-    {% if messages %} 
-    {% for message in messages %}
-    <h4 class="flash">{{ message }}</h4>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
-  </div>
-  
-  <div class="container">
     {% block content %}{% endblock %}
+  </main>
+
+  <!-- Progress Modal (hidden by default) -->
+  <div id="progress-modal" class="modern-progress" style="display: none;">
+    <h3 class="modern-progress-text">Creating your memo...</h3>
+    <div class="modern-progress-bar">
+      <div class="modern-progress-fill" id="progress-fill" style="width: 0%"></div>
+    </div>
+    <div class="modern-progress-percentage" id="progress-percentage">0%</div>
+    <p class="text-sm" style="color: var(--color-gray-500); margin-top: var(--spacing-4);">
+      This may take a few seconds while we compile your LaTeX document.
+    </p>
   </div>
-</section>
+
+  <!-- Overlay for progress modal -->
+  <div id="progress-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9998;"></div>
+
+  <!-- JavaScript -->
+  <script>
+    // Mobile navigation toggle and dark mode functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      // Mobile nav
+      const toggle = document.getElementById('mobile-nav-toggle');
+      const navLinks = document.getElementById('nav-links');
+      
+      if (toggle && navLinks) {
+        toggle.addEventListener('click', function() {
+          navLinks.classList.toggle('open');
+          toggle.classList.toggle('active');
+        });
+        
+        // Close mobile menu when clicking on a link
+        navLinks.addEventListener('click', function(e) {
+          if (e.target.tagName === 'A') {
+            navLinks.classList.remove('open');
+            toggle.classList.remove('active');
+          }
+        });
+      }
+      
+      // Dark mode functionality
+      initTheme();
+    });
+
+    // Enhanced status message display - make it globally available
+    window.showStatusMessage = function(message, type = 'info') {
+      const statusAlert = document.getElementById('status-alert');
+      const statusElement = document.getElementById('status');
+      
+      if (statusAlert && statusElement) {
+        statusElement.textContent = message;
+        statusAlert.className = `modern-alert modern-alert-${type} fade-in`;
+        statusAlert.style.display = 'flex';
+        
+        // Auto-hide after 5 seconds for non-error messages
+        if (type !== 'error') {
+          setTimeout(() => {
+            statusAlert.style.display = 'none';
+          }, 5000);
+        }
+      }
+    }
+
+    // Dark mode functionality
+    function initTheme() {
+      const themeToggle = document.getElementById('theme-toggle');
+      const themeIcon = document.querySelector('.theme-icon');
+      
+      // Check for saved theme preference or default to light mode
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+      
+      // Apply saved theme
+      if (savedTheme !== currentTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+      }
+      
+      // Theme toggle event listener
+      if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+          const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+          const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+          
+          document.documentElement.setAttribute('data-theme', newTheme);
+          localStorage.setItem('theme', newTheme);
+          updateThemeIcon(newTheme);
+        });
+      }
+      
+      function updateThemeIcon(theme) {
+        if (themeIcon) {
+          themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+      }
+      
+      // Initialize icon
+      updateThemeIcon(savedTheme);
+    }
+
+    // Progress functions moved to tasks.js
+
+    function updateProgress(percentage) {
+      const fill = document.getElementById('progress-fill');
+      const text = document.getElementById('progress-percentage');
+      
+      if (fill && text) {
+        fill.style.width = percentage + '%';
+        text.textContent = Math.round(percentage) + '%';
+      }
+    }
+  </script>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

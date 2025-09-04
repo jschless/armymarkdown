@@ -11,11 +11,11 @@ function findHighest(prefix) {
     return highestNumber;
 }
 
-const forCount = findHighest("for");
-const thruCount = findHighest("thru");
-const encCount = findHighest("enc");
-const distroCount = findHighest("distro");
-const cfCount = findHighest("cf");
+let forCount = findHighest("for");
+let thruCount = findHighest("thru");
+let encCount = findHighest("enc");
+let distroCount = findHighest("distro");
+let cfCount = findHighest("cf");
 
 const suffixToVarMap = {
     "for": forCount,
@@ -238,6 +238,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const options = { day: 'numeric', month: 'long', year: 'numeric' };    
     const formattedDate = currentDate.toLocaleDateString('en-GB', options);
     document.getElementById('DATE').value = formattedDate;
+    
 
     document.getElementById('addFOR').addEventListener('click', addForAddress);
     document.getElementById('addTHRU').addEventListener('click', addThruAddress);

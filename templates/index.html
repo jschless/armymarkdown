@@ -1,30 +1,59 @@
 {% extends 'base.html' %}
 
+{% block title %}Army Memo Maker - Professional Military Documents{% endblock %}
+
+{% block hero %}
+<div class="modern-hero fade-in">
+  <h1>Army Memo Maker</h1>
+  <p>
+    Create professional military memorandums in accordance with AR 25-50. 
+    Simple markdown-like syntax, LaTeX-powered formatting.
+  </p>
+</div>
+{% endblock %}
+
 {% block top_info %}
-<div class="row">
-  Welcome to Army Memo Maker, a simple webapp that helps you make memos formatted in perfect accordance with AR 25-50. Memos are guaranteed to have the right spacing and font. Note, generating your memo will take a few seconds (this website is currently running on a server less powerful than your phone).
-  
-  <br><br>
-  The tutorial example explains how to create your memo. You can also view other example memos to see other supported features. If you make an account, you can save documents and load recently created ones. If you are confused, try the <a href="https://armymemomaker.com/form">Form Editor</a>, which is more intuitive.
-  <br>
-  <br>
-</div>  
-
-
 {% from "example_list.html" import build_list %}
-{{ build_list('index') }}
+<div class="fade-in">
+  {{ build_list('index') }}
+</div>
 {% endblock %}
 
 {% block content %}
+<div class="modern-card fade-in">
+  <div class="modern-card-header">
+    <h2 class="modern-card-title">Memo Editor</h2>
+    <p class="modern-card-description">
+      Type your memo content below using simple markdown-like syntax. Variables like <span class="variable">&#123;&#123;ORGANIZATION_NAME&#125;&#125;</span>, <span class="variable">&#123;&#123;AUTHOR&#125;&#125;</span>, and <span class="variable">&#123;&#123;DATE&#125;&#125;</span> will be automatically rendered by LaTeX into properly formatted memo headers and signatures. 
+      The tutorial example shows you the syntax. Need help? Try the <a href="/form" style="color: var(--color-primary); text-decoration: none; font-weight: 500;">Form Builder</a>.
+    </p>
+  </div>
 
-<form id="memo" method="post">
-  <textarea name="memo_text" id="editor" spellcheck="true" class="u-full-width u-full-height">{{memo_text}}</textarea>
-  <button class="button-primary" id="start-bg-job">Create Memo PDF</button>
-  {% if current_user.is_authenticated %}
-  <button class="button.u-pull-right" id="save-progress">Save Progress</button>
-  {% endif %}
-</form>
+  <form id="memo" method="post" class="modern-form">
+    <div class="modern-form-group">
+      <textarea 
+        name="memo_text" 
+        id="editor" 
+        spellcheck="true" 
+        class="modern-form-textarea large" 
+        placeholder="Start typing your memo content here...">{{memo_text}}</textarea>
+    </div>
+    
+    <div style="display: flex; gap: var(--spacing-4); flex-wrap: wrap; justify-content: flex-start; align-items: center;">
+      <button type="submit" class="modern-btn modern-btn-primary modern-btn-lg" id="start-bg-job">
+        Create Memo PDF
+      </button>
+      {% if current_user.is_authenticated %}
+      <button type="button" class="modern-btn modern-btn-outline" id="save-progress">
+        Save Progress
+      </button>
+      {% endif %}
+    </div>
+  </form>
+</div>
+{% endblock %}
 
+{% block scripts %}
 <script src="{{ url_for('static', filename='tasks.js') }}"></script>
 <script src="{{ url_for('static', filename='index.js') }}"></script>
 {% endblock %}
