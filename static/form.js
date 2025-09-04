@@ -2,10 +2,10 @@ function findHighest(prefix) {
     let highestNumber = 0;
 
     document.querySelectorAll("[id^='" + prefix + "']").forEach(function(element) {
-	const idNumber = parseInt(element.id.replace(prefix, ""));
-	if (idNumber > highestNumber) {
+        const idNumber = parseInt(element.id.replace(prefix, ""), 10);
+        if (idNumber > highestNumber) {
             highestNumber = idNumber;
-	}
+        }
     });
 
     return highestNumber;
@@ -28,24 +28,27 @@ const suffixToVarMap = {
 function addAddress(fields, is_for) {
     // reuse this for thru and for address buttons
     let newRow = document.createElement('div');
-    newRow.classList.add("row")
+    newRow.classList.add("row");
     let newDiv = document.createElement('div');
     newDiv.classList.add("six");
     newDiv.classList.add("columns");
     console.log(forCount, thruCount);
-    is_for ? forCount++ : thruCount++; 
+    if (is_for) {
+        forCount++;
+    } else {
+        thruCount++;
+    }
 
     const suffix = is_for ? forCount : thruCount;
     
     fields.forEach(function(field) {
-	let label = document.createElement('label');
+        let label = document.createElement('label');
 	label.textContent = field.label;
 	label.classList.add("u-full-width");
 	label.classList.add("center");
-	label.setAttribute('for', field.id + suffix);
+        label.setAttribute('for', field.id + suffix);
 
-	
-	let input = document.createElement('input');
+        let input = document.createElement('input');
 	input.type = 'text';
 	input.id = field.id + suffix;
 	input.name = field.id + suffix;
@@ -55,9 +58,9 @@ function addAddress(fields, is_for) {
 	input.classList.add("center");
 
 	
-	newDiv.append(label);
-	newDiv.append(input);
-	newDiv.append(document.createElement('br')); // Add line break
+        newDiv.append(label);
+        newDiv.append(input);
+        newDiv.append(document.createElement('br')); // Add line break
 
     });
 
@@ -67,23 +70,23 @@ function addAddress(fields, is_for) {
     deleteButton.classList.add("center");
 
     deleteButton.addEventListener('click', function() {
-	newRow.remove();
+        newRow.remove();
     });
     newDiv.append(deleteButton);
 
     newDiv.append(document.createElement('hr'));
     newRow.append(newDiv);
     console.log("trying to add", newDiv);
-    whereToAdd = is_for ? "forFieldContainer" : "thruFieldContainer";
+    const whereToAdd = is_for ? "forFieldContainer" : "thruFieldContainer";
     document.getElementById(whereToAdd).prepend(newRow);
 
 }
 
-function addAuthority(){
-    addSingleField("Authority", "AUTHORITY", "GEN Milley", "authority", "removeAuthority", removeAuthority, "authorityDiv", "addAuthority");   
+function addAuthority() {
+    addSingleField("Authority", "AUTHORITY", "GEN Milley", "authority", "removeAuthority", removeAuthority, "authorityDiv", "addAuthority");
 }
 
-function removeAuthority(){
+function removeAuthority() {
     removeSingleField("authorityDiv", "authority", "addAuthority", "Add Authority", addAuthority);
 }
 
@@ -176,12 +179,12 @@ function addField(suffix, labelText, inputValue, divId) {
 
     let input = document.createElement('input');
     input.type = 'text';
-    if (suffix == "enc") {
-	input.id = "ENCLOSURE" + count;
-	input.name = "ENCLOSURE" + count;
+    if (suffix === "enc") {
+        input.id = "ENCLOSURE" + count;
+        input.name = "ENCLOSURE" + count;
     } else {
-	input.id = suffix.toUpperCase() + count;
-	input.name = suffix.toUpperCase() + count;
+        input.id = suffix.toUpperCase() + count;
+        input.name = suffix.toUpperCase() + count;
     }
     input.value = inputValue;
     input.classList.add("u-full-width");
@@ -196,7 +199,7 @@ function addField(suffix, labelText, inputValue, divId) {
     deleteButton.type = 'text';
     deleteButton.textContent = 'Remove ' + labelText;
     deleteButton.addEventListener('click', function() {
-	div.remove();
+        div.remove();
     });
     div.append(deleteButton);
     div.append(document.createElement('hr'));
@@ -205,9 +208,9 @@ function addField(suffix, labelText, inputValue, divId) {
 
 function addForAddress() {
     const fields = [
-	{ id: "FOR_ORGANIZATION_NAME", placeholder: "U.S. Army Command and General Staff College (ATZL)", label: "FOR Organization Name"},
-	{ id: "FOR_ORGANIZATION_STREET_ADDRESS", placeholder: "100 Stimson Avenue", label: "FOR Street Address"},
-	{ id: "FOR_ORGANIZATION_CITY_STATE_ZIP", placeholder: "Ft Leavenworth, KS 66027-1352", label: "FOR City, State Zip"}
+        { id: "FOR_ORGANIZATION_NAME", placeholder: "U.S. Army Command and General Staff College (ATZL)", label: "FOR Organization Name"},
+        { id: "FOR_ORGANIZATION_STREET_ADDRESS", placeholder: "100 Stimson Avenue", label: "FOR Street Address"},
+        { id: "FOR_ORGANIZATION_CITY_STATE_ZIP", placeholder: "Ft Leavenworth, KS 66027-1352", label: "FOR City, State Zip"}
     ];
 
     addAddress(fields, true);
@@ -215,9 +218,9 @@ function addForAddress() {
 
 function addThruAddress() {
     const fields = [
-	{ id: "THRU_ORGANIZATION_NAME", placeholder: "U.S. Army Command and General Staff College (ATZL)", label: "THRU Organization Name"},
-	{ id: "THRU_ORGANIZATION_STREET_ADDRESS", placeholder: "100 Stimson Avenue", label: "THRU Street Address"},
-	{ id: "THRU_ORGANIZATION_CITY_STATE_ZIP", placeholder: "Ft Leavenworth, KS 66027-1352", label: "THRU City, State Zip"}
+        { id: "THRU_ORGANIZATION_NAME", placeholder: "U.S. Army Command and General Staff College (ATZL)", label: "THRU Organization Name"},
+        { id: "THRU_ORGANIZATION_STREET_ADDRESS", placeholder: "100 Stimson Avenue", label: "THRU Street Address"},
+        { id: "THRU_ORGANIZATION_CITY_STATE_ZIP", placeholder: "Ft Leavenworth, KS 66027-1352", label: "THRU City, State Zip"}
     ];
 
     addAddress(fields, false);
@@ -225,11 +228,11 @@ function addThruAddress() {
 
 
 function deleteElement(elementId) {
-    let element = document.getElementById(elementId);
+    const element = document.getElementById(elementId);
     if (element) {
-	element.remove();
+        element.remove();
     } else {
-	console.log("Element with ID " + elementId + " not found.");
+        console.log("Element with ID " + elementId + " not found.");
     }
 }
 
@@ -245,22 +248,22 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('addDistro').addEventListener('click', addDistro);
     document.getElementById('addCF').addEventListener('click', addCF);
     if (document.getElementById('removeTitle')) {
-	document.getElementById('removeTitle').addEventListener('click', removeTitle);
+        document.getElementById('removeTitle').addEventListener('click', removeTitle);
     }
     if (document.getElementById('addTitle')) {
-	document.getElementById('addTitle').addEventListener('click', addTitle);     
+        document.getElementById('addTitle').addEventListener('click', addTitle);
     }
     if (document.getElementById('removeSuspense')) {
-	document.getElementById('removeSuspense').addEventListener('click', removeSuspense);
+        document.getElementById('removeSuspense').addEventListener('click', removeSuspense);
     }
     if (document.getElementById('addSuspense')) {
-	document.getElementById('addSuspense').addEventListener('click', addSuspense);     
+        document.getElementById('addSuspense').addEventListener('click', addSuspense);
     }
     if (document.getElementById('removeAuthority')) {
-	document.getElementById('removeAuthority').addEventListener('click', removeAuthority);
+        document.getElementById('removeAuthority').addEventListener('click', removeAuthority);
     }
     if (document.getElementById('addAuthority')) {
-	document.getElementById('addAuthority').addEventListener('click', addAuthority);     
+        document.getElementById('addAuthority').addEventListener('click', addAuthority);
     }
 });
 

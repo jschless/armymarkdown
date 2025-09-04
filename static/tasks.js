@@ -1,8 +1,8 @@
 document.getElementById('linkSelector').addEventListener('change', function() {
     const selectElement = document.getElementById("linkSelector");
-    const selectedValue = selectElement.options[selectElement.selectedIndex].value; 
+    const selectedValue = selectElement.options[selectElement.selectedIndex].value;
 
-    window.location.assign(selectedValue); 
+    window.location.assign(selectedValue);
 });
 
 function saveData() {
@@ -82,10 +82,10 @@ function updateProgress(status_url, count) {
             button.classList.add("center");
             button.setAttribute('id', "temp_button");
 
-            const container = document.getElementById('progress-bar-container');		
+            const container = document.getElementById('progress-bar-container');
             container.style.opacity = '1';
             container.append(document.createElement('br'));
-            container.appendChild(button);	    	
+            container.appendChild(button);
         } else if (data["state"] === "FAILURE") {
             let errorMessage = "Error processing your memo. ";
             if (data["status"]) {
@@ -107,7 +107,7 @@ function updateProgress(status_url, count) {
             document.getElementById('progress-bar-container').style.display = 'block';
 
             // Constants for polling
-            const POLLING_INTERVAL_MS = 1000;        
+            const POLLING_INTERVAL_MS = 1000;
             const AVERAGE_COMPLETION_SECONDS = 10;
             const MAX_POLLING_ATTEMPTS = 80;
             
@@ -118,8 +118,8 @@ function updateProgress(status_url, count) {
                 const progress = Math.min(count / AVERAGE_COMPLETION_SECONDS * 100, 100);
                 document.getElementById('progress').style.width = progress + '%';
                 
-                setTimeout(function () {
-                    updateProgress(status_url, count); 
+                setTimeout(function() {
+                    updateProgress(status_url, count);
                 }, POLLING_INTERVAL_MS);
             } else {
                 // Timeout after max attempts
