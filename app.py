@@ -1,6 +1,7 @@
 import random
 import os
 import sys
+from dotenv import load_dotenv
 from flask import (
     Flask,
     render_template,
@@ -18,6 +19,9 @@ from botocore.exceptions import ClientError
 from armymarkdown import memo_model, writer
 from flask_talisman import Talisman
 from db.db import init_db
+
+# Load environment variables from .env file
+load_dotenv()
 
 def get_required_env_var(var_name):
     """Get required environment variable or raise error if missing."""
