@@ -20,6 +20,11 @@ temp_file.pdf
 local_config.py
 *.DS_Store
 
+# Environment variables (contain secrets)
+.env
+.env.local
+.env.*.local
+
 # Temp files
 *#
 .ipynb_checkpoints/
