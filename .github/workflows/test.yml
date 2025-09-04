@@ -2,9 +2,10 @@ name: Test Suite
 
 on:
   push:
-    branches: [ main, develop, feature/* ]
+    branches: [ main, develop, feature/*, improve-code-quality ]
   pull_request:
     branches: [ main, develop ]
+  workflow_dispatch:
 
 jobs:
   test:
