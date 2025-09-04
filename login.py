@@ -1,4 +1,4 @@
-from flask import render_template, request, url_for, jsonify, redirect, sessions, flash
+from flask import render_template, request, url_for, redirect, flash
 from urllib.parse import urlsplit
 from app import app
 from db.schema import User, Document, db
@@ -86,7 +86,7 @@ def history():
                 {
                     "id": document.id,
                     "content": processed_content,
-                    "preview": document.content[end_index : end_index + 300].strip(),
+                    "preview": document.content[end_index:end_index + 300].strip(),
                 }
             )
         except Exception as e:
@@ -140,7 +140,7 @@ def save_document(text):
         return "Document is already saved."
 
     from constants import MAX_DOCUMENTS_PER_USER
-    
+
     num_documents = Document.query.filter_by(user_id=user_id).count()
     removed_oldest = num_documents >= MAX_DOCUMENTS_PER_USER
     if removed_oldest:
@@ -164,6 +164,6 @@ def save_document(text):
 
         return "Document saved successfully."
 
-    except Exception as e:
+    except Exception:
         db.session.rollback()
         return "Document failed to save."

@@ -1,14 +1,11 @@
 import random
 import os
-import sys
 from flask import (
     Flask,
     render_template,
     request,
     url_for,
     jsonify,
-    redirect,
-    session,
     flash,
 )
 from celery import Celery
@@ -18,6 +15,7 @@ from botocore.exceptions import ClientError
 from armymarkdown import memo_model, writer
 from flask_talisman import Talisman
 from db.db import init_db
+from login import save_document
 
 if "REDIS_URL" not in os.environ:
     # set os.environ from local_config
@@ -54,16 +52,15 @@ s3 = boto3.client(
     config=boto3.session.Config(region_name="us-east-2", signature_version="s3v4"),
 )
 
-import login
-from login import save_document
-
 
 @app.after_request
 def add_csp(response):
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
-        "script-src 'self' https://www.google.com/recaptcha/api.js https://www.gstatic.com/recaptcha/; "  # Allow scripts from trusted sources
-        "font-src 'self' https://fonts.gstatic.com https://fonts.google.com https://www.gstatic.com data:; "  # Allow data URIs for fonts
+        "script-src 'self' https://www.google.com/recaptcha/api.js "
+        "https://www.gstatic.com/recaptcha/; "  # Allow scripts from trusted sources
+        "font-src 'self' https://fonts.gstatic.com https://fonts.google.com "
+        "https://www.gstatic.com data:; "  # Allow data URIs for fonts
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "  # Allow inline styles if necessary
         "frame-src https://www.google.com;"
         "img-src 'self'; "  # Only allow images from the same origin
@@ -185,19 +182,19 @@ def taskstatus(task_id):
 def get_aws_link(file_name):
     """
     Generate presigned URL for S3 object with proper error handling.
-    
+
     Args:
         file_name (str): S3 object key
-        
+
     Returns:
         str: Presigned URL or None on error
     """
     from constants import S3_BUCKET_NAME, PRESIGNED_URL_EXPIRY_SECONDS
-    
+
     if not file_name:
         app.logger.error("get_aws_link called with empty file_name")
         return None
-        
+
     try:
         response = s3.generate_presigned_url(
             "get_object",
@@ -206,12 +203,12 @@ def get_aws_link(file_name):
         )
         app.logger.debug(f"Generated presigned URL for {file_name}")
         return response
-        
+
     except ClientError as e:
         error_code = e.response['Error']['Code']
         app.logger.error(f"AWS S3 ClientError generating presigned URL ({error_code}): {e}")
         return None
-        
+
     except Exception as e:
         app.logger.error(f"Unexpected error generating presigned URL: {e}")
         return None
@@ -220,24 +217,24 @@ def get_aws_link(file_name):
 def upload_file_to_s3(file_path, aws_path, acl="public-read"):
     """
     Upload file to S3 with proper error handling.
-    
+
     Args:
         file_path (str): Local path to file to upload
         aws_path (str): S3 key/path for the file
         acl (str): Access control level
-        
+
     Returns:
         str: The original file_path on success
-        
+
     Raises:
         FileNotFoundError: If local file doesn't exist
         RuntimeError: If S3 upload fails
     """
     from constants import S3_BUCKET_NAME, ErrorMessages
-    
+
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"File not found: {file_path}")
-    
+
     try:
         s3.upload_file(
             file_path,
@@ -250,16 +247,16 @@ def upload_file_to_s3(file_path, aws_path, acl="public-read"):
         )
         app.logger.info(f"Successfully uploaded {file_path} to S3 as {aws_path}")
         return file_path
-        
+
     except ClientError as e:
         error_code = e.response['Error']['Code']
         app.logger.error(f"AWS S3 ClientError ({error_code}): {e}")
         raise RuntimeError(f"S3 upload failed: {error_code}")
-        
+
     except Exception as e:
         app.logger.error(f"Unexpected error during S3 upload: {e}")
         raise RuntimeError(ErrorMessages.FILE_UPLOAD_FAILED)
-        
+
     finally:
         # Clean up local file after upload attempt
         if os.path.exists(file_path):
@@ -273,28 +270,28 @@ def upload_file_to_s3(file_path, aws_path, acl="public-read"):
 @celery.task(name="create_memo")
 def create_memo(text, dictionary=None):
     from constants import (
-        MAX_SUBJECT_LENGTH_FOR_FILENAME, 
-        RANDOM_ID_LENGTH, 
+        MAX_SUBJECT_LENGTH_FOR_FILENAME,
+        RANDOM_ID_LENGTH,
         TEX_EXTENSION,
         PDF_EXTENSION,
         LATEX_TEMP_EXTENSIONS,
         ErrorMessages
     )
-    
+
     try:
         # Parse memo model with validation
         if dictionary:
             m = memo_model.MemoModel.from_form(dictionary)
         else:
             m = memo_model.MemoModel.from_text(text)
-        
+
         # Check if parsing failed (returns string error message)
         if isinstance(m, str):
             app.logger.error(f"Memo parsing failed: {m}")
             raise ValueError(ErrorMessages.MEMO_PARSING_ERROR)
 
         app.logger.debug(m.to_dict())
-        
+
         # Create memo writer with validation
         try:
             mw = writer.MemoWriter(m)
@@ -334,7 +331,7 @@ def create_memo(text, dictionary=None):
         # Upload to S3 with error handling
         try:
             upload_result = upload_file_to_s3(
-                pdf_path, 
+                pdf_path,
                 temp_name[:-len(TEX_EXTENSION)] + PDF_EXTENSION
             )
             if isinstance(upload_result, Exception):
@@ -364,7 +361,7 @@ def create_memo(text, dictionary=None):
 def _cleanup_temp_files(temp_name, file_extensions):
     """Helper function to clean up temporary files."""
     from constants import TEX_EXTENSION
-    
+
     for extension in file_extensions:
         temp_file = temp_name[:-len(TEX_EXTENSION)] + extension
         if os.path.exists(temp_file):

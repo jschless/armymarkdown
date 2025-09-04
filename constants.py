@@ -9,14 +9,14 @@ TEX_EXTENSION = ".tex"
 # LaTeX cleanup file extensions
 LATEX_TEMP_EXTENSIONS = [
     ".aux",
-    ".fdb_latexmk", 
+    ".fdb_latexmk",
     ".fls",
     ".log",
     ".out",
     ".tex",
 ]
 
-# Database constants  
+# Database constants
 MAX_DOCUMENTS_PER_USER = 10
 MAX_DOCUMENT_CONTENT_LENGTH = 5000
 
@@ -36,6 +36,8 @@ MIN_PASSWORD_LENGTH = 6
 MAX_PASSWORD_LENGTH = 14
 
 # Error messages
+
+
 class ErrorMessages:
     GENERIC_ERROR = "An error occurred while processing your request. Please try again."
     PDF_GENERATION_FAILED = "PDF generation failed. Please check your memo format and try again."

@@ -62,7 +62,7 @@ class MemoModel:
 
     def _check_date(self, date_str):
         # form 08 May 2022
-        date_pattern = re.compile("\d\d [A-Z][a-z]+ \d\d\d\d")
+        date_pattern = re.compile(r"\d\d [A-Z][a-z]+ \d\d\d\d")
         if date_pattern.match(date_str) is None:
             return (
                 f"The entered date {date_str} does not conform to pattern"
@@ -126,7 +126,6 @@ class MemoModel:
 
     def to_amd(self):
         str_builder = ""
-        present_fields = fields(self)
         for write_key, attrib in [
             ("ORGANIZATION_NAME", "unit_name"),
             ("ORGANIZATION_STREET_ADDRESS", "unit_street_address"),
@@ -292,17 +291,17 @@ def validate_input_text(text):
     """Validate input text for basic safety and format requirements."""
     if not isinstance(text, str):
         return "Input must be a string"
-    
+
     if len(text.strip()) == 0:
         return "Input cannot be empty"
-    
+
     if len(text) > 50000:  # Reasonable limit to prevent DoS
         return "Input text too long (maximum 50,000 characters)"
-    
+
     # Check for potentially dangerous LaTeX commands
     dangerous_patterns = [
         r'\\input\s*{',
-        r'\\include\s*{', 
+        r'\\include\s*{',
         r'\\write\s*{',
         r'\\immediate',
         r'\\openout',
@@ -312,36 +311,37 @@ def validate_input_text(text):
         r'\\let\s*\\',
         r'\\expandafter',
     ]
-    
+
     import re
     for pattern in dangerous_patterns:
         if re.search(pattern, text, re.IGNORECASE):
-            return f"Potentially unsafe LaTeX command detected: {pattern.replace('\\\\', '\\')}"
-    
+            escaped_pattern = pattern.replace('\\\\', '\\')
+            return f"Potentially unsafe LaTeX command detected: {escaped_pattern}"
+
     return None  # No validation errors
 
 
 def validate_memo_fields(memo_dict):
     """Validate required memo fields and their formats."""
     required_fields = ['unit_name', 'office_symbol', 'subject', 'author_name', 'author_rank']
-    
+
     for field in required_fields:
         if field not in memo_dict or not memo_dict[field]:
             return f"Required field missing: {field.replace('_', ' ').title()}"
-        
+
         # Check field length limits
         if len(str(memo_dict[field])) > 500:
             return f"Field too long: {field.replace('_', ' ').title()} (maximum 500 characters)"
-    
+
     # Validate subject line
     if len(memo_dict['subject']) < 3:
         return "Subject must be at least 3 characters long"
-    
+
     # Validate office symbol format (basic check)
     office_symbol = memo_dict['office_symbol'].strip()
     if len(office_symbol) < 2 or not re.match(r'^[A-Z0-9-]+$', office_symbol):
         return "Office symbol should contain only uppercase letters, numbers, and hyphens"
-    
+
     return None  # No validation errors
 
 
@@ -358,13 +358,13 @@ def parse_lines(file_lines):
             file_lines,
         )
     )
-    
+
     # Validate total input size
     total_content = "\n".join(file_lines)
     validation_error = validate_input_text(total_content)
     if validation_error:
         return f"INPUT VALIDATION ERROR: {validation_error}"
-    
+
     try:
         memo_begin_loc = [i for i, s in enumerate(file_lines) if "SUBJECT" in s][0]
     except IndexError:
@@ -381,7 +381,7 @@ def parse_lines(file_lines):
             parts = line.split("=", 1)
             if len(parts) != 2:
                 continue
-                
+
             key, text = parts
             key = key.strip()
             text = text.strip()
@@ -411,12 +411,12 @@ def parse_lines(file_lines):
         memo_dict["text"] = parse_memo_body(file_lines[memo_begin_loc:])
     except Exception as e:
         return f"ERROR: Failed to parse memo body: {str(e)}"
-    
+
     # Validate required fields before creating model
     field_validation_error = validate_memo_fields(memo_dict)
     if field_validation_error:
         return f"FIELD VALIDATION ERROR: {field_validation_error}"
-    
+
     return MemoModel.from_dict(memo_dict)
 
 
@@ -495,5 +495,5 @@ def process_table(line_list):
             .iloc[1:]
         )
         return tabulate(table, table.columns, tablefmt="latex")
-    except Exception as e:
+    except Exception:
         return ""
