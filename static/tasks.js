@@ -1,5 +1,5 @@
 document.getElementById('linkSelector').addEventListener('change', function() {
-    const selectElement = document.getElementById("linkSelector");
+    const selectElement = document.getElementById('linkSelector');
     const selectedValue = selectElement.options[selectElement.selectedIndex].value; 
 
     window.location.assign(selectedValue); 
@@ -15,16 +15,16 @@ function saveData() {
             'X-Requested-With': 'XMLHttpRequest' // Add header to indicate AJAX request
         }
     })
-    .then(response => {
-        if (response.ok) {
-            console.log('Form data submitted successfully.');
-        } else {
-            console.error('Error submitting form data:', response.status);
-        }
-    })
-    .catch(error => {
-        console.error('Error submitting form data:', error);
-    });
+        .then(response => {
+            if (response.ok) {
+                console.log('Form data submitted successfully.');
+            } else {
+                console.error('Error submitting form data:', response.status);
+            }
+        })
+        .catch(error => {
+            console.error('Error submitting form data:', error);
+        });
 }
 
 function buttonPress(endpoint, polling_function) {
@@ -35,86 +35,85 @@ function buttonPress(endpoint, polling_function) {
     showIndeterminateProgress();
 
     fetch(endpoint, {
-        method: "POST",
+        method: 'POST',
         body: formData,
         headers: {
             'X-Requested-With': 'XMLHttpRequest'
         }
     })
-    .then(response => {
-        if (response.ok) {
-            return response.headers.get("Location");
-        } else {
-            throw new Error("Network response was not ok");
-        }
-    })
-    .then(status_url => {
-        polling_function(status_url, 0);
-    })
-    .catch(error => {
-        console.error('Error submitting form:', error);
-        showProgress(false);
-        showStatusMessage("Error submitting your memo. Please check your connection and try again.", 'error');
-    });
+        .then(response => {
+            if (response.ok) {
+                return response.headers.get('Location');
+            } else {
+                throw new Error('Network response was not ok');
+            }
+        })
+        .then(status_url => {
+            polling_function(status_url, 0);
+        })
+        .catch(error => {
+            console.error('Error submitting form:', error);
+            showProgress(false);
+            showStatusMessage('Error submitting your memo. Please check your connection and try again.', 'error');
+        });
 }
 
 function updateProgress(status_url, count) {
     fetch(status_url)
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json(); 
-    })
-    .then(data => {
-        if (data["state"] === "SUCCESS") {
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json(); 
+        })
+        .then(data => {
+            if (data['state'] === 'SUCCESS') {
             // Hide progress modal and show success
-            showProgress(false);
-            
-            // Open PDF in new tab
-            if (data["presigned_url"]) {
-                window.open(data["presigned_url"], "_blank", 'noopener,noreferrer');
-            }
-            
-            // Show success message
-            showStatusMessage("🎉 Your memo has been created successfully! The PDF should open in a new tab.", 'success');
-            
-        } else if (data["state"] === "FAILURE") {
-            // Hide progress modal
-            showProgress(false);
-            
-            let errorMessage = "Error processing your memo. Please check your memo format and try again.";
-            
-            // Show error message using modern alert system
-            showStatusMessage(errorMessage, 'error');
-        } else {
-            // Still processing - update progress
-            const POLLING_INTERVAL_MS = 1000;        
-            const AVERAGE_COMPLETION_SECONDS = 10;
-            const MAX_POLLING_ATTEMPTS = 80;
-            
-            count += 1;
-
-            // Keep showing indeterminate progress (no percentage updates needed)
-            
-
-            // Continue polling or timeout
-            if (count < MAX_POLLING_ATTEMPTS) {
-                setTimeout(function () {
-                    updateProgress(status_url, count); 
-                }, POLLING_INTERVAL_MS);
-            } else {
-                // Timeout after max attempts
                 showProgress(false);
-                showStatusMessage("Processing is taking longer than expected. Please try again or contact support if the issue persists.", 'warning');
+            
+                // Open PDF in new tab
+                if (data['presigned_url']) {
+                    window.open(data['presigned_url'], '_blank', 'noopener,noreferrer');
+                }
+            
+                // Show success message
+                showStatusMessage('🎉 Your memo has been created successfully! The PDF should open in a new tab.', 'success');
+            
+            } else if (data['state'] === 'FAILURE') {
+            // Hide progress modal
+                showProgress(false);
+            
+                const errorMessage = 'Error processing your memo. Please check your memo format and try again.';
+            
+                // Show error message using modern alert system
+                showStatusMessage(errorMessage, 'error');
+            } else {
+            // Still processing - update progress
+                const POLLING_INTERVAL_MS = 1000;        
+                const MAX_POLLING_ATTEMPTS = 80;
+            
+                count += 1;
+
+                // Keep showing indeterminate progress (no percentage updates needed)
+            
+
+                // Continue polling or timeout
+                if (count < MAX_POLLING_ATTEMPTS) {
+                    setTimeout(function () {
+                        updateProgress(status_url, count); 
+                    }, POLLING_INTERVAL_MS);
+                } else {
+                // Timeout after max attempts
+                    showProgress(false);
+                    showStatusMessage('Processing is taking longer than expected. Please try again or contact support if the issue persists.', 'warning');
+                }
             }
-        }
-    })
-    .catch(error => {
-        console.error('Error polling task status:', error);
-        showProgress(false);
-        showStatusMessage("Connection error while checking status. Please refresh the page and try again.", 'error');
-    });
+        })
+        .catch(error => {
+            console.error('Error polling task status:', error);
+            showProgress(false);
+            showStatusMessage('Connection error while checking status. Please refresh the page and try again.', 'error');
+        });
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -133,15 +132,15 @@ document.addEventListener('DOMContentLoaded', function() {
 function makeTabsWork(textAreaId) {
     const textarea = document.getElementById(textAreaId);
 
-    textarea.addEventListener("keydown", function(event) {
-        if (event.key === "Tab") {
+    textarea.addEventListener('keydown', function(event) {
+        if (event.key === 'Tab') {
             event.preventDefault();
 
             const start = this.selectionStart;
             const end = this.selectionEnd;
 
             // Insert four spaces at the caret position
-            this.value = this.value.substring(0, start) + "    " + this.value.substring(end);
+            this.value = this.value.substring(0, start) + '    ' + this.value.substring(end);
 
             // Move the caret position forward by four spaces
             this.selectionStart = this.selectionEnd = start + 4;
