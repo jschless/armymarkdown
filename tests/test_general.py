@@ -1,6 +1,9 @@
 import os
 from armymarkdown import memo_model, writer
 
+# Get the directory containing this test file
+TEST_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 def test_memo_model_creation():
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -36,8 +39,10 @@ def test_latex_file():
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     template_path = os.path.join(project_root, "tests", "template.Amd")
     output_path = os.path.join(project_root, "tests", "test_tex_output_basic.tex")
-    answer_path = os.path.join(project_root, "tests", "answer_test_tex_output_basic.tex")
-    
+    answer_path = os.path.join(
+        project_root, "tests", "answer_test_tex_output_basic.tex"
+    )
+
     m = memo_model.MemoModel.from_file(template_path)
     mw = writer.MemoWriter(m)
     mw.write(output_file=output_path)

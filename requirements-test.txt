@@ -29,3 +29,12 @@ flask-wtf>=1.1.0
 
 # Mock AWS services for testing
 moto>=4.0.0
+
+# Code quality and linting tools
+flake8>=6.0.0
+mypy>=1.0.0
+coverage-badge>=1.1.0
+
+# Security scanning
+bandit>=1.7.0
+safety>=2.3.0

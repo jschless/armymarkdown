@@ -15,6 +15,13 @@ services:
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt
       - db-data:/data
+    environment:
+      - FLASK_SECRET=${FLASK_SECRET}
+      - RECAPTCHA_PUBLIC_KEY=${RECAPTCHA_PUBLIC_KEY}
+      - RECAPTCHA_PRIVATE_KEY=${RECAPTCHA_PRIVATE_KEY}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
     depends_on:
       - redis
       - sqlite_db
@@ -29,6 +36,13 @@ services:
       - db-data:/data
     container_name: cel01
     command: celery -A app.celery worker -l info
+    environment:
+      - FLASK_SECRET=${FLASK_SECRET}
+      - RECAPTCHA_PUBLIC_KEY=${RECAPTCHA_PUBLIC_KEY}
+      - RECAPTCHA_PRIVATE_KEY=${RECAPTCHA_PRIVATE_KEY}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
     links:
       - redis
     restart: unless-stopped
