@@ -1,3 +1,4 @@
+from flask import Flask
 from .schema import db
 
 
