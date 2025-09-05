@@ -132,6 +132,7 @@ jobs:
 
     - name: Run integration tests
       env:
+        PYTHONPATH: .
         FLASK_SECRET: "test-secret-key-for-ci"
         REDIS_URL: "redis://localhost:6379/15"
         RECAPTCHA_PUBLIC_KEY: "test-public-key"
