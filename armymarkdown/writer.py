@@ -38,6 +38,7 @@ class MemoWriter:
         tex_filename = os.path.basename(self.output_file)
 
         # LaTeX command with comprehensive flags for production reliability
+        # Must use lualatex due to fontspec requirement in armymemo class
         cmd = [
             "lualatex",
             "-interaction=nonstopmode",  # Never stop for user input
@@ -45,7 +46,6 @@ class MemoWriter:
             "-file-line-error",  # Include file and line in error messages
             "-synctex=0",  # Disable synctex for speed
             "-output-directory=.",  # Output in working directory
-            "--no-shell-escape",  # Disable shell escapes for security (safer is incompatible with luaotfload)
             tex_filename,  # Just the filename, not full path
         ]
 
@@ -66,6 +66,13 @@ class MemoWriter:
             
             # Log environment for debugging
             logging.info(f"LaTeX environment: TEXMFCACHE={env['TEXMFCACHE']}, TEXMFVAR={env['TEXMFVAR']}, LUATEX_CACHE_DIR={env['LUATEX_CACHE_DIR']}")
+            
+            # Add additional environment variables to prevent font loading issues
+            env['OSFONTDIR'] = '/usr/share/fonts'
+            env['LUAOTFLOAD_VERBOSE'] = '1'  # Enable verbose logging from luaotfload
+            env['TEXMFHOME'] = '/home/appuser/.texlive'
+            
+            logging.info("Environment configured for LaTeX font loading")
             
             # Run with timeout and capture output (reduced timeout for faster feedback)
             result = subprocess.run(
