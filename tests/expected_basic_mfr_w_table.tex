@@ -1,0 +1,42 @@
+\documentclass{./latex/armymemo-notikz}
+\address{1st Candy Battalion}
+\address{123 Wetzel Road}
+\address{Colorado Springs, CO 80904}
+\author{Philip K. Dick}\rank{1LT}\branch{EN}
+\officesymbol{ABC-DEF-GH}
+\signaturedate{13 June 2022}
+\subject{Table demo}
+\memoline{{MEMORANDUM FOR RECORD}}
+\title{Platoon Leader}
+\begin{document}
+\begin{enumerate}
+\item This memo is a demo.
+\item This is how you create a table:
+
+
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+       & Job Title          & Favorite Color    \\
+\hline
+ Smith & Squad Leader       & Blue              \\\hline
+ Jones & Platoon Sergeant   & Green             \\
+\hline
+\end{tabular}
+\end{center}
+\item It doesn't have to be all aligned, either. You just need the |'s to divide columns and --- to divide table header from the rest of the table. For example, this will also work:
+
+
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+       & Job Title          & Favorite Color    \\
+\hline
+ Smith & Squad Leader       & Blue              \\\hline
+ Jones & Platoon Sergeant   & Green             \\
+\hline
+\end{tabular}
+\end{center}
+\item Point of contact is the undersigned.
+\end{enumerate}
+\end{document}

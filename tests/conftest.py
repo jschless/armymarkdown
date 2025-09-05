@@ -25,15 +25,83 @@ def mock_database_modules():
     sys.modules["db"] = MagicMock()
     sys.modules["db.db"] = MagicMock()
 
+    # Create a configurable mock user for current_user first
+    mock_user = MagicMock()
+
     # Mock flask-login components
     mock_flask_login = MagicMock()
     mock_flask_login.LoginManager = MagicMock
-    mock_flask_login.login_user = MagicMock()
-    mock_flask_login.logout_user = MagicMock()
-    mock_flask_login.login_required = lambda f: f  # Pass-through decorator
-
-    # Create a configurable mock user for current_user
-    mock_user = MagicMock()
+    
+    # Mock login_user to actually set session and update user state
+    def mock_login_user(user):
+        from flask import session
+        mock_user.is_authenticated = True
+        mock_user.is_active = True
+        mock_user.is_anonymous = False
+        # Ensure we get actual values, not MagicMock objects
+        user_id = getattr(user, 'id', 1)
+        username = getattr(user, 'username', 'testuser')
+        # Convert MagicMock to actual values if needed
+        if hasattr(user_id, '_mock_name'):
+            user_id = 1
+        if hasattr(username, '_mock_name'):
+            username = 'testuser'
+        mock_user.id = user_id
+        mock_user.username = username
+        mock_user.get_id.return_value = str(user_id)
+        # Also set session for compatibility (use actual values)
+        session['user_id'] = user_id
+        session['username'] = username
+        return True
+    
+    def mock_logout_user():
+        mock_user.is_authenticated = False
+        mock_user.is_active = False
+        mock_user.is_anonymous = True
+        mock_user.id = None
+        mock_user.username = None
+        mock_user.get_id.return_value = None
+        from flask import session
+        session.pop('user_id', None)
+        session.pop('username', None)
+    
+    mock_flask_login.login_user = mock_login_user
+    mock_flask_login.logout_user = mock_logout_user
+    
+    # Mock login_required decorator to properly check authentication
+    def mock_login_required(f):
+        from functools import wraps
+        from flask import jsonify, session
+        
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            # Check if user is authenticated (either via mock_user or session)
+            # Use try-catch for defensive programming in case of CI environment differences
+            try:
+                is_authenticated = (
+                    getattr(mock_user, 'is_authenticated', False) or 
+                    (hasattr(session, 'get') and session.get('user_id') is not None)
+                )
+            except:
+                # In case session or mock_user is not available, default to not authenticated
+                is_authenticated = False
+            
+            if not is_authenticated:
+                from flask import redirect, url_for, request
+                try:
+                    # Return 401 for API routes, 302 for HTML routes
+                    if request.path.startswith('/api/') or 'json' in request.headers.get('Accept', ''):
+                        return jsonify({'error': 'Authentication required'}), 401
+                    else:
+                        # For protected routes like /history, return 302 redirect
+                        return redirect(url_for('login')), 302
+                except:
+                    # Fallback: just return 401 if url_for fails
+                    return jsonify({'error': 'Authentication required'}), 401
+            return f(*args, **kwargs)
+        return wrapper
+    
+    mock_flask_login.login_required = mock_login_required
     mock_user.is_authenticated = False
     mock_user.is_active = False
     mock_user.is_anonymous = True
