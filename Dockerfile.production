@@ -61,6 +61,10 @@ RUN mkdir -p /data \
     && chown -R appuser:appuser /app /data /home/appuser /tmp/luatex-cache /tmp/armymarkdown \
     && chmod 755 /tmp/luatex-cache /tmp/armymarkdown
 
+# Copy latex assets to the temp directory so they're available for all compilations
+RUN cp -r /app/latex /tmp/armymarkdown/latex \
+    && chown -R appuser:appuser /tmp/armymarkdown/latex
+
 # Set environment variables for LaTeX cache directories and working directories
 ENV TEXMFCACHE=/home/appuser/.texlive
 ENV TEXMFVAR=/home/appuser/.texlive

@@ -32,25 +32,18 @@ class MemoWriter:
         """Generate PDF from LaTeX file with robust error handling and timeout."""
         import logging
         import signal
-        import shutil
 
         # Set up working directory (directory containing the .tex file)
         work_dir = os.path.dirname(self.output_file)
         tex_filename = os.path.basename(self.output_file)
         
-        # Copy latex assets to working directory so relative paths work
-        latex_src_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "latex")
-        latex_dest_dir = os.path.join(work_dir, "latex")
-        
-        try:
-            # Remove existing latex dir if it exists and copy fresh
-            if os.path.exists(latex_dest_dir):
-                shutil.rmtree(latex_dest_dir)
-            shutil.copytree(latex_src_dir, latex_dest_dir)
-            logging.info(f"Copied LaTeX assets from {latex_src_dir} to {latex_dest_dir}")
-        except Exception as e:
-            logging.error(f"Failed to copy LaTeX assets: {e}")
-            raise Exception(f"Could not copy LaTeX assets: {e}")
+        # Verify latex assets are available (they should be copied by Dockerfile)
+        latex_dir = os.path.join(work_dir, "latex")
+        if not os.path.exists(latex_dir):
+            logging.error(f"LaTeX assets directory not found at {latex_dir}")
+            raise Exception(f"LaTeX assets not available at {latex_dir}. Check Dockerfile setup.")
+        else:
+            logging.info(f"LaTeX assets directory verified at {latex_dir}")
 
         # LaTeX command with comprehensive flags for production reliability
         # Must use lualatex due to fontspec requirement in armymemo class
