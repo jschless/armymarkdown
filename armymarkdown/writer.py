@@ -45,8 +45,7 @@ class MemoWriter:
             "-file-line-error",  # Include file and line in error messages
             "-synctex=0",  # Disable synctex for speed
             "-output-directory=.",  # Output in working directory
-            "--safer",  # Restrict system command execution
-            "--no-shell-escape",  # Disable shell escapes for security
+            "--no-shell-escape",  # Disable shell escapes for security (safer is incompatible with luaotfload)
             tex_filename,  # Just the filename, not full path
         ]
 
