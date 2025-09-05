@@ -320,7 +320,8 @@ def create_memo(self, text, dictionary=None):
             + "".join(random.choices("0123456789", k=4))
             + ".tex"
         )
-        file_path = os.path.join(app.root_path, temp_name)
+        # Use /tmp directory for better compatibility in containerized environments
+        file_path = os.path.join("/tmp", temp_name)
 
         # Write LaTeX file
         app.logger.info(f"Writing LaTeX file: {file_path}")

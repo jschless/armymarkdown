@@ -10,7 +10,15 @@ class MemoWriter:
     def write(self, output_file=None):
         self.output_file = output_file
 
-        self.lines.append("\\documentclass{./latex/armymemo-notikz}")
+        # Use absolute path to avoid issues in containerized/Celery environments
+        import os
+        # Get the absolute path to the latex directory
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        latex_dir = os.path.join(os.path.dirname(current_dir), "latex")
+        latex_class_path = os.path.join(latex_dir, "armymemo-notikz")
+        
+        # Use the absolute path for the documentclass
+        self.lines.append(f"\\documentclass{{{latex_class_path}}}")
         self._write_admin()
         self._write_body()
         self.temp_dir = os.path.join(os.getcwd(), "assets")
@@ -41,6 +49,9 @@ class MemoWriter:
         ]
         
         try:
+            logging.info(f"Running LaTeX command: {' '.join(cmd)}")
+            logging.info(f"Working directory: {work_dir}")
+            
             # Run with timeout and capture output
             result = subprocess.run(
                 cmd,
@@ -50,11 +61,23 @@ class MemoWriter:
                 text=True,                       # Return strings not bytes
                 check=False                      # Don't raise on non-zero exit
             )
+
+            # Log the LaTeX output for debugging
+            logging.info(f"LaTeX exit code: {result.returncode}")
+            if result.stdout:
+                logging.info(f"LaTeX STDOUT: {result.stdout}")
+            if result.stderr:
+                logging.info(f"LaTeX STDERR: {result.stderr}")
             
             # Check if PDF was created successfully
             pdf_path = self.output_file.replace('.tex', '.pdf')
             if not os.path.exists(pdf_path):
-                error_msg = f"LaTeX compilation failed. Exit code: {result.returncode}\n"
+                error_msg = (
+                    f"LaTeX compilation failed. Exit code: {result.returncode}\n"
+                    f"Working directory: {work_dir}\n"
+                    f"LaTeX file: {tex_filename}\n"
+                    f"Expected PDF: {pdf_path}\n"
+                )
                 if result.stderr:
                     error_msg += f"STDERR: {result.stderr}\n"
                 if result.stdout:
