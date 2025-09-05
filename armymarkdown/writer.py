@@ -64,11 +64,14 @@ class MemoWriter:
             env['TEXMFVAR'] = os.environ.get('TEXMFVAR', '/home/appuser/.texlive')
             env['LUATEX_CACHE_DIR'] = os.environ.get('LUATEX_CACHE_DIR', '/tmp/luatex-cache')
             
-            # Run with timeout and capture output
+            # Log environment for debugging
+            logging.info(f"LaTeX environment: TEXMFCACHE={env['TEXMFCACHE']}, TEXMFVAR={env['TEXMFVAR']}, LUATEX_CACHE_DIR={env['LUATEX_CACHE_DIR']}")
+            
+            # Run with timeout and capture output (reduced timeout for faster feedback)
             result = subprocess.run(
                 cmd,
                 cwd=work_dir,  # Set working directory
-                timeout=60,  # 60 second timeout
+                timeout=30,  # 30 second timeout for faster feedback
                 capture_output=True,  # Capture stdout/stderr
                 text=True,  # Return strings not bytes
                 check=False,  # Don't raise on non-zero exit
@@ -99,8 +102,11 @@ class MemoWriter:
 
             logging.info(f"LaTeX compilation successful: {pdf_path}")
 
-        except subprocess.TimeoutExpired:
-            raise Exception("LaTeX compilation timed out after 60 seconds")
+        except subprocess.TimeoutExpired as e:
+            logging.error("LaTeX compilation timed out - killing process")
+            if hasattr(e, 'process') and e.process:
+                e.process.kill()
+            raise Exception("LaTeX compilation timed out after 30 seconds")
         except Exception as e:
             logging.error(f"LaTeX compilation error: {e}")
             raise
