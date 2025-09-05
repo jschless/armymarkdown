@@ -32,22 +32,22 @@ class MemoWriter:
         """Generate PDF from LaTeX file with robust error handling and timeout."""
         import logging
         import signal
-        
+
         # Set up working directory (directory containing the .tex file)
         work_dir = os.path.dirname(self.output_file)
         tex_filename = os.path.basename(self.output_file)
-        
+
         # LaTeX command with comprehensive flags for production reliability
         cmd = [
-            "lualatex", 
+            "lualatex",
             "-interaction=nonstopmode",  # Never stop for user input
-            "-halt-on-error",            # Stop on first error
-            "-file-line-error",          # Include file and line in error messages  
-            "-synctex=0",                # Disable synctex for speed
-            "-output-directory=.",       # Output in working directory
-            tex_filename                 # Just the filename, not full path
+            "-halt-on-error",  # Stop on first error
+            "-file-line-error",  # Include file and line in error messages
+            "-synctex=0",  # Disable synctex for speed
+            "-output-directory=.",  # Output in working directory
+            tex_filename,  # Just the filename, not full path
         ]
-        
+
         try:
             logging.info(f"Running LaTeX command: {' '.join(cmd)}")
             logging.info(f"Working directory: {work_dir}")
@@ -55,11 +55,11 @@ class MemoWriter:
             # Run with timeout and capture output
             result = subprocess.run(
                 cmd,
-                cwd=work_dir,                    # Set working directory
-                timeout=60,                      # 60 second timeout
-                capture_output=True,             # Capture stdout/stderr
-                text=True,                       # Return strings not bytes
-                check=False                      # Don't raise on non-zero exit
+                cwd=work_dir,  # Set working directory
+                timeout=60,  # 60 second timeout
+                capture_output=True,  # Capture stdout/stderr
+                text=True,  # Return strings not bytes
+                check=False,  # Don't raise on non-zero exit
             )
 
             # Log the LaTeX output for debugging
@@ -70,7 +70,7 @@ class MemoWriter:
                 logging.info(f"LaTeX STDERR: {result.stderr}")
             
             # Check if PDF was created successfully
-            pdf_path = self.output_file.replace('.tex', '.pdf')
+            pdf_path = self.output_file.replace(".tex", ".pdf")
             if not os.path.exists(pdf_path):
                 error_msg = (
                     f"LaTeX compilation failed. Exit code: {result.returncode}\n"
@@ -83,9 +83,9 @@ class MemoWriter:
                 if result.stdout:
                     error_msg += f"STDOUT: {result.stdout}\n"
                 raise Exception(error_msg)
-                
+
             logging.info(f"LaTeX compilation successful: {pdf_path}")
-            
+
         except subprocess.TimeoutExpired:
             raise Exception("LaTeX compilation timed out after 60 seconds")
         except Exception as e:
@@ -189,7 +189,7 @@ class MemoWriter:
         s4 = -3  # end before the bottom rule
         return "\n".join(
             [
-                s.replace("\\\\", "\\\\\hline")
+                s.replace("\\\\", "\\\\\\hline")
                 if i >= s3 and i < len(new_a.split("\n")) + s4
                 else s
                 for i, s in enumerate(new_a.split("\n"))

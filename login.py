@@ -78,7 +78,11 @@ def history():
         try:
             # Find the end of the subject line to get preview text
             subject_end = content.find("\n", content.find("SUBJECT"))
-            preview = content[subject_end : subject_end + 300].strip() if subject_end != -1 else content[:300]
+            preview = (
+                content[subject_end : subject_end + 300].strip()
+                if subject_end != -1
+                else content[:300]
+            )
 
             processed_documents.append(
                 {
@@ -175,15 +179,16 @@ def authenticate_user(username, password):
     user = get_user_by_username(username)
     if user is None:
         return False
-    
+
     # Handle both real User objects and mock dictionary data
-    if hasattr(user, 'check_password'):
+    if hasattr(user, "check_password"):
         return user.check_password(password)
-    elif isinstance(user, dict) and 'password_hash' in user:
+    elif isinstance(user, dict) and "password_hash" in user:
         # For testing with mocked user data
         from werkzeug.security import check_password_hash
-        return check_password_hash(user['password_hash'], password)
-    
+
+        return check_password_hash(user["password_hash"], password)
+
     return False
 
 
@@ -212,7 +217,7 @@ def create_user(username, email, password):
         return False, "Username already exists"
     if get_user_by_email(email):
         return False, "Email already exists"
-    
+
     # Create user in database
     if create_user_in_db(username, email, password):
         return True, "User created successfully"
@@ -223,6 +228,7 @@ def create_user(username, email, password):
 def check_password_hash(password_hash, password):
     """Check password hash for testing purposes."""
     from werkzeug.security import check_password_hash as check_hash
+
     return check_hash(password_hash, password)
 
 
@@ -233,7 +239,7 @@ def validate_username(username):
     if len(username) > 20:
         return False
     # Allow alphanumeric, underscores, and hyphens based on test
-    if not all(c.isalnum() or c in '_-' for c in username):
+    if not all(c.isalnum() or c in "_-" for c in username):
         return False
     return True
 
@@ -241,7 +247,8 @@ def validate_username(username):
 def validate_email(email):
     """Validate email for testing purposes."""
     import re
-    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+
+    email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
     if not email or not re.match(email_pattern, email):
         return False
     return True
@@ -263,6 +270,7 @@ def validate_password_strength(password):
 def sanitize_user_input(input_string):
     """Sanitize user input for testing purposes."""
     import html
+
     if not input_string:
         return ""
     # Basic HTML escaping
@@ -276,7 +284,9 @@ def get_db_connection():
 
 def get_user_documents(user_id):
     """Get all documents for a user for testing purposes."""
-    documents = Document.query.filter_by(user_id=user_id).order_by(Document.id.desc()).all()
+    documents = (
+        Document.query.filter_by(user_id=user_id).order_by(Document.id.desc()).all()
+    )
     result = []
     for doc in documents:
         try:
@@ -284,10 +294,19 @@ def get_user_documents(user_id):
             start_index = doc.content.find("SUBJECT") + 8
             end_index = doc.content.find("\n", start_index)
             subject = doc.content[start_index:end_index].strip(" =")
-            
-            result.append((doc.id, subject, doc.content, doc.created_at.strftime("%Y-%m-%d")))
+
+            result.append(
+                (doc.id, subject, doc.content, doc.created_at.strftime("%Y-%m-%d"))
+            )
         except Exception:
             # If we can't parse the subject, just use the document ID
-            result.append((doc.id, f"Document {doc.id}", doc.content, doc.created_at.strftime("%Y-%m-%d")))
-    
+            result.append(
+                (
+                    doc.id,
+                    f"Document {doc.id}",
+                    doc.content,
+                    doc.created_at.strftime("%Y-%m-%d"),
+                )
+            )
+
     return result

@@ -6,7 +6,7 @@ from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, Length
 import sqlalchemy as sa
 from db.schema import User, db
-from local_config import config
+# Removed local_config import - using environment variables instead
 
 
 class LoginForm(FlaskForm):
@@ -40,12 +40,14 @@ class RegistrationForm(FlaskForm):
     )
     recaptcha = RecaptchaField()
     submit = SubmitField("Register")
-    
+
     def validate_recaptcha(self, field):
         from flask import current_app
+
         # Skip recaptcha validation if disabled or no keys configured
-        if (current_app.config.get("DISABLE_CAPTCHA") or 
-            not current_app.config.get("RECAPTCHA_PUBLIC_KEY")):
+        if current_app.config.get("DISABLE_CAPTCHA") or not current_app.config.get(
+            "RECAPTCHA_PUBLIC_KEY"
+        ):
             return
         # Otherwise, let the RecaptchaField handle validation
         return field.validate(self)

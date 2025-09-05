@@ -66,8 +66,7 @@ class MemoModel:
         date_pattern = re.compile(rf"\d\d ({valid_months}) \d\d\d\d")
         if date_pattern.match(date_str) is None:
             return (
-                f"The entered date {date_str} does not conform to pattern"
-                " ## Month ####"
+                f"The entered date {date_str} does not conform to pattern ## Month ####"
             )
 
     def _check_branch(self, branch):
@@ -354,7 +353,7 @@ def nested_list_to_string(lst, indent=0):
 def add_latex_escape_chars(s):
     # Process backslash first to avoid interfering with other escape sequences
     s = s.replace("\\", "\\textbackslash")
-    
+
     special_chars = {
         "~": "\\textasciitilde ",
         "^": "\\textasciicircum",

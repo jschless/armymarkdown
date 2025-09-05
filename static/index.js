@@ -1,10 +1,10 @@
-makeTabsWork("editor");
+makeTabsWork('editor');
 
 document.addEventListener('DOMContentLoaded', function() {
-    const saveProgressButton = document.getElementById("save-progress");
+    const saveProgressButton = document.getElementById('save-progress');
     
     if (saveProgressButton) {
-        saveProgressButton.addEventListener("click", function(e) {
+        saveProgressButton.addEventListener('click', function(e) {
             e.preventDefault();
             saveData();
         });
@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (startBgJobButton) {
         startBgJobButton.addEventListener('click', function(event) {
             event.preventDefault(); 
-            buttonPress("/process", updateProgress); 
+            buttonPress('/process', updateProgress); 
         });
     }
 });

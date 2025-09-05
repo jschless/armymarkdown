@@ -21,6 +21,11 @@ local_config.py
 .env
 *.DS_Store
 
+# Environment variables (contain secrets)
+.env
+.env.local
+.env.*.local
+
 # Temp files
 *#
 .ipynb_checkpoints/
