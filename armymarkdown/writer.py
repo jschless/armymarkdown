@@ -45,12 +45,25 @@ class MemoWriter:
             "-file-line-error",  # Include file and line in error messages
             "-synctex=0",  # Disable synctex for speed
             "-output-directory=.",  # Output in working directory
+            "--safer",  # Restrict system command execution
+            "--no-shell-escape",  # Disable shell escapes for security
             tex_filename,  # Just the filename, not full path
         ]
 
         try:
             logging.info(f"Running LaTeX command: {' '.join(cmd)}")
             logging.info(f"Working directory: {work_dir}")
+            
+            # Check and log directory permissions for debugging
+            logging.info(f"Directory permissions: {oct(os.stat(work_dir).st_mode)[-3:]}")
+            logging.info(f"Directory owner: {os.stat(work_dir).st_uid}")
+            logging.info(f"Current user: {os.getuid()}")
+            
+            # Set environment variables for LaTeX
+            env = os.environ.copy()
+            env['TEXMFCACHE'] = os.environ.get('TEXMFCACHE', '/home/appuser/.texlive')
+            env['TEXMFVAR'] = os.environ.get('TEXMFVAR', '/home/appuser/.texlive')
+            env['LUATEX_CACHE_DIR'] = os.environ.get('LUATEX_CACHE_DIR', '/tmp/luatex-cache')
             
             # Run with timeout and capture output
             result = subprocess.run(
@@ -60,6 +73,7 @@ class MemoWriter:
                 capture_output=True,  # Capture stdout/stderr
                 text=True,  # Return strings not bytes
                 check=False,  # Don't raise on non-zero exit
+                env=env,  # Pass environment variables
             )
 
             # Log the LaTeX output for debugging

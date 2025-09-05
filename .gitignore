@@ -1,32 +1,104 @@
-settings.json
-*.tex
+# Python
 *.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.so
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesis
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
+ENV/
+env.bak/
+venv.bak/
+
+# uv
+.uv/
+uv.lock
+
+# Environment variables (contain secrets)
+.env
+.env.local
+.env.*.local
+local_config.py
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# LaTeX
+*.tex
 *.aux
 *.log
 *.out
 *.pdf
 *.gz
 *.xdv
+*.fls
+*.fdb_latexmk
+
+# Project specific
+settings.json
 *.rdb
 not-zip-safe
 PKG-INFO
-*.fls
-*.fdb_latexmk
 amd/
 dependency_links.txt
 SOURCES.txt
 top_level.txt
 temp_file.pdf
-local_config.py
-.env
-*.DS_Store
+latex_sandbox/
 
-# Environment variables (contain secrets)
-.env
-.env.local
-.env.*.local
+# Test and coverage
+htmlcov/
+.coverage
+coverage.xml
+coverage.svg
+.pytest_cache/
+test_output_*.tex
 
-# Temp files
+# Temporary files
 *#
 .ipynb_checkpoints/
-latex_sandbox/
+*.tmp
+*.bak
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Node modules (if any frontend tooling is added)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

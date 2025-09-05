@@ -2,7 +2,7 @@ name: Test Suite
 
 on:
   push:
-    branches: [ main, develop, feature/*, improve-code-quality ]
+    branches: [ main, develop, feature/*, devops-improvements ]
   pull_request:
     branches: [ main, develop ]
   workflow_dispatch:
@@ -26,27 +26,19 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up Python 3.11
-      uses: actions/setup-python@v4
+    - name: Install uv
+      uses: astral-sh/setup-uv@v2
       with:
-        python-version: '3.11'
+        version: "latest"
 
-    # LaTeX not needed - tests only generate .tex files, don't compile them
+    - name: Set up Python
+      run: uv python install 3.11
 
-    - name: Cache Python dependencies
-      uses: actions/cache@v4
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-
-    - name: Install Python dependencies
+    - name: Create virtual environment and install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install -r requirements-test.txt
-        pip install flake8 mypy coverage-badge
+        uv venv
+        uv pip install -r requirements.txt
+        uv pip install -r requirements-test.txt
 
     - name: Set up test environment
       run: |
@@ -59,14 +51,22 @@ jobs:
         export DISABLE_CAPTCHA="true"
         export DEVELOPMENT="true"
 
-    - name: Run linting
+    - name: Run code quality checks
       run: |
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics || true
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics || true
+        source .venv/bin/activate
+        ruff check . --output-format=github
+        ruff format --check .
 
     - name: Run type checking
       run: |
+        source .venv/bin/activate
         mypy --ignore-missing-imports armymarkdown/ || true
+
+    - name: Run security checks
+      run: |
+        source .venv/bin/activate
+        bandit -r . -f json || true
+        safety check || true
 
     - name: Run unit tests with coverage
       env:
@@ -80,6 +80,7 @@ jobs:
         DISABLE_CAPTCHA: "true"
         DEVELOPMENT: "true"
       run: |
+        source .venv/bin/activate
         pytest tests/ --cov=. --cov-report=xml --cov-report=html --cov-report=term-missing --continue-on-collection-errors --forked --tb=short --maxfail=10 -v || true
 
     - name: Upload coverage reports to Codecov
@@ -92,6 +93,7 @@ jobs:
 
     - name: Generate coverage badge
       run: |
+        source .venv/bin/activate
         coverage-badge -o coverage.svg || true
 
     - name: Archive coverage results
@@ -117,18 +119,19 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up Python 3.11
-      uses: actions/setup-python@v4
+    - name: Install uv
+      uses: astral-sh/setup-uv@v2
       with:
-        python-version: '3.11'
+        version: "latest"
 
-    # LaTeX not needed - tests only generate .tex files, don't compile them
+    - name: Set up Python
+      run: uv python install 3.11
 
-    - name: Install dependencies
+    - name: Create virtual environment and install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install -r requirements-test.txt
+        uv venv
+        uv pip install -r requirements.txt
+        uv pip install -r requirements-test.txt
 
     - name: Run integration tests
       env:
@@ -142,6 +145,7 @@ jobs:
         DISABLE_CAPTCHA: "true"
         DEVELOPMENT: "true"
       run: |
+        source .venv/bin/activate
         pytest tests/test_integration.py -v || true
 
   security-scan:
@@ -150,20 +154,25 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up Python 3.11
-      uses: actions/setup-python@v4
+    - name: Install uv
+      uses: astral-sh/setup-uv@v2
       with:
-        python-version: '3.11'
+        version: "latest"
+
+    - name: Set up Python
+      run: uv python install 3.11
 
     - name: Install security tools
       run: |
-        python -m pip install --upgrade pip
-        pip install safety bandit
+        uv venv
+        uv pip install safety bandit
 
     - name: Run safety check
       run: |
+        source .venv/bin/activate
         safety check --json || true
 
     - name: Run bandit security scan
       run: |
+        source .venv/bin/activate
         bandit -r . -f json || true

@@ -54,13 +54,19 @@ WORKDIR /app
 RUN mkdir -p /data \
     /home/appuser/.texlive \
     /home/appuser/.cache \
+    /home/appuser/.local \
+    /home/appuser/.local/share \
     /tmp/luatex-cache \
-    && chown -R appuser:appuser /app /data /home/appuser /tmp/luatex-cache
+    /tmp/armymarkdown \
+    && chown -R appuser:appuser /app /data /home/appuser /tmp/luatex-cache /tmp/armymarkdown \
+    && chmod 755 /tmp/luatex-cache /tmp/armymarkdown
 
-# Set environment variables for LaTeX cache directories
+# Set environment variables for LaTeX cache directories and working directories
 ENV TEXMFCACHE=/home/appuser/.texlive
 ENV TEXMFVAR=/home/appuser/.texlive
 ENV LUATEX_CACHE_DIR=/tmp/luatex-cache
+ENV TEXMF_OUTPUT_DIRECTORY=/tmp/armymarkdown
+ENV TMPDIR=/tmp/armymarkdown
 
 # Switch to non-root user
 USER appuser
