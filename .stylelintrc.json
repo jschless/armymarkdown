@@ -1,0 +1,8 @@
+{
+  "extends": ["stylelint-config-standard"],
+  "rules": {
+    "media-feature-range-notation": null,
+    "alpha-value-notation": null,
+    "property-no-vendor-prefix": null
+  }
+}

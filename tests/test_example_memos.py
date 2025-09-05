@@ -28,8 +28,13 @@ class TestExampleMemos:
     ])
     def test_memo_parsing_and_latex_generation(self, memo_file, expected_file):
         """Test that each example memo parses correctly and generates expected LaTeX."""
+        # Get absolute paths to ensure tests work in different environments
+        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        memo_path = os.path.join(project_root, memo_file)
+        expected_path = os.path.join(project_root, expected_file)
+        
         # Parse the memo file
-        memo = memo_model.MemoModel.from_file(memo_file)
+        memo = memo_model.MemoModel.from_file(memo_path)
         
         # Ensure parsing succeeded
         assert isinstance(memo, memo_model.MemoModel)
@@ -44,14 +49,14 @@ class TestExampleMemos:
         
         # Generate LaTeX output
         writer_obj = writer.MemoWriter(memo)
-        test_output_file = os.path.join(TEST_DIR, f"test_output_{os.path.basename(expected_file)}")
+        test_output_file = os.path.join(project_root, "tests", f"test_output_{os.path.basename(expected_file)}")
         writer_obj.write(output_file=test_output_file)
         
         # Compare with expected output
         with open(test_output_file, "r") as f:
             generated_output = f.read()
         
-        with open(expected_file, "r") as f:
+        with open(expected_path, "r") as f:
             expected_output = f.read()
             
         assert generated_output == expected_output
