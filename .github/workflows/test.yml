@@ -31,16 +31,7 @@ jobs:
       with:
         python-version: '3.11'
 
-    - name: Install LaTeX dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          texlive-latex-base \
-          texlive-latex-extra \
-          texlive-fonts-recommended \
-          texlive-fonts-extra \
-          texlive-luatex \
-          latexmk
+    # LaTeX not needed - tests only generate .tex files, don't compile them
 
     - name: Cache Python dependencies
       uses: actions/cache@v4
@@ -55,6 +46,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install -r requirements-test.txt
+        pip install flake8 mypy coverage-badge
 
     - name: Set up test environment
       run: |
@@ -78,6 +70,7 @@ jobs:
 
     - name: Run unit tests with coverage
       env:
+        PYTHONPATH: .
         FLASK_SECRET: "test-secret-key-for-ci"
         REDIS_URL: "redis://localhost:6379/15"
         RECAPTCHA_PUBLIC_KEY: "test-public-key"
@@ -129,16 +122,7 @@ jobs:
       with:
         python-version: 3.11
 
-    - name: Install LaTeX dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          texlive-latex-base \
-          texlive-latex-extra \
-          texlive-fonts-recommended \
-          texlive-fonts-extra \
-          texlive-luatex \
-          latexmk
+    # LaTeX not needed - tests only generate .tex files, don't compile them
 
     - name: Install dependencies
       run: |
