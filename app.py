@@ -23,6 +23,7 @@ from db.db import init_db
 # Load environment variables from .env file
 load_dotenv()
 
+
 def get_required_env_var(var_name):
     """Get required environment variable or raise error if missing."""
     value = os.environ.get(var_name)
@@ -30,16 +31,20 @@ def get_required_env_var(var_name):
         raise ValueError(f"Required environment variable {var_name} is not set")
     return value
 
+
 def get_optional_env_var(var_name, default=None):
     """Get optional environment variable with default fallback."""
     return os.environ.get(var_name, default)
+
 
 # Load configuration from environment variables
 app = Flask(__name__, static_url_path="/static")
 app.secret_key = get_required_env_var("FLASK_SECRET")
 app.config["RECAPTCHA_PUBLIC_KEY"] = get_optional_env_var("RECAPTCHA_PUBLIC_KEY")
 app.config["RECAPTCHA_PRIVATE_KEY"] = get_optional_env_var("RECAPTCHA_PRIVATE_KEY")
-app.config["DISABLE_CAPTCHA"] = get_optional_env_var("DISABLE_CAPTCHA", "false").lower() == "true"
+app.config["DISABLE_CAPTCHA"] = (
+    get_optional_env_var("DISABLE_CAPTCHA", "false").lower() == "true"
+)
 
 celery = Celery(
     app.name,
@@ -51,20 +56,17 @@ celery = Celery(
 # Configure Celery for production resilience
 celery.conf.update(
     # Task execution settings
-    task_soft_time_limit=120,    # 2 minutes soft timeout
-    task_time_limit=180,         # 3 minutes hard timeout  
-    task_acks_late=True,         # Acknowledge after task completion
-    worker_prefetch_multiplier=1, # Process one task at a time
-    
+    task_soft_time_limit=120,  # 2 minutes soft timeout
+    task_time_limit=180,  # 3 minutes hard timeout
+    task_acks_late=True,  # Acknowledge after task completion
+    worker_prefetch_multiplier=1,  # Process one task at a time
     # Retry and error handling
     task_reject_on_worker_lost=True,
-    task_default_retry_delay=60,    # Wait 60s before retry
-    task_max_retries=2,             # Max 2 retries
-    
+    task_default_retry_delay=60,  # Wait 60s before retry
+    task_max_retries=2,  # Max 2 retries
     # Result backend settings
-    result_expires=3600,            # Results expire after 1 hour
-    result_persistent=True,         # Persist results across restarts
-    
+    result_expires=3600,  # Results expire after 1 hour
+    result_persistent=True,  # Persist results across restarts
     # Worker settings for stability
     worker_disable_rate_limits=True,
     worker_send_task_events=True,
@@ -210,7 +212,9 @@ def process():
         flash("Error processing memo. Please try again.")
         # Return to appropriate page based on input type
         if "SUBJECT" not in request.form:
-            return render_template("index.html", memo_text=request.form.get("memo_text", ""))
+            return render_template(
+                "index.html", memo_text=request.form.get("memo_text", "")
+            )
         else:
             # Try to reconstruct the form data
             try:
@@ -239,7 +243,7 @@ def process_task(task, result_func):
         response = {
             "state": task.state,
             "status": f"Task failed: {str(task.info)}",
-            "error": str(task.info)
+            "error": str(task.info),
         }
         app.logger.error(f"Task {task.id} failed: {task.info}")
     elif task.state == "RETRY":
@@ -258,7 +262,9 @@ def process_task(task, result_func):
         # Other states (STARTED, PROGRESS, etc.)
         response = {
             "state": task.state,
-            "status": str(task.info) if task.info else f"Task is {task.state.lower()}...",
+            "status": str(task.info)
+            if task.info
+            else f"Task is {task.state.lower()}...",
         }
     return response
 
@@ -314,7 +320,7 @@ def create_memo(self, text, dictionary=None):
     """Create memo PDF with comprehensive error handling and timeout protection."""
     temp_name = None
     file_path = None
-    
+
     try:
         if dictionary:
             m = memo_model.MemoModel.from_form(dictionary)
@@ -351,11 +357,11 @@ def create_memo(self, text, dictionary=None):
     except Exception as e:
         error_msg = f"Memo creation failed: {str(e)}"
         app.logger.error(error_msg)
-        
+
         # Cleanup any partial files on error
         if file_path:
             cleanup_temp_files(file_path, temp_name)
-            
+
         # Re-raise with more context
         raise self.retry(exc=Exception(error_msg), countdown=60, max_retries=2)
 
@@ -368,19 +374,19 @@ def cleanup_temp_files(file_path, temp_name):
     """Clean up temporary LaTeX compilation files."""
     if not file_path or not temp_name:
         return
-        
+
     file_endings = [
         ".aux",
-        ".fdb_latexmk", 
+        ".fdb_latexmk",
         ".fls",
         ".log",
         ".out",
         ".tex",
-        ".synctex.gz"  # Added this common LaTeX artifact
+        ".synctex.gz",  # Added this common LaTeX artifact
     ]
 
-    base_name = temp_name[:-4] if temp_name.endswith('.tex') else temp_name
-    
+    base_name = temp_name[:-4] if temp_name.endswith(".tex") else temp_name
+
     for ending in file_endings:
         temp_file = os.path.join(os.path.dirname(file_path), base_name + ending)
         try:

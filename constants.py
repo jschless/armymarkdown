@@ -40,8 +40,12 @@ MAX_PASSWORD_LENGTH = 14
 
 class ErrorMessages:
     GENERIC_ERROR = "An error occurred while processing your request. Please try again."
-    PDF_GENERATION_FAILED = "PDF generation failed. Please check your memo format and try again."
-    INVALID_MEMO_FORMAT = "Invalid memo format. Please check the required fields and syntax."
+    PDF_GENERATION_FAILED = (
+        "PDF generation failed. Please check your memo format and try again."
+    )
+    INVALID_MEMO_FORMAT = (
+        "Invalid memo format. Please check the required fields and syntax."
+    )
     FILE_UPLOAD_FAILED = "Failed to upload file to storage. Please try again."
     MEMO_PARSING_ERROR = "Error parsing memo content. Please check your formatting."
     DOCUMENT_SAVE_FAILED = "Failed to save document. Please try again."
