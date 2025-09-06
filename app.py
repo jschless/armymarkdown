@@ -335,29 +335,7 @@ def create_memo(self, text, dictionary=None):
             + "".join(random.choices("0123456789", k=4))
             + ".tex"
         )
-        # Use dedicated tmp directory with proper permissions
-        tmp_dir = os.environ.get('TMPDIR', '/tmp')
-        app.logger.info(f"Using TMPDIR: {tmp_dir}")
-        
-        # Ensure the tmp directory exists and is writable
-        try:
-            os.makedirs(tmp_dir, mode=0o755, exist_ok=True)
-            app.logger.info(f"Successfully created/verified directory: {tmp_dir}")
-            
-            # Test write permissions
-            test_file = os.path.join(tmp_dir, "test_write.tmp")
-            with open(test_file, 'w') as f:
-                f.write("test")
-            os.remove(test_file)
-            app.logger.info(f"Directory {tmp_dir} is writable")
-            
-        except Exception as e:
-            app.logger.error(f"Failed to create or write to {tmp_dir}: {e}")
-            # Fallback to system tmp
-            tmp_dir = '/tmp'
-            app.logger.info(f"Falling back to system tmp: {tmp_dir}")
-            
-        file_path = os.path.join(tmp_dir, temp_name)
+        file_path = os.path.join(app.root_path, temp_name)
 
         # Write LaTeX file
         app.logger.info(f"Writing LaTeX file: {file_path}")
