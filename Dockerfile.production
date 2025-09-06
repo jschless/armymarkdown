@@ -7,18 +7,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fontconfig ttf-mscorefonts-installer \ 
     texlive-base \
     texlive-latex-base \
+    texlive-latex-extra \
+    texlive-fonts-recommended \
+    texlive-fonts-extra \
     texlive-luatex \
     latexmk \
     xz-utils
 
 RUN fc-cache -f -v
-
-RUN tlmgr init-usertree
-RUN tlmgr option repository ftp://tug.org/historic/systems/texlive/2021/tlnet-final
-RUN tlmgr install koma-script etoolbox fontspec xkeyval \
-    	  	  xcolor datetime fmtcount background csquotes \
-		  pgf background enumitem setspace booktabs \
-		  microtype pdftexcmds infwarerr everypage ragged2e
 
 RUN export OSFONTDIR=/usr/share/fonts
 RUN luaotfload-tool -vvv --update --force
