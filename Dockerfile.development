@@ -23,6 +23,8 @@ RUN tlmgr install koma-script etoolbox fontspec xkeyval \
 
 RUN export OSFONTDIR=/usr/share/fonts
 RUN luaotfload-tool -vvv --update --force
+RUN mkdir -p /root/texmf
+RUN luaotfload-tool --cache=write --force --verbose
 
 RUN apt-get clean \
     && rm -rf /var/lib/apt/lists/*
