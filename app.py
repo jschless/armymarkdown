@@ -53,24 +53,6 @@ celery = Celery(
     broker_connection_retry_on_startup=True,
 )
 
-# Configure Celery for production resilience
-celery.conf.update(
-    # Task execution settings
-    task_soft_time_limit=120,  # 2 minutes soft timeout
-    task_time_limit=180,  # 3 minutes hard timeout
-    task_acks_late=True,  # Acknowledge after task completion
-    worker_prefetch_multiplier=1,  # Process one task at a time
-    # Retry and error handling
-    task_reject_on_worker_lost=True,
-    task_default_retry_delay=60,  # Wait 60s before retry
-    task_max_retries=2,  # Max 2 retries
-    # Result backend settings
-    result_expires=3600,  # Results expire after 1 hour
-    result_persistent=True,  # Persist results across restarts
-    # Worker settings for stability
-    worker_disable_rate_limits=True,
-    worker_send_task_events=True,
-)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////data/users.db"
 
