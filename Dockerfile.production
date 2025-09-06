@@ -1,15 +1,5 @@
 FROM ubuntu:22.04
 
-# Create non-root user first
-RUN groupadd -r -g 1001 appuser && useradd -r -u 1001 -g appuser -m appuser
-
-# Switch to appuser for all operations
-USER appuser
-
-# Install system packages as appuser (using sudo if needed, or we'll need to do this differently)
-# Actually, let's do system installs as root first, then switch to appuser
-USER root
-
 RUN echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | debconf-set-selections
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -21,22 +11,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     latexmk \
     xz-utils
 
-RUN apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-ENV PYTHONUNBUFFERED=1
-
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-
-COPY . /app
-WORKDIR /app
-RUN chown -R appuser:appuser /app
-
-# Now switch to appuser for all remaining operations
-USER appuser
-
-# Font and TeX setup as appuser
 RUN fc-cache -f -v
 
 RUN tlmgr init-usertree
@@ -47,6 +21,18 @@ RUN tlmgr install koma-script etoolbox fontspec xkeyval \
 		  microtype pdftexcmds infwarerr everypage ragged2e
 
 RUN export OSFONTDIR=/usr/share/fonts
-RUN luaotfload-tool --update --force
+RUN luaotfload-tool -vvv --update --force
+
+RUN apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV PYTHONUNBUFFERED=1
+
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+COPY . /app
+
+WORKDIR /app
 
 CMD gunicorn -w 3 --certfile /etc/letsencrypt/live/armymemomaker.com/fullchain.pem --keyfile /etc/letsencrypt/live/armymemomaker.com/privkey.pem -b 0.0.0.0:8443 -t 360 --reload app:app
