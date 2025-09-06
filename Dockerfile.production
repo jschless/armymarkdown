@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:latest
 
 RUN echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | debconf-set-selections
 
@@ -7,37 +7,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fontconfig ttf-mscorefonts-installer \ 
     texlive-base \
     texlive-latex-base \
-    texlive-latex-extra \
-    texlive-fonts-recommended \
-    texlive-fonts-extra \
     texlive-luatex \
     latexmk \
     xz-utils
 
 RUN fc-cache -f -v
 
-# Create the non-root user first but don't switch yet
-RUN groupadd -r -g 1001 appuser && useradd -r -u 1001 -g appuser -m appuser
-
-# Install TeX packages as root but configure for user access  
-RUN tlmgr init-usertree || echo "tlmgr init-usertree failed, continuing..."
-RUN tlmgr option repository ftp://tug.org/historic/systems/texlive/2021/tlnet-final || echo "tlmgr repository setup failed, continuing..."
-
-# Try to install packages, but don't fail if some are already available via apt
+RUN tlmgr init-usertree
+RUN tlmgr option repository ftp://tug.org/historic/systems/texlive/2021/tlnet-final
 RUN tlmgr install koma-script etoolbox fontspec xkeyval \
     	  	  xcolor datetime fmtcount background csquotes \
-		  pgf enumitem setspace booktabs \
-		  microtype pdftexcmds infwarerr everypage ragged2e || \
-    echo "Some tlmgr packages failed to install, may already be available via system packages"
+		  pgf background enumitem setspace booktabs \
+		  microtype pdftexcmds infwarerr everypage ragged2e
 
-# Set up font directories and permissions
 RUN export OSFONTDIR=/usr/share/fonts
 RUN luaotfload-tool -vvv --update --force
-
-# Make TeX installation accessible to non-root user
-RUN chmod -R 755 /usr/local/texlive 2>/dev/null || true
-RUN chmod -R 755 /opt/texlive 2>/dev/null || true
-RUN find /usr -name "*.fmt" -exec chmod 644 {} \; 2>/dev/null || true
 
 RUN apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -48,32 +32,7 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 COPY . /app
+
 WORKDIR /app
 
-# Create necessary directories with proper permissions for LaTeX and the application
-RUN mkdir -p /data \
-    /home/appuser/.texlive \
-    /home/appuser/.cache \
-    /home/appuser/.local \
-    /home/appuser/.local/share \
-    /tmp/luatex-cache \
-    /tmp/armymarkdown \
-    && ln -s /app/latex /tmp/armymarkdown/latex \
-    && chown -R appuser:appuser /app /data /home/appuser /tmp/luatex-cache /tmp/armymarkdown \
-    && chmod 777 /tmp/luatex-cache /tmp/armymarkdown
-
-# Set environment variables for LaTeX cache directories and working directories
-ENV TEXMFCACHE=/home/appuser/.texlive
-ENV TEXMFVAR=/home/appuser/.texlive
-ENV LUATEX_CACHE_DIR=/tmp/luatex-cache
-ENV TEXMF_OUTPUT_DIRECTORY=/tmp/armymarkdown
-ENV TMPDIR=/tmp/armymarkdown
-
-# Switch to non-root user
-USER appuser
-
-# Initialize font cache for the non-root user
-RUN luaotfload-tool --update --force
-
 CMD gunicorn -w 3 --certfile /etc/letsencrypt/live/armymemomaker.com/fullchain.pem --keyfile /etc/letsencrypt/live/armymemomaker.com/privkey.pem -b 0.0.0.0:8443 -t 360 --reload app:app
-
