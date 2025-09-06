@@ -1,6 +1,9 @@
 FROM ubuntu:22.04
 
-# mscorefonts EULA
+# Create non-root user first
+RUN groupadd -r -g 1001 appuser && useradd -r -u 1001 -g appuser -m appuser
+
+# System packages need to be installed as root
 RUN echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | debconf-set-selections
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -12,26 +15,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     latexmk \
     xz-utils
 
-RUN fc-cache -f -v
-
-RUN tlmgr option repository ftp://tug.org/historic/systems/texlive/2021/tlnet-final
-RUN tlmgr install --system koma-script etoolbox fontspec xkeyval \
-    	  	  xcolor datetime fmtcount background csquotes \
-		  pgf background enumitem setspace booktabs \
-		  microtype pdftexcmds infwarerr everypage ragged2e
-
-# Make TeX installation accessible to all users
-RUN chmod -R 755 /usr/local/texlive 2>/dev/null || true
-RUN chmod -R 755 /opt/texlive 2>/dev/null || true
-RUN find /usr -name "*.fmt" -exec chmod 644 {} \; 2>/dev/null || true
-
-RUN export OSFONTDIR=/usr/share/fonts
-
 RUN apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-
-# Create non-root user for security
-RUN groupadd -r -g 1001 appuser && useradd -r -u 1001 -g appuser -m appuser
 
 ENV PYTHONUNBUFFERED=1
 ENV DEVELOPMENT=1
@@ -41,13 +26,22 @@ RUN pip install -r requirements.txt
 
 COPY . /app
 WORKDIR /app
+RUN chown -R appuser:appuser /app
 
-# Create necessary directories and set permissions
-RUN mkdir -p /home/appuser/.texlive \
-    && chown -R appuser:appuser /app /home/appuser
-
-# Switch to non-root user and generate font cache for this user
+# Switch to appuser for all remaining operations
 USER appuser
+
+# Font and TeX setup as appuser
+RUN fc-cache -f -v
+
+RUN tlmgr init-usertree
+RUN tlmgr option repository ftp://tug.org/historic/systems/texlive/2021/tlnet-final
+RUN tlmgr install koma-script etoolbox fontspec xkeyval \
+    	  	  xcolor datetime fmtcount background csquotes \
+		  pgf background enumitem setspace booktabs \
+		  microtype pdftexcmds infwarerr everypage ragged2e
+
+RUN export OSFONTDIR=/usr/share/fonts
 RUN luaotfload-tool --update --force
 
 CMD gunicorn -w 3 -b 0.0.0.0:8000 -t 360 --reload app:app
