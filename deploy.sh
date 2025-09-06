@@ -17,8 +17,8 @@ echo "🧹 Clearing Redis queues and failed tasks..."
 docker compose up -d redis
 sleep 5  # Wait for Redis to be ready
 
-# Clear the queues using our Python script
-if python3 clear-redis.py; then
+# Clear the queues using our Python script from within a container
+if docker compose run --rm web python3 clear-redis.py; then
     echo "✅ Redis queues cleared successfully"
 else
     echo "⚠️  Warning: Could not clear Redis queues, continuing anyway..."

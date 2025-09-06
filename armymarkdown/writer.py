@@ -10,15 +10,7 @@ class MemoWriter:
     def write(self, output_file=None):
         self.output_file = output_file
 
-        # Use absolute path to avoid issues in containerized/Celery environments
-        import os
-        # Get the absolute path to the latex directory
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        latex_dir = os.path.join(os.path.dirname(current_dir), "latex")
-        latex_class_path = os.path.join(latex_dir, "armymemo-notikz")
-        
-        # Use the absolute path for the documentclass
-        self.lines.append(f"\\documentclass{{{latex_class_path}}}")
+        self.lines.append("\\documentclass{./latex/armymemo-notikz}")
         self._write_admin()
         self._write_body()
         self.temp_dir = os.path.join(os.getcwd(), "assets")
@@ -29,102 +21,12 @@ class MemoWriter:
             print("\n".join(self.lines), file=f)
 
     def generate_memo(self):
-        """Generate PDF from LaTeX file with robust error handling and timeout."""
-        import logging
-        import signal
-
-        # Set up working directory (directory containing the .tex file)
+        # Change to the directory containing the .tex file so relative paths work
         work_dir = os.path.dirname(self.output_file)
         tex_filename = os.path.basename(self.output_file)
         
-        # Verify latex assets are available (they should be copied by Dockerfile)
-        latex_dir = os.path.join(work_dir, "latex")
-        if not os.path.exists(latex_dir):
-            logging.error(f"LaTeX assets directory not found at {latex_dir}")
-            raise Exception(f"LaTeX assets not available at {latex_dir}. Check Dockerfile setup.")
-        else:
-            logging.info(f"LaTeX assets directory verified at {latex_dir}")
-
-        # LaTeX command with comprehensive flags for production reliability
-        # Must use lualatex due to fontspec requirement in armymemo class
-        cmd = [
-            "lualatex",
-            "-interaction=nonstopmode",  # Never stop for user input
-            "-halt-on-error",  # Stop on first error
-            "-file-line-error",  # Include file and line in error messages
-            "-synctex=0",  # Disable synctex for speed
-            "-output-directory=.",  # Output in working directory
-            tex_filename,  # Just the filename, not full path
-        ]
-
-        try:
-            logging.info(f"Running LaTeX command: {' '.join(cmd)}")
-            logging.info(f"Working directory: {work_dir}")
-            
-            # Check and log directory permissions for debugging
-            logging.info(f"Directory permissions: {oct(os.stat(work_dir).st_mode)[-3:]}")
-            logging.info(f"Directory owner: {os.stat(work_dir).st_uid}")
-            logging.info(f"Current user: {os.getuid()}")
-            
-            # Set environment variables for LaTeX
-            env = os.environ.copy()
-            env['TEXMFCACHE'] = os.environ.get('TEXMFCACHE', '/home/appuser/.texlive')
-            env['TEXMFVAR'] = os.environ.get('TEXMFVAR', '/home/appuser/.texlive')
-            env['LUATEX_CACHE_DIR'] = os.environ.get('LUATEX_CACHE_DIR', '/tmp/luatex-cache')
-            
-            # Log environment for debugging
-            logging.info(f"LaTeX environment: TEXMFCACHE={env['TEXMFCACHE']}, TEXMFVAR={env['TEXMFVAR']}, LUATEX_CACHE_DIR={env['LUATEX_CACHE_DIR']}")
-            
-            # Add additional environment variables to prevent font loading issues
-            env['OSFONTDIR'] = '/usr/share/fonts'
-            env['LUAOTFLOAD_VERBOSE'] = '1'  # Enable verbose logging from luaotfload
-            env['TEXMFHOME'] = '/home/appuser/.texlive'
-            
-            logging.info("Environment configured for LaTeX font loading")
-            
-            # Run with timeout and capture output (reduced timeout for faster feedback)
-            result = subprocess.run(
-                cmd,
-                cwd=work_dir,  # Set working directory
-                timeout=30,  # 30 second timeout for faster feedback
-                capture_output=True,  # Capture stdout/stderr
-                text=True,  # Return strings not bytes
-                check=False,  # Don't raise on non-zero exit
-                env=env,  # Pass environment variables
-            )
-
-            # Log the LaTeX output for debugging
-            logging.info(f"LaTeX exit code: {result.returncode}")
-            if result.stdout:
-                logging.info(f"LaTeX STDOUT: {result.stdout}")
-            if result.stderr:
-                logging.info(f"LaTeX STDERR: {result.stderr}")
-            
-            # Check if PDF was created successfully
-            pdf_path = self.output_file.replace(".tex", ".pdf")
-            if not os.path.exists(pdf_path):
-                error_msg = (
-                    f"LaTeX compilation failed. Exit code: {result.returncode}\n"
-                    f"Working directory: {work_dir}\n"
-                    f"LaTeX file: {tex_filename}\n"
-                    f"Expected PDF: {pdf_path}\n"
-                )
-                if result.stderr:
-                    error_msg += f"STDERR: {result.stderr}\n"
-                if result.stdout:
-                    error_msg += f"STDOUT: {result.stdout}\n"
-                raise Exception(error_msg)
-
-            logging.info(f"LaTeX compilation successful: {pdf_path}")
-
-        except subprocess.TimeoutExpired as e:
-            logging.error("LaTeX compilation timed out - killing process")
-            if hasattr(e, 'process') and e.process:
-                e.process.kill()
-            raise Exception("LaTeX compilation timed out after 30 seconds")
-        except Exception as e:
-            logging.error(f"LaTeX compilation error: {e}")
-            raise
+        # Run lualatex from the directory containing the .tex file
+        subprocess.run(["lualatex", tex_filename], cwd=work_dir)
 
     def _write_for_lines(self) -> list:
         ans = []

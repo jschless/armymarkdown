@@ -57,6 +57,7 @@ RUN mkdir -p /data \
     /home/appuser/.texlive \
     /home/appuser/.cache \
     /tmp/luatex-cache \
+    && ln -s /app/latex /tmp/latex \
     && chown -R appuser:appuser /app /data /home/appuser /tmp/luatex-cache
 
 # Set environment variables for LaTeX cache directories
