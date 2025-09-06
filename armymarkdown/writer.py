@@ -21,10 +21,7 @@ class MemoWriter:
             print("\n".join(self.lines), file=f)
 
     def generate_memo(self):
-        # Change to the directory containing the .tex file so PDF is created there
-        work_dir = os.path.dirname(self.output_file)
-        tex_filename = os.path.basename(self.output_file)
-        subprocess.run(["lualatex", tex_filename], cwd=work_dir)
+        subprocess.run(["lualatex", self.output_file])
 
     def _write_for_lines(self) -> list:
         ans = []
