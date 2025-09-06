@@ -35,7 +35,7 @@ services:
       - .:/src
       - db-data:/data
     container_name: cel01
-    command: celery -A app.celery worker -l info
+    command: celery -A app.celery worker -l debug --without-heartbeat --without-gossip
     environment:
       - FLASK_SECRET=${FLASK_SECRET}
       - RECAPTCHA_PUBLIC_KEY=${RECAPTCHA_PUBLIC_KEY}
