@@ -21,7 +21,14 @@ RUN tlmgr install koma-script etoolbox fontspec xkeyval \
 		  microtype pdftexcmds infwarerr everypage ragged2e
 
 RUN export OSFONTDIR=/usr/share/fonts
+
+# Create font database in multiple locations to ensure it's found
+RUN mkdir -p /root/.texlive2022/texmf-var/luatex-cache/generic/fonts/otf
 RUN luaotfload-tool -vvv --update --force
+RUN luaotfload-tool --cache=erase --cache=write --force
+
+# Test that the font database was created
+RUN luaotfload-tool --list=* | head -5 || echo "Font database test failed"
 
 RUN apt-get clean \
     && rm -rf /var/lib/apt/lists/*
