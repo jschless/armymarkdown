@@ -58,7 +58,7 @@ RUN mkdir -p /data \
     /home/appuser/.local/share \
     /tmp/luatex-cache \
     /tmp/armymarkdown \
-    && ln -s /app/latex /tmp/latex \
+    && ln -s /app/latex /tmp/armymarkdown/latex \
     && chown -R appuser:appuser /app /data /home/appuser /tmp/luatex-cache /tmp/armymarkdown \
     && chmod 755 /tmp/luatex-cache /tmp/armymarkdown
 

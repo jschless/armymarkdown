@@ -57,8 +57,10 @@ RUN mkdir -p /data \
     /home/appuser/.texlive \
     /home/appuser/.cache \
     /tmp/luatex-cache \
+    /tmp/armymarkdown \
     && ln -s /app/latex /tmp/latex \
-    && chown -R appuser:appuser /app /data /home/appuser /tmp/luatex-cache
+    && ln -s /app/latex /tmp/armymarkdown/latex \
+    && chown -R appuser:appuser /app /data /home/appuser /tmp/luatex-cache /tmp/armymarkdown
 
 # Set environment variables for LaTeX cache directories
 ENV TEXMFCACHE=/home/appuser/.texlive
