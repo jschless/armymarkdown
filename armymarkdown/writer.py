@@ -23,7 +23,7 @@ class MemoWriter:
     def generate_memo(self):
         import time
         print(f"[{time.strftime('%H:%M:%S')}] Starting LaTeX compilation for {self.output_file}")
-        result = subprocess.run(["lualatex", self.output_file], capture_output=True, text=True)
+        result = subprocess.run(["xelatex", self.output_file], capture_output=True, text=True)
         print(f"[{time.strftime('%H:%M:%S')}] LaTeX compilation finished. Return code: {result.returncode}")
         if result.stdout:
             print(f"LaTeX stdout: {result.stdout[-500:]}")  # Last 500 chars

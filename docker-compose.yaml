@@ -35,7 +35,7 @@ services:
       - .:/src
       - db-data:/data
     container_name: cel01
-    command: celery -A app.celery worker -l debug --without-heartbeat --without-gossip
+    command: celery -A app.celery worker -l info --without-heartbeat --without-gossip
     environment:
       - FLASK_SECRET=${FLASK_SECRET}
       - RECAPTCHA_PUBLIC_KEY=${RECAPTCHA_PUBLIC_KEY}
@@ -43,6 +43,10 @@ services:
       - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+    deploy:
+      resources:
+        limits:
+          memory: 750M  # Limit to 750MB, leave 250MB for system
     links:
       - redis
     restart: unless-stopped
