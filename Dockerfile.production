@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:latest
 
 RUN echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | debconf-set-selections
 
@@ -20,27 +20,8 @@ RUN tlmgr install koma-script etoolbox fontspec xkeyval \
 		  pgf background enumitem setspace booktabs \
 		  microtype pdftexcmds infwarerr everypage ragged2e
 
-# Check what fonts are actually available
-RUN find /usr -name "*.ttf" -o -name "*.otf" | head -10
-
-# Set font directory and make it persistent via ENV (not just export)
-ENV OSFONTDIR=/usr/share/fonts
-
-# Create font cache directories explicitly
-RUN mkdir -p /root/.texlive2022/texmf-var/luatex-cache/generic/fonts/otf
-RUN mkdir -p /root/.cache/luaotfload
-
-# Generate font database with explicit cache location
-ENV TEXMFCACHE=/root/.texlive2022/texmf-var
-ENV LUATEX_CACHE_DIR=/root/.texlive2022/texmf-var/luatex-cache
-
+RUN export OSFONTDIR=/usr/share/fonts
 RUN luaotfload-tool -vvv --update --force
-RUN luaotfload-tool --cache=erase --cache=write --force
-
-# Verify font database was created and list cache contents
-RUN luaotfload-tool --list=* | head -5 || echo "Font database test failed"
-RUN ls -la /root/.texlive2022/texmf-var/luatex-cache/generic/fonts/ || echo "Cache directory not found"
-RUN echo "OSFONTDIR is: $OSFONTDIR"
 
 RUN apt-get clean \
     && rm -rf /var/lib/apt/lists/*

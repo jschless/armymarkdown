@@ -316,65 +316,32 @@ def upload_file_to_s3(file, aws_path, acl="public-read"):
 
 
 @celery.task(name="create_memo", bind=True)
-def create_memo(self, text, dictionary=None):
-    """Create memo PDF with comprehensive error handling and timeout protection."""
-    temp_name = None
-    file_path = None
+def create_memo(text, dictionary=None):
+    if dictionary:
+        m = memo_model.MemoModel.from_form(dictionary)
+    else:
+        m = memo_model.MemoModel.from_text(text)
 
-    try:
-        if dictionary:
-            m = memo_model.MemoModel.from_form(dictionary)
-        else:
-            m = memo_model.MemoModel.from_text(text)
+    app.logger.debug(m.to_dict())
+    mw = writer.MemoWriter(m)
 
-        app.logger.debug(m.to_dict())
-        mw = writer.MemoWriter(m)
+    temp_name = (
+        m.subject.replace(" ", "_").lower()[:15]
+        + "".join(random.choices("0123456789", k=4))
+        + ".tex"
+    )
+    file_path = os.path.join(app.root_path, temp_name)
 
-        temp_name = (
-            m.subject.replace(" ", "_").lower()[:15]
-            + "".join(random.choices("0123456789", k=4))
-            + ".tex"
-        )
-        file_path = os.path.join(app.root_path, temp_name)
+    mw.write(output_file=file_path)
 
-        # Write LaTeX file
-        app.logger.info(f"Writing LaTeX file: {file_path}")
-        mw.write(output_file=file_path)
+    mw.generate_memo()
 
-        # Generate PDF with timeout protection
-        app.logger.info(f"Starting LaTeX compilation for: {temp_name}")
-        mw.generate_memo()
-        app.logger.info(f"LaTeX compilation completed for: {temp_name}")
+    if os.path.exists(file_path[:-4] + ".pdf"):
+        upload_file_to_s3(file_path[:-4] + ".pdf", temp_name[:-4] + ".pdf")
+    else:
+        raise Exception(f"PDF at path {file_path[:-4]}.pdf was not created")
 
-        pdf_path = file_path[:-4] + ".pdf"
-        if os.path.exists(pdf_path):
-            app.logger.info(f"PDF created successfully: {pdf_path}")
-            upload_file_to_s3(pdf_path, temp_name[:-4] + ".pdf")
-            app.logger.info(f"PDF uploaded to S3: {temp_name[:-4]}.pdf")
-        else:
-            raise Exception(f"PDF was not created at expected path: {pdf_path}")
-
-    except Exception as e:
-        error_msg = f"Memo creation failed: {str(e)}"
-        app.logger.error(error_msg)
-
-        # Cleanup any partial files on error
-        if file_path:
-            cleanup_temp_files(file_path, temp_name)
-
-        # Re-raise with more context
-        raise self.retry(exc=Exception(error_msg), countdown=60, max_retries=2)
-
-    # Clean up temp files after successful upload to AWS
-    cleanup_temp_files(file_path, temp_name)
-    return temp_name
-
-
-def cleanup_temp_files(file_path, temp_name):
-    """Clean up temporary LaTeX compilation files."""
-    if not file_path or not temp_name:
-        return
-
+    # clean up temp files after upload to AWS
     file_endings = [
         ".aux",
         ".fdb_latexmk",
@@ -382,19 +349,14 @@ def cleanup_temp_files(file_path, temp_name):
         ".log",
         ".out",
         ".tex",
-        ".synctex.gz",  # Added this common LaTeX artifact
     ]
 
-    base_name = temp_name[:-4] if temp_name.endswith(".tex") else temp_name
-
     for ending in file_endings:
-        temp_file = os.path.join(os.path.dirname(file_path), base_name + ending)
-        try:
-            if os.path.exists(temp_file):
-                os.remove(temp_file)
-                app.logger.debug(f"Cleaned up temp file: {temp_file}")
-        except Exception as e:
-            app.logger.warning(f"Failed to cleanup {temp_file}: {e}")
+        temp = temp_name[:-4] + ending
+        if os.path.exists(temp):
+            os.remove(temp)
+
+    return temp_name
 
 
 if os.environ.get("DEVELOPMENT") is None:

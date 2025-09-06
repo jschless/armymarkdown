@@ -21,7 +21,7 @@ class MemoWriter:
             print("\n".join(self.lines), file=f)
 
     def generate_memo(self):
-        subprocess.run(["lualatex", "-interaction=nonstopmode", self.output_file], timeout=60)
+        subprocess.run(["lualatex", self.output_file])
 
     def _write_for_lines(self) -> list:
         ans = []
@@ -120,7 +120,7 @@ class MemoWriter:
         s4 = -3  # end before the bottom rule
         return "\n".join(
             [
-                s.replace("\\\\", "\\\\\\hline")
+                s.replace("\\\\", "\\\\\hline")
                 if i >= s3 and i < len(new_a.split("\n")) + s4
                 else s
                 for i, s in enumerate(new_a.split("\n"))
