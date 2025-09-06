@@ -14,9 +14,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN fc-cache -f -v
 
-RUN tlmgr init-usertree
 RUN tlmgr option repository ftp://tug.org/historic/systems/texlive/2021/tlnet-final
-RUN tlmgr install koma-script etoolbox fontspec xkeyval \
+RUN tlmgr install --system koma-script etoolbox fontspec xkeyval \
     	  	  xcolor datetime fmtcount background csquotes \
 		  pgf background enumitem setspace booktabs \
 		  microtype pdftexcmds infwarerr everypage ragged2e
