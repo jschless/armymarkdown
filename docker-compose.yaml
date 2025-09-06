@@ -43,10 +43,6 @@ services:
       - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - TEXMFCACHE=/home/appuser/.texlive
-      - TEXMFVAR=/home/appuser/.texlive
-      - LUATEX_CACHE_DIR=/tmp/luatex-cache
-      - TMPDIR=/tmp/armymarkdown
     links:
       - redis
     restart: unless-stopped
