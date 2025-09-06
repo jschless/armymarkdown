@@ -2,8 +2,9 @@
 Tests for form handling and validation.
 """
 
+from unittest.mock import Mock, patch
+
 import pytest
-from unittest.mock import patch, Mock
 from werkzeug.datastructures import MultiDict
 
 
@@ -378,7 +379,6 @@ class TestFormIntegration:
 
     def test_register_form_post_duplicate_user(self, client):
         """Test registration with duplicate username."""
-        from unittest.mock import Mock
 
         existing_user = Mock()
         existing_user.username = "existing"

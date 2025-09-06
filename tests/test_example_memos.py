@@ -2,10 +2,12 @@
 Tests for all example memo files to ensure comprehensive coverage of features.
 """
 
-import pytest
+from datetime import date
 import os
 from unittest.mock import patch
-from datetime import date
+
+import pytest
+
 from armymarkdown import memo_model, writer
 
 # Get the directory containing this test file
@@ -82,10 +84,10 @@ class TestExampleMemos:
         writer_obj.write(output_file=test_output_file)
 
         # Compare with expected output
-        with open(test_output_file, "r") as f:
+        with open(test_output_file) as f:
             generated_output = f.read()
 
-        with open(expected_path, "r") as f:
+        with open(expected_path) as f:
             expected_output = f.read()
 
         assert generated_output == expected_output

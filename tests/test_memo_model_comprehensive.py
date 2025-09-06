@@ -2,9 +2,11 @@
 Comprehensive tests for memo_model.py functionality.
 """
 
-import pytest
-import tempfile
 import os
+import tempfile
+
+import pytest
+
 from armymarkdown import memo_model
 from armymarkdown.memo_model import (
     MemoModel,

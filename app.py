@@ -1,23 +1,23 @@
-import random
+import logging
 import os
-import sys
+import random
+
+import boto3
+from botocore.exceptions import ClientError
+from celery import Celery
 from dotenv import load_dotenv
 from flask import (
     Flask,
+    flash,
+    jsonify,
+    redirect,
     render_template,
     request,
     url_for,
-    jsonify,
-    redirect,
-    session,
-    flash,
 )
-from celery import Celery
-import logging
-import boto3
-from botocore.exceptions import ClientError
-from armymarkdown import memo_model, writer
 from flask_talisman import Talisman
+
+from armymarkdown import memo_model, writer
 from db.db import init_db
 
 # Load environment variables from .env file
@@ -93,7 +93,7 @@ def index():
 
     return render_template(
         "index.html",
-        memo_text=open(os.path.join("./examples", example_file), "r").read(),
+        memo_text=open(os.path.join("./examples", example_file)).read(),
     )
 
 
@@ -224,7 +224,7 @@ def process_task(task, result_func):
         # Task failed with an exception
         response = {
             "state": task.state,
-            "status": f"Task failed: {str(task.info)}",
+            "status": f"Task failed: {task.info!s}",
             "error": str(task.info),
         }
         app.logger.error(f"Task {task.id} failed: {task.info}")
@@ -232,7 +232,7 @@ def process_task(task, result_func):
         # Task is being retried
         response = {
             "state": task.state,
-            "status": f"Task failed, retrying... ({str(task.info)})",
+            "status": f"Task failed, retrying... ({task.info!s})",
         }
     elif task.state == "REVOKED":
         # Task was revoked/cancelled

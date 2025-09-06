@@ -2,10 +2,11 @@
 Integration tests for Army Memo Maker - testing complete workflows.
 """
 
-import pytest
-import tempfile
 import os
-from unittest.mock import patch, Mock
+import tempfile
+from unittest.mock import Mock, patch
+
+import pytest
 
 
 class TestCompleteUserWorkflow:

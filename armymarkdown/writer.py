@@ -1,5 +1,5 @@
-import subprocess
 import os
+import subprocess
 
 
 class MemoWriter:
@@ -42,7 +42,7 @@ class MemoWriter:
             for name, add, csz in zip(
                 self.data.for_unit_name,
                 self.data.for_unit_street_address,
-                self.data.for_unit_city_state_zip,
+                self.data.for_unit_city_state_zip, strict=False,
             ):
                 if len(self.data.for_unit_name) == 1:
                     ans.append(f"\\memoline{{{prefix} {name}, {add}, {csz}}}")
@@ -55,7 +55,7 @@ class MemoWriter:
         for name, add, csz in zip(
             self.data.thru_unit_name,
             self.data.thru_unit_street_address,
-            self.data.thru_unit_city_state_zip,
+            self.data.thru_unit_city_state_zip, strict=False,
         ):
             if len(self.data.thru_unit_name) == 1:
                 ans.append(f"\\addmemoline{{MEMORANDUM THRU {name}, {add}, {csz} }}")
@@ -129,7 +129,7 @@ class MemoWriter:
         s4 = -3  # end before the bottom rule
         return "\n".join(
             [
-                s.replace("\\\\", "\\\\\hline")
+                s.replace("\\\\", "\\\\\\hline")
                 if i >= s3 and i < len(new_a.split("\n")) + s4
                 else s
                 for i, s in enumerate(new_a.split("\n"))

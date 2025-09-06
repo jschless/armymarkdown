@@ -1,14 +1,16 @@
 from dataclasses import dataclass, fields
 from datetime import date
-import re
-import pandas as pd
 from io import StringIO
+import re
+
+import pandas as pd
 from tabulate import tabulate
 
-from armymarkdown.utils import branch_to_abbrev, abbrev_to_branch
 from armymarkdown.utils import (
-    key_converter,
+    abbrev_to_branch,
+    branch_to_abbrev,
     inv_key_converter,
+    key_converter,
     list_keys,
     optional_keys,
 )
@@ -105,7 +107,7 @@ class MemoModel:
                 zip(
                     self.for_unit_name,
                     self.for_unit_street_address,
-                    self.for_unit_city_state_zip,
+                    self.for_unit_city_state_zip, strict=False,
                 )
             )
 
@@ -114,7 +116,7 @@ class MemoModel:
                 zip(
                     self.thru_unit_name,
                     self.thru_unit_street_address,
-                    self.thru_unit_city_state_zip,
+                    self.thru_unit_city_state_zip, strict=False,
                 )
             )
 
@@ -147,7 +149,7 @@ class MemoModel:
             for a, b, c in zip(
                 self.for_unit_name,
                 self.for_unit_street_address,
-                self.for_unit_city_state_zip,
+                self.for_unit_city_state_zip, strict=False,
             ):
                 str_builder += "\n"
                 str_builder += f"FOR_ORGANIZATION_NAME = {a}\n"
@@ -158,7 +160,7 @@ class MemoModel:
             for a, b, c in zip(
                 self.thru_unit_name,
                 self.thru_unit_street_address,
-                self.thru_unit_city_state_zip,
+                self.thru_unit_city_state_zip, strict=False,
             ):
                 str_builder += "\n"
                 str_builder += f"THRU_ORGANIZATION_NAME = {a}\n"
@@ -238,7 +240,7 @@ class MemoModel:
 
     @classmethod
     def from_file(cls, filepath):
-        with open(filepath, "r") as f:
+        with open(filepath) as f:
             file_lines = f.readlines()
 
         return parse_lines(file_lines)
@@ -415,5 +417,5 @@ def process_table(line_list):
             .iloc[1:]
         )
         return tabulate(table, table.columns, tablefmt="latex")
-    except Exception as e:
+    except Exception:
         return ""

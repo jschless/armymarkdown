@@ -2,11 +2,12 @@
 Comprehensive tests for Flask application routes and functionality.
 """
 
-import pytest
 import json
 import os
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
+
 from flask import url_for
+import pytest
 
 
 class TestRoutes:

@@ -1,4 +1,5 @@
 import os
+
 from armymarkdown import memo_model, writer
 
 # Get the directory containing this test file
@@ -47,6 +48,6 @@ def test_latex_file():
     mw = writer.MemoWriter(m)
     mw.write(output_file=output_path)
 
-    created_output = open(output_path, "r").read()
-    answer_output = open(answer_path, "r").read()
+    created_output = open(output_path).read()
+    answer_output = open(answer_path).read()
     assert created_output == answer_output

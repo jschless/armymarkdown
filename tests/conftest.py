@@ -2,15 +2,17 @@
 Test configuration and fixtures for Army Memo Maker tests.
 """
 
-import pytest
-import tempfile
 import os
 import shutil
-import sys
-from unittest.mock import Mock, patch, MagicMock
-from flask import Flask
-from armymarkdown import memo_model
 import sqlite3
+import sys
+import tempfile
+from unittest.mock import MagicMock, Mock, patch
+
+from flask import Flask
+import pytest
+
+from armymarkdown import memo_model
 
 
 # Mock the database and login modules before they get imported
@@ -31,7 +33,7 @@ def mock_database_modules():
     # Mock flask-login components
     mock_flask_login = MagicMock()
     mock_flask_login.LoginManager = MagicMock
-    
+
     # Mock login_user to actually set session and update user state
     def mock_login_user(user):
         from flask import session
@@ -53,7 +55,7 @@ def mock_database_modules():
         session['user_id'] = user_id
         session['username'] = username
         return True
-    
+
     def mock_logout_user():
         mock_user.is_authenticated = False
         mock_user.is_active = False
@@ -64,30 +66,31 @@ def mock_database_modules():
         from flask import session
         session.pop('user_id', None)
         session.pop('username', None)
-    
+
     mock_flask_login.login_user = mock_login_user
     mock_flask_login.logout_user = mock_logout_user
-    
+
     # Mock login_required decorator to properly check authentication
     def mock_login_required(f):
         from functools import wraps
+
         from flask import jsonify, session
-        
+
         @wraps(f)
         def wrapper(*args, **kwargs):
             # Check if user is authenticated (either via mock_user or session)
             # Use try-catch for defensive programming in case of CI environment differences
             try:
                 is_authenticated = (
-                    getattr(mock_user, 'is_authenticated', False) or 
+                    getattr(mock_user, 'is_authenticated', False) or
                     (hasattr(session, 'get') and session.get('user_id') is not None)
                 )
             except:
                 # In case session or mock_user is not available, default to not authenticated
                 is_authenticated = False
-            
+
             if not is_authenticated:
-                from flask import redirect, url_for, request
+                from flask import redirect, request, url_for
                 try:
                     # Return 401 for API routes, 302 for HTML routes
                     if request.path.startswith('/api/') or 'json' in request.headers.get('Accept', ''):
@@ -100,7 +103,7 @@ def mock_database_modules():
                     return jsonify({'error': 'Authentication required'}), 401
             return f(*args, **kwargs)
         return wrapper
-    
+
     mock_flask_login.login_required = mock_login_required
     mock_user.is_authenticated = False
     mock_user.is_active = False
@@ -194,6 +197,7 @@ def test_app():
             app.config["TESTING"] = True
             app.config["WTF_CSRF_ENABLED"] = False
             app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
+            app.config["DISABLE_CAPTCHA"] = True
 
             # Add current_user to template context for testing
             @app.context_processor
@@ -203,7 +207,7 @@ def test_app():
                 return dict(current_user=current_user)
 
             yield app
-        except ImportError as e:
+        except ImportError:
             # If app import fails, create a minimal Flask app for testing
             app = Flask(__name__)
             app.config["TESTING"] = True

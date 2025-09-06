@@ -1,16 +1,18 @@
-from flask import render_template, request, url_for, jsonify, redirect, sessions, flash
 from urllib.parse import urlsplit
-from app import app
-from db.schema import User, Document, db
+
+from flask import flash, redirect, render_template, request, url_for
 from flask_login import (
     LoginManager,
+    current_user,
+    login_required,
     login_user,
     logout_user,
-    login_required,
-    current_user,
 )
-from forms import LoginForm, RegistrationForm
+
+from app import app
 from armymarkdown import memo_model
+from db.schema import Document, User, db
+from forms import LoginForm, RegistrationForm
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -164,7 +166,7 @@ def save_document(text):
 
         return "Document saved successfully."
 
-    except Exception as e:
+    except Exception:
         db.session.rollback()
         return "Document failed to save."
 

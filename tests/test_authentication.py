@@ -2,11 +2,12 @@
 Tests for authentication and user management functionality.
 """
 
-import pytest
-import tempfile
 import os
 import sqlite3
-from unittest.mock import patch, Mock
+import tempfile
+from unittest.mock import Mock, patch
+
+import pytest
 from werkzeug.security import generate_password_hash
 
 
@@ -17,7 +18,7 @@ class TestUserAuthentication:
         """Test authentication with valid credentials."""
         # Since the actual login module uses Flask-Login and database models,
         # we'll test the overall authentication behavior instead
-        from werkzeug.security import generate_password_hash, check_password_hash
+        from werkzeug.security import check_password_hash, generate_password_hash
 
         # Test password hashing functionality that would be used
         password = "test_password"
@@ -110,7 +111,7 @@ class TestUserRegistration:
 
     def test_password_hashing(self):
         """Test that passwords are properly hashed."""
-        from werkzeug.security import generate_password_hash, check_password_hash
+        from werkzeug.security import check_password_hash, generate_password_hash
 
         password = "test_password_123"
         hashed = generate_password_hash(password)

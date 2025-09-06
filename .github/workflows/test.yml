@@ -36,9 +36,7 @@ jobs:
 
     - name: Create virtual environment and install dependencies
       run: |
-        uv venv
-        uv pip install -r requirements.txt
-        uv pip install -r requirements-test.txt
+        uv sync
 
     - name: Set up test environment
       run: |
@@ -129,9 +127,7 @@ jobs:
 
     - name: Create virtual environment and install dependencies
       run: |
-        uv venv
-        uv pip install -r requirements.txt
-        uv pip install -r requirements-test.txt
+        uv sync
 
     - name: Run integration tests
       env:
@@ -164,8 +160,7 @@ jobs:
 
     - name: Install security tools
       run: |
-        uv venv
-        uv pip install safety bandit
+        uv sync
 
     - name: Run safety check
       run: |

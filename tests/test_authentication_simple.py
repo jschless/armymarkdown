@@ -3,7 +3,7 @@ Simplified authentication tests focusing on testable components.
 """
 
 import pytest
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 
 
 class TestPasswordSecurity:
@@ -167,8 +167,7 @@ class TestSessionSecurity:
         # Simulate logout - clear user data
         user_fields = ["user_id", "username"]
         for field in user_fields:
-            if field in session_data:
-                del session_data[field]
+            session_data.pop(field, None)
 
         # Should not contain user identification
         assert "user_id" not in session_data
