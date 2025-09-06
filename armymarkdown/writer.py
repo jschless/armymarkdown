@@ -25,8 +25,21 @@ class MemoWriter:
         work_dir = os.path.dirname(self.output_file)
         tex_filename = os.path.basename(self.output_file)
         
-        # Run lualatex from the directory containing the .tex file
-        subprocess.run(["lualatex", tex_filename], cwd=work_dir)
+        # Set environment variables for performance and font loading
+        env = os.environ.copy()
+        env['TEXMFCACHE'] = os.environ.get('TEXMFCACHE', '/home/appuser/.texlive')
+        env['TEXMFVAR'] = os.environ.get('TEXMFVAR', '/home/appuser/.texlive')
+        env['LUATEX_CACHE_DIR'] = os.environ.get('LUATEX_CACHE_DIR', '/tmp/luatex-cache')
+        env['OSFONTDIR'] = '/usr/share/fonts'
+        env['TEXMFHOME'] = '/home/appuser/.texlive'
+        
+        # Run lualatex with performance flags
+        subprocess.run([
+            "lualatex",
+            "-interaction=nonstopmode",  # Don't wait for user input
+            "-synctex=0",  # Disable synctex for speed
+            tex_filename
+        ], cwd=work_dir, env=env, timeout=60)
 
     def _write_for_lines(self) -> list:
         ans = []
