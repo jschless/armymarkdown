@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fontconfig ttf-mscorefonts-installer \ 
     texlive-base \
     texlive-latex-base \
-    texlive-xetex \
+    texlive-luatex \
     latexmk \
     xz-utils
 
@@ -20,11 +20,12 @@ RUN tlmgr install koma-script etoolbox fontspec xkeyval \
 		  pgf background enumitem setspace booktabs \
 		  microtype pdftexcmds infwarerr everypage ragged2e
 
-# Set font directory and build font cache for XeLaTeX
+# Set font directory and build font cache for LuaLaTeX
 ENV OSFONTDIR=/usr/share/fonts
 RUN fc-cache -fv
+RUN luaotfload-tool --update --quiet --force
 # Verify Arial font is available
-RUN fc-match Arial
+RUN fc-match Arial && luaotfload-tool --find=Arial
 
 RUN apt-get clean \
     && rm -rf /var/lib/apt/lists/*
