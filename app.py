@@ -316,7 +316,7 @@ def upload_file_to_s3(file, aws_path, acl="public-read"):
 
 
 @celery.task(name="create_memo", bind=True)
-def create_memo(text, dictionary=None):
+def create_memo(self, text, dictionary=None):
     if dictionary and isinstance(dictionary, dict):
         m = memo_model.MemoModel.from_form(dictionary)
     else:
