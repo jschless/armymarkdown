@@ -36,7 +36,7 @@ services:
       context: ./
       dockerfile: Dockerfile.development
     volumes:
-      - .:/app  # Mount current directory to /app in container
+      # - .:/app  # Mount current directory to /app in container
       - db-data:/data
     container_name: cel01
     command: celery -A app.celery worker -l info

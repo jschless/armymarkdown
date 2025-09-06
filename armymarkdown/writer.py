@@ -21,7 +21,13 @@ class MemoWriter:
             print("\n".join(self.lines), file=f)
 
     def generate_memo(self):
-        subprocess.run(["lualatex", self.output_file])
+        subprocess.run([
+            "lualatex", 
+            "-interaction=nonstopmode",  # Don't stop for errors
+            "-halt-on-error",           # Stop on first error  
+            "-file-line-error",         # Better error messages
+            self.output_file
+        ], timeout=60)  # 60 second timeout
 
     def _write_for_lines(self) -> list:
         ans = []
