@@ -21,6 +21,11 @@ RUN tlmgr install koma-script etoolbox fontspec xkeyval \
 		  pgf background enumitem setspace booktabs \
 		  microtype pdftexcmds infwarerr everypage ragged2e
 
+# Make TeX installation accessible to all users
+RUN chmod -R 755 /usr/local/texlive 2>/dev/null || true
+RUN chmod -R 755 /opt/texlive 2>/dev/null || true
+RUN find /usr -name "*.fmt" -exec chmod 644 {} \; 2>/dev/null || true
+
 RUN export OSFONTDIR=/usr/share/fonts
 
 RUN apt-get clean \
