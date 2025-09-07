@@ -43,12 +43,12 @@
           <input class="u-full-width center" type="button" id="removeSuspense" value="Remove Suspense">
         </div>
         {% else %}
-        <button type="button" class="modern-btn modern-btn-ghost u-full-width center" id="addSuspense">Add Suspense</button>      
+        <button type="button" class="modern-btn modern-btn-ghost u-full-width center" id="addSuspense">Add Suspense</button>
         {% endif %}
 
     </div>
   </div>
-  
+
   <div class="row">
     <div class="three columns">
       <label for="OFFICE_SYMBOL" class="u-full-width center">Office Symbol</label>
@@ -60,14 +60,14 @@
     <div  class="three columns">
       <label for="DATE" class="u-full-width center">Date</label>
       <input type="text" value="24 January 2006" id="DATE" name="DATE" class="u-full-width center">
-    </div>    
+    </div>
   </div>
 
   <hr>
 
   <div id="thruFieldContainer">
     {% for name, add, city in zipped_thru %}
-    
+
     <div class="row" id="thru{{ zipped_thru|length - loop.index0 }}">
       <div class="six columns">
         <label class="u-full-width center" for="THRU_ORGANIZATION_NAME{{ zipped_thru|length - loop.index0 }}">THRU Organization Name</label>
@@ -90,7 +90,7 @@
       </div>
     </div>
   </div>
-  
+
   <div id="forFieldContainer">
     {% for name, add, city in zipped_for %}
 
@@ -105,7 +105,7 @@
         <label class="u-full-width center" for="FOR_ORGANIZATION_CITY_STATE_ZIP{{ zipped_for|length - loop.index0 }}">FOR City, State Zip</label>
         <input type="text" id="FOR_ORGANIZATION_CITY_STATE_ZIP{{ zipped_for|length - loop.index0 }}" name="FOR_ORGANIZATION_CITY_STATE_ZIP{{ zipped_for|length - loop.index0 }}" value="{{ city }}" class="u-full-width center">
         <br>
-        <input type="button" class="u-full-width center" value="Remove For Address" onclick="deleteElement('for{{ zipped_for|length - loop.index0 }}')">            
+        <input type="button" class="u-full-width center" value="Remove For Address" onclick="deleteElement('for{{ zipped_for|length - loop.index0 }}')">
         <hr>
       </div>
     </div>
@@ -125,7 +125,7 @@
     <input class="u-full-width" type="text" value="{{ subject | default('This is your memo subject') }}" name="SUBJECT" id="SUBJECT">
   </div>
 
-  
+
   <div class="row">
     <label for="MEMO_TEXT">Memo Text</label>
     <textarea class="u-full-width u-half-height" name="MEMO_TEXT" id="MEMO_TEXT">{{text | default('- This memo is a demo.
@@ -147,16 +147,16 @@
           <input class="u-full-width center" type="button" id="removeAuthority" value="Remove Authority">
         </div>
         {% else %}
-        <button type="button" class="modern-btn modern-btn-ghost u-full-width center" id="addAuthority">Add Authority</button>      
+        <button type="button" class="modern-btn modern-btn-ghost u-full-width center" id="addAuthority">Add Authority</button>
         {% endif %}
     </div>
   </div>
 
-  
+
   <hr>
 
-  
-  <div class="row">    
+
+  <div class="row">
     <div class="twelve columns">
       <div class="three columns" id="enclosures">
         {% if enclosures is iterable %}
@@ -186,10 +186,10 @@
           <input class="u-full-width center" type="button" id="removeTitle" value="Remove Title">
         </div>
         {% else %}
-        <input class="u-full-width center" type="button" id="addTitle" value="Add Title">      
+        <input class="u-full-width center" type="button" id="addTitle" value="Add Title">
         {% endif %}
       </div>
-    </div>    
+    </div>
   </div>
 
   <hr>
@@ -198,8 +198,8 @@
       <h3 class="center">Less Common Items</h3>
     </div>
   </div>
-  
-  <div class="row">    
+
+  <div class="row">
     <div class="three columns" id="distributions">
       {% if distros is iterable %}
       {% for dist in distros %}
@@ -215,7 +215,7 @@
       </div>
   </div>
 
-    <div class="row">    
+    <div class="row">
       <div class="three columns" id="cfs">
         {% if cfs is iterable %}
         {% for cf in cfs %}
@@ -231,14 +231,14 @@
       </div>
     </div>
 
-    
+
   <hr>
-  
+
   <div class="row" style="display: flex; gap: var(--spacing-4); align-items: center;">
     <button type="submit" class="modern-btn modern-btn-primary modern-btn-lg" id="start-bg-job">Create Memo PDF</button>
     {% if current_user.is_authenticated %}
     <button type="button" class="modern-btn modern-btn-outline" id="save-progress">Save Progress</button>
-    {% endif %}   
+    {% endif %}
   </div>
 
 

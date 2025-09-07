@@ -78,7 +78,7 @@
    ```bash
    # Install uv if not already installed
    curl -LsSf https://astral.sh/uv/install.sh | sh
-   
+
    # Create virtual environment and install dependencies
    uv sync --extra dev
    ```
@@ -95,7 +95,7 @@
    ```bash
    # Start Redis (if not using Docker)
    redis-server
-   
+
    # Start the Flask app
    uv run python app.py
    ```
@@ -167,7 +167,7 @@ SUBJECT=Template for Army Markdown
 - **Backend**: Python Flask with Gunicorn WSGI server
 - **Package Management**: uv for fast, reliable dependency resolution
 - **Build System**: Modern Python packaging with pyproject.toml
-- **Task Queue**: Celery with Redis for asynchronous PDF generation  
+- **Task Queue**: Celery with Redis for asynchronous PDF generation
 - **Database**: SQLite for user accounts and document storage
 - **PDF Generation**: LuaLaTeX with custom Army memo class
 - **Frontend**: Modern CSS with vanilla JavaScript
@@ -269,7 +269,7 @@ export DEVELOPMENT="true"
 ### Endpoints
 
 - `GET /` - Main memo editor interface
-- `GET /form` - Form-based memo builder  
+- `GET /form` - Form-based memo builder
 - `GET /history` - User's saved documents (requires authentication)
 - `POST /process` - Submit memo for PDF generation
 - `POST /save_progress` - Save draft (requires authentication)
@@ -279,7 +279,7 @@ export DEVELOPMENT="true"
 
 - `GET /login` - User login page
 - `POST /login` - Process login credentials
-- `GET /register` - User registration page  
+- `GET /register` - User registration page
 - `POST /register` - Create new user account
 - `GET /logout` - End user session
 
@@ -299,7 +299,7 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
    ```bash
    # Install uv if needed
    curl -LsSf https://astral.sh/uv/install.sh | sh
-   
+
    # Install dependencies
    uv sync --extra dev
    ```
@@ -313,7 +313,7 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
    ```bash
    # Run tests frequently during development
    uv run pytest tests/ -v
-   
+
    # Check code quality
    uv run ruff check .
    uv run ruff format .
@@ -333,7 +333,7 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 - **Python**: Follow PEP 8, use type hints where helpful
 - **Code Quality**: Use `ruff` for linting and formatting
 - **Testing**: Write tests for new functionality (`pytest`)
-- **Dependencies**: Use `uv add` for new dependencies  
+- **Dependencies**: Use `uv add` for new dependencies
 - **Documentation**: Update README and docstrings as needed
 - **Docker**: Ensure both development and production builds succeed
 

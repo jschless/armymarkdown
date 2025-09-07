@@ -19,7 +19,7 @@
           </h3>
           <p class="modern-card-description">{{ document.preview }}</p>
         </div>
-        
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <button class="modern-btn modern-btn-outline classic-editor-button" data-url="{{ url_for('get_document', document_id=document.id, form_editor=false) }}">
             📝 Classic Editor
@@ -32,7 +32,7 @@
           </button>
         </div>
       </div>
-      {% endfor %}  
+      {% endfor %}
     </div>
   {% else %}
     <div class="modern-card text-center">

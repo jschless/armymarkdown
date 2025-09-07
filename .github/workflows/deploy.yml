@@ -9,7 +9,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Deploy to DigitalOcean
       uses: appleboy/ssh-action@v1.0.3
@@ -20,7 +20,7 @@ jobs:
         script: |
           cd /root/armymarkdown
           git pull origin main
-          
+
           # Make deploy script executable if it exists
           if [ -f "deploy.sh" ]; then
             chmod +x deploy.sh

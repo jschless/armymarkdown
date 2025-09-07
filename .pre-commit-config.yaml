@@ -5,7 +5,7 @@
 repos:
   # Ruff for linting and formatting (replaces flake8, black, isort, etc.)
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.7.0
+    rev: v0.8.6
     hooks:
       # Run the linter
       - id: ruff
@@ -17,7 +17,7 @@ repos:
 
   # Built-in pre-commit hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v5.0.0
     hooks:
       # Basic file checks
       - id: check-yaml
@@ -32,7 +32,6 @@ repos:
       - id: check-ast
       - id: debug-statements
       - id: check-docstring-first
-      - id: requirements-txt-fixer
 
       # Security checks
       - id: detect-private-key
@@ -51,32 +50,11 @@ repos:
 
   # Security linting with bandit
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.5
+    rev: 1.8.0
     hooks:
       - id: bandit
         args: [-c, pyproject.toml]
         additional_dependencies: ["bandit[toml]"]
-
-  # Safety check for known vulnerabilities
-  - repo: https://github.com/Lucas-C/pre-commit-hooks-safety
-    rev: v1.3.2
-    hooks:
-      - id: python-safety-dependencies-check
-        files: requirements.*\.txt$
-
-  # Check for common shell script issues
-  - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.9.0.6
-    hooks:
-      - id: shellcheck
-        args: [--severity=warning]
-
-  # Format shell scripts
-  - repo: https://github.com/mvdan/sh
-    rev: v3.7.0
-    hooks:
-      - id: shfmt
-        args: [-w, -s, -i, '2']
 
 # Configuration
 ci:

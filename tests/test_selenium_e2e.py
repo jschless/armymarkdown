@@ -102,11 +102,15 @@ SUBJECT=Selenium Test Memo
         """Wait for progress modal to appear or disappear."""
         if should_be_visible:
             return WebDriverWait(driver, timeout).until(
-                expected_conditions.visibility_of_element_located((By.ID, "progress-modal"))
+                expected_conditions.visibility_of_element_located(
+                    (By.ID, "progress-modal")
+                )
             )
         else:
             return WebDriverWait(driver, timeout).until(
-                expected_conditions.invisibility_of_element_located((By.ID, "progress-modal"))
+                expected_conditions.invisibility_of_element_located(
+                    (By.ID, "progress-modal")
+                )
             )
 
     def check_progress_text(self, driver):
@@ -159,9 +163,10 @@ SUBJECT=Selenium Test Memo
 
         # Check progress text is not NaN%
         progress_text = self.check_progress_text(driver)
-        assert progress_text in ["Processing...", "0%"], (
-            f"Unexpected initial progress: {progress_text}"
-        )
+        assert progress_text in [
+            "Processing...",
+            "0%",
+        ], f"Unexpected initial progress: {progress_text}"
 
         # Verify Celery task was called
         mock_celery_task.assert_called_once()
@@ -224,9 +229,10 @@ SUBJECT=Selenium Test Memo
 
         # Check progress text is not NaN%
         progress_text = self.check_progress_text(driver)
-        assert progress_text in ["Processing...", "0%"], (
-            f"Unexpected initial progress: {progress_text}"
-        )
+        assert progress_text in [
+            "Processing...",
+            "0%",
+        ], f"Unexpected initial progress: {progress_text}"
 
         # Verify Celery task was called
         mock_celery_task.assert_called_once()
@@ -261,9 +267,9 @@ SUBJECT=Selenium Test Memo
             progress_text = self.check_progress_text(driver)
 
             # The main assertion - should never see NaN%
-            assert "NaN%" not in progress_text, (
-                f"Found NaN% in progress text: {progress_text}"
-            )
+            assert (
+                "NaN%" not in progress_text
+            ), f"Found NaN% in progress text: {progress_text}"
 
             time.sleep(0.5)  # Check every 500ms
 

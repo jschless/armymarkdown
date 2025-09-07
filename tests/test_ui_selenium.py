@@ -72,9 +72,10 @@ class TestUIBehavior:
         assert not progress_modal.is_displayed()
 
         progress_text = chrome_driver.find_element(By.ID, "progress-percentage")
-        assert progress_text.text in ["0%", ""], (
-            f"Unexpected initial progress text: {progress_text.text}"
-        )
+        assert progress_text.text in [
+            "0%",
+            "",
+        ], f"Unexpected initial progress text: {progress_text.text}"
 
     @pytest.mark.selenium
     def test_form_page_loads_correctly(self, chrome_driver, app_url):

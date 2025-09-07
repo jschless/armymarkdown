@@ -1,4 +1,4 @@
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, field, fields
 from datetime import date
 from io import StringIO
 import re
@@ -41,7 +41,7 @@ class MemoModel:
 
     memo_type: str = "MEMORANDUM FOR RECORD"
     # options: MFR, MEMORANDUM FOR, MEMORANDUM THRU
-    todays_date: str = date.today().strftime("%d %B %Y")
+    todays_date: str = field(default_factory=lambda: date.today().strftime("%d %B %Y"))
 
     # optional, less frequently used parameters
     for_unit_name: list = None

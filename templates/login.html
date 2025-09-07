@@ -11,7 +11,7 @@
 
   <form action="" method="post" novalidate class="modern-form">
     {{ form.hidden_tag() }}
-    
+
     <div class="modern-form-group">
       <label for="{{ form.username.id }}" class="modern-form-label">{{ form.username.label.text }}</label>
       {{ form.username(class="modern-form-input", placeholder="Enter your username") }}
@@ -38,7 +38,7 @@
   </form>
   <div class="text-center" style="margin-top: var(--spacing-6); padding-top: var(--spacing-6); border-top: 1px solid var(--color-gray-200);">
     <p style="color: var(--color-gray-600);">
-      New to Army Memo Maker? 
+      New to Army Memo Maker?
       <a href="{{ url_for('register') }}" style="color: var(--color-primary); text-decoration: none; font-weight: 500;">
         Create an account
       </a>

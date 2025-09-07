@@ -5,7 +5,7 @@ RUN echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula sele
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3.11 python3.11-venv curl git \
-    fontconfig ttf-mscorefonts-installer \ 
+    fontconfig ttf-mscorefonts-installer \
     texlive-base \
     texlive-latex-base \
     texlive-luatex \
