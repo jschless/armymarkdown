@@ -54,9 +54,6 @@ jobs:
         uv run ruff check . --output-format=github
         uv run ruff format --check .
 
-    - name: Run type checking
-      run: |
-        uv run mypy --ignore-missing-imports armymarkdown/ || true
 
     - name: Run security checks
       run: |
