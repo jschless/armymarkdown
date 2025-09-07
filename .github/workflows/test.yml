@@ -36,7 +36,7 @@ jobs:
 
     - name: Create virtual environment and install dependencies
       run: |
-        uv sync
+        uv sync --all-extras
 
     - name: Set up test environment
       run: |
@@ -51,20 +51,17 @@ jobs:
 
     - name: Run code quality checks
       run: |
-        source .venv/bin/activate
-        ruff check . --output-format=github
-        ruff format --check .
+        uv run ruff check . --output-format=github
+        uv run ruff format --check .
 
     - name: Run type checking
       run: |
-        source .venv/bin/activate
-        mypy --ignore-missing-imports armymarkdown/ || true
+        uv run mypy --ignore-missing-imports armymarkdown/ || true
 
     - name: Run security checks
       run: |
-        source .venv/bin/activate
-        bandit -r . -f json || true
-        safety check || true
+        uv run bandit -r . -f json || true
+        uv run safety check || true
 
     - name: Run unit tests with coverage
       env:
@@ -78,8 +75,7 @@ jobs:
         DISABLE_CAPTCHA: "true"
         DEVELOPMENT: "true"
       run: |
-        source .venv/bin/activate
-        pytest tests/ --cov=. --cov-report=xml --cov-report=html --cov-report=term-missing --continue-on-collection-errors --forked --tb=short --maxfail=10 -v || true
+        uv run pytest tests/ --cov=. --cov-report=xml --cov-report=html --cov-report=term-missing --continue-on-collection-errors --forked --tb=short --maxfail=10 -v || true
 
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v3
@@ -91,8 +87,7 @@ jobs:
 
     - name: Generate coverage badge
       run: |
-        source .venv/bin/activate
-        coverage-badge -o coverage.svg || true
+        uv run coverage-badge -o coverage.svg || true
 
     - name: Archive coverage results
       uses: actions/upload-artifact@v4
@@ -127,7 +122,7 @@ jobs:
 
     - name: Create virtual environment and install dependencies
       run: |
-        uv sync
+        uv sync --all-extras
 
     - name: Run integration tests
       env:
@@ -141,8 +136,7 @@ jobs:
         DISABLE_CAPTCHA: "true"
         DEVELOPMENT: "true"
       run: |
-        source .venv/bin/activate
-        pytest tests/test_integration.py -v || true
+        uv run pytest tests/test_integration.py -v || true
 
   selenium-test:
     runs-on: ubuntu-latest
@@ -218,8 +212,7 @@ jobs:
         TEST_APP_URL: "http://localhost:8000"
         PYTHONPATH: .
       run: |
-        source .venv/bin/activate
-        pytest tests/test_ui_selenium.py -v --tb=short
+        uv run pytest tests/test_ui_selenium.py -v --tb=short
 
     - name: Stop application services
       if: always()
@@ -243,14 +236,12 @@ jobs:
 
     - name: Install security tools
       run: |
-        uv sync
+        uv sync --all-extras
 
     - name: Run safety check
       run: |
-        source .venv/bin/activate
-        safety check --json || true
+        uv run safety check --json || true
 
     - name: Run bandit security scan
       run: |
-        source .venv/bin/activate
-        bandit -r . -f json || true
+        uv run bandit -r . -f json || true
