@@ -72,7 +72,7 @@ jobs:
         DISABLE_CAPTCHA: "true"
         DEVELOPMENT: "true"
       run: |
-        uv run pytest tests/ --cov=. --cov-report=xml --cov-report=html --cov-report=term-missing --continue-on-collection-errors --forked --tb=short --maxfail=10 -v || true
+        uv run pytest tests/ -m "not selenium" --cov=. --cov-report=xml --cov-report=html --cov-report=term-missing --continue-on-collection-errors --forked --tb=short --maxfail=10 -v || true
 
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v3
@@ -133,7 +133,7 @@ jobs:
         DISABLE_CAPTCHA: "true"
         DEVELOPMENT: "true"
       run: |
-        uv run pytest tests/test_integration.py -v || true
+        uv run pytest tests/test_integration.py -m "not selenium" -v || true
 
   selenium-test:
     runs-on: ubuntu-latest
@@ -198,9 +198,10 @@ jobs:
         DEVELOPMENT: "true"
       run: |
         docker compose -f docker-compose-dev.yaml up -d
-        # Wait for the main services to be ready (sqlite_db exits after creating the database file)
-        docker compose -f docker-compose-dev.yaml wait redis flask_app celery proxy
-        sleep 30  # Give services time to fully start
+        # Check status of services (sqlite_db exits after creating the database file, which is expected)
+        docker compose -f docker-compose-dev.yaml ps
+        # Give services time to start
+        sleep 30
 
     - name: Wait for application to be ready
       run: |

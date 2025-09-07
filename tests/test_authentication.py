@@ -203,28 +203,44 @@ class TestSessionManagement:
 class TestDocumentManagement:
     """Test document saving and retrieval."""
 
-    @patch("db.schema.db.session")
-    def test_save_document_logged_in(self, mock_db_session, auth_user):
+    @patch("login.db.session")
+    @patch("login.Document")
+    def test_save_document_logged_in(
+        self, mock_document_class, mock_db_session, auth_user, test_app
+    ):
         """Test saving document when logged in."""
         # Mock database operations
         mock_db_session.add = Mock()
         mock_db_session.commit = Mock()
+        mock_db_session.rollback = Mock()
+
+        # Mock the Document constructor to return a mock instance
+        mock_document_instance = Mock()
+        mock_document_class.return_value = mock_document_instance
+
+        # Mock existing document query to return None (no duplicate)
+        mock_document_class.query.filter_by.return_value.first.return_value = None
+        mock_document_class.query.filter_by.return_value.count.return_value = 0
 
         # Authenticate user
         auth_user.login(user_id=1, username="testuser")
 
-        # Mock existing document query to return None (no duplicate)
-        with patch("db.schema.Document.query") as mock_query:
-            mock_query.filter_by.return_value.first.return_value = None
-            mock_query.filter_by.return_value.count.return_value = 0
-
+        # Run within application context
+        with test_app.app_context():
             from login import save_document
 
             result = save_document("Test memo content")
 
-        assert isinstance(result, str)
-        # Should indicate success
-        assert "saved" in result.lower() or "success" in result.lower()
+            assert isinstance(result, str)
+            # Should indicate success
+            assert "saved" in result.lower() or "success" in result.lower()
+
+            # Verify the Document was created and added to session
+            mock_document_class.assert_called_once_with(
+                content="Test memo content", user_id=1
+            )
+            mock_db_session.add.assert_called_once_with(mock_document_instance)
+            mock_db_session.commit.assert_called_once()
 
     def test_save_document_not_logged_in(self, auth_user):
         """Test saving document when not logged in."""
