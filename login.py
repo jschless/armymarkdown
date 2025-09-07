@@ -9,13 +9,11 @@ from flask_login import (
     logout_user,
 )
 
-from app import app
 from armymarkdown import memo_model
 from db.schema import Document, User, db
 from forms import LoginForm, RegistrationForm
 
 login_manager = LoginManager()
-login_manager.init_app(app)
 
 
 @login_manager.user_loader
@@ -23,15 +21,16 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
-@app.route("/login", methods=["GET", "POST"])
-def login():
+def login_route():
     if current_user.is_authenticated:
         return redirect(url_for("index"))
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         if user is None or not user.check_password(form.password.data):
-            app.logger.info(
+            from flask import current_app
+
+            current_app.logger.info(
                 f"{form.username.data} logged in with wrong username or password"
             )
             flash("Invalid username or password")
@@ -40,14 +39,15 @@ def login():
         next_page = request.args.get("next")
         if not next_page or urlsplit(next_page).netloc != "":
             next_page = url_for("index", example_file="tutorial.Amd")
-        app.logger.info(f"{form.username.data} logged in")
+        from flask import current_app
+
+        current_app.logger.info(f"{form.username.data} logged in")
 
         return redirect(next_page)
     return render_template("login.html", title="Sign In", form=form)
 
 
-@app.route("/register", methods=["GET", "POST"])
-def register():
+def register_route():
     if current_user.is_authenticated:
         return url_for("index", example_file="tutorial.Amd")
     form = RegistrationForm()
@@ -57,22 +57,24 @@ def register():
         db.session.add(user)
         db.session.commit()
         flash("Congratulations, you are now a registered user!")
-        app.logger.info(f"{form.username.data} created an account")
+        from flask import current_app
+
+        current_app.logger.info(f"{form.username.data} created an account")
         return render_template("login.html", title="Sign In", form=form)
     return render_template("register.html", title="Register", form=form)
 
 
-@app.route("/logout")
 @login_required
-def logout():
-    app.logger.info(f"{current_user.username} logged out")
+def logout_route():
+    from flask import current_app
+
+    current_app.logger.info(f"{current_user.username} logged out")
     logout_user()
     return redirect(url_for("index", example_file="tutorial.Amd"))
 
 
-@app.route("/history")
 @login_required
-def history():
+def history_route():
     user_id = current_user.id
     documents = get_user_documents(user_id)
     processed_documents = []
@@ -94,14 +96,17 @@ def history():
                 }
             )
         except Exception as e:
-            app.logger.error("Received following error when trying to render history")
-            app.logger.error(e)
+            from flask import current_app
+
+            current_app.logger.error(
+                "Received following error when trying to render history"
+            )
+            current_app.logger.error(e)
     return render_template("history.html", documents=processed_documents)
 
 
-@app.route("/delete/<int:document_id>")
 @login_required
-def delete_document(document_id):
+def delete_document_route(document_id):
     document = Document.query.get_or_404(document_id)
     if document.user_id != current_user.id:
         flash("This is not your file, so you can't view it")
@@ -113,9 +118,8 @@ def delete_document(document_id):
     return redirect(url_for("history"))
 
 
-@app.route("/<int:document_id>")
 @login_required
-def get_document(document_id):
+def get_document_route(document_id):
     document = Document.query.get_or_404(document_id)
     if document.user_id != current_user.id:
         flash("This is not your file, so you can't view it")
@@ -138,7 +142,9 @@ def save_document(text):
 
     existing_document = Document.query.filter_by(user_id=user_id, content=text).first()
     if existing_document:
-        app.logger.info(
+        from flask import current_app
+
+        current_app.logger.info(
             f"{current_user.username} tried to save a document that already was saved"
         )
         return "Document is already saved."
@@ -153,14 +159,18 @@ def save_document(text):
         )
         db.session.delete(oldest_document)
         db.session.commit()
-        app.logger.info(
+        from flask import current_app
+
+        current_app.logger.info(
             f"{current_user.username} deleting documents to make room for more saves"
         )
     try:
         new_document = Document(content=text, user_id=user_id)
         db.session.add(new_document)
         db.session.commit()
-        app.logger.info(f"{current_user.username} saved document")
+        from flask import current_app
+
+        current_app.logger.info(f"{current_user.username} saved document")
         if removed_oldest:
             return "Document saved successfully. Removed oldest document."
 
@@ -306,3 +316,15 @@ def get_user_documents(user_id):
             )
 
     return result
+
+
+def register_login_routes(app):
+    """Register all login-related routes with the Flask app."""
+    app.add_url_rule("/login", "login", login_route, methods=["GET", "POST"])
+    app.add_url_rule("/register", "register", register_route, methods=["GET", "POST"])
+    app.add_url_rule("/logout", "logout", logout_route)
+    app.add_url_rule("/history", "history", history_route)
+    app.add_url_rule(
+        "/delete/<int:document_id>", "delete_document", delete_document_route
+    )
+    app.add_url_rule("/<int:document_id>", "get_document", get_document_route)

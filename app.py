@@ -47,6 +47,12 @@ app.config["DISABLE_CAPTCHA"] = (
     get_optional_env_var("DISABLE_CAPTCHA", "false").lower() == "true"
 )
 
+# Initialize login manager
+login.login_manager.init_app(app)
+
+# Register login routes
+login.register_login_routes(app)
+
 celery = Celery(
     app.name,
     broker=get_required_env_var("REDIS_URL"),
