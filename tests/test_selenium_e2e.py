@@ -267,9 +267,9 @@ SUBJECT=Selenium Test Memo
             progress_text = self.check_progress_text(driver)
 
             # The main assertion - should never see NaN%
-            assert (
-                "NaN%" not in progress_text
-            ), f"Found NaN% in progress text: {progress_text}"
+            assert "NaN%" not in progress_text, (
+                f"Found NaN% in progress text: {progress_text}"
+            )
 
             time.sleep(0.5)  # Check every 500ms
 
