@@ -16,9 +16,8 @@ function saveData() {
         }
     })
         .then(response => {
-            if (response.ok) {
-                console.log('Form data submitted successfully.');
-            } else {
+            if (!response.ok) {
+                // Only log errors, not successful saves
                 console.error('Error submitting form data:', response.status);
             }
         })
@@ -194,9 +193,23 @@ function showIndeterminateProgress() {
         progressText.style.fontWeight = 'var(--font-weight-medium)';
     }
     
-    // Hide the progress fill since we're using CSS animations
+    // Show the progress fill for indeterminate progress
     const progressFill = document.getElementById('progress-fill');
     if (progressFill) {
-        progressFill.style.width = '0%';
+        progressFill.style.width = '100%';
     }
 }
+
+// Store reference to our real updateProgress function
+const realUpdateProgress = updateProgress;
+
+// Override any legacy updateProgress function that might cause NaN%
+window.updateProgress = function(status_url, count) {
+    if (arguments.length === 2 && typeof status_url === 'string') {
+        // This is the new progress system - call our real function
+        realUpdateProgress(status_url, count);
+    } else {
+        // Legacy call with percentage - ignore it and maintain indeterminate progress
+        showIndeterminateProgress();
+    }
+};

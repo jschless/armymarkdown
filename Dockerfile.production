@@ -12,8 +12,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     xz-utils
 
 # Install uv
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh
-ENV PATH="/root/.cargo/bin:$PATH"
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
+    /root/.local/bin/uv --version
+ENV PATH="/root/.local/bin:$PATH"
 
 RUN fc-cache -f -v
 

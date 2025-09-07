@@ -14,7 +14,7 @@ def clear_redis_queues():
     """Clear all Celery queues and failed tasks from Redis."""
     try:
         # Connect to Redis using environment variable or default
-        redis_url = os.environ.get('REDIS_URL', 'redis://redis:6379/0')
+        redis_url = os.environ.get("REDIS_URL", "redis://redis:6379/0")
         print(f"Connecting to Redis at: {redis_url}")
 
         r = redis.from_url(redis_url)
@@ -24,17 +24,17 @@ def clear_redis_queues():
         print("✅ Connected to Redis successfully")
 
         # Get all keys
-        all_keys = r.keys('*')
+        all_keys = r.keys("*")
         print(f"Found {len(all_keys)} total keys in Redis")
 
         # Clear Celery-related keys
         celery_patterns = [
-            'celery-task-meta-*',  # Task results
-            '_kombu.binding.*',    # Kombu bindings
-            'celery',              # Default queue
-            'create_memo',         # Our specific task queue
-            'unacked*',           # Unacknowledged tasks
-            'reserved*',          # Reserved tasks
+            "celery-task-meta-*",  # Task results
+            "_kombu.binding.*",  # Kombu bindings
+            "celery",  # Default queue
+            "create_memo",  # Our specific task queue
+            "unacked*",  # Unacknowledged tasks
+            "reserved*",  # Reserved tasks
         ]
 
         cleared_count = 0
@@ -46,16 +46,16 @@ def clear_redis_queues():
                 print(f"🗑️  Cleared {deleted} keys matching pattern: {pattern}")
 
         # Clear any remaining failed task states
-        failed_keys = r.keys('celery-task-meta-*')
+        failed_keys = r.keys("celery-task-meta-*")
         if failed_keys:
             deleted = r.delete(*failed_keys)
             cleared_count += deleted
             print(f"🗑️  Cleared {deleted} failed task metadata")
 
         # Clear the default Celery queue
-        queue_length = r.llen('celery')
+        queue_length = r.llen("celery")
         if queue_length > 0:
-            r.delete('celery')
+            r.delete("celery")
             cleared_count += 1
             print(f"🗑️  Cleared main celery queue ({queue_length} tasks)")
 
@@ -69,6 +69,7 @@ def clear_redis_queues():
     except Exception as e:
         print(f"❌ Error clearing Redis: {e}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     print("🧹 Clearing Redis queues and failed tasks...")

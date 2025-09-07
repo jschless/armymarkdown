@@ -2,6 +2,10 @@
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools.packages.find]
+include = ["armymarkdown*"]
+exclude = ["tests*", "docs*", "examples*"]
+
 [project]
 name = "armymarkdown"
 version = "1.0.0"
@@ -10,12 +14,11 @@ readme = "README.md"
 authors = [
     {name = "Joe Schlessinger", email = "jschless@example.com"}
 ]
-license = {text = "MIT"}
+license = "MIT"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Government",
     "Topic :: Text Processing :: Markup",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -27,7 +30,7 @@ dependencies = [
     # Core Flask application dependencies
     "flask>=3.0.0",
     "flask-wtf>=1.2.0",
-    "flask-login>=0.7.0",
+    "flask-login>=0.6.0",
     "flask-sqlalchemy>=3.1.0",
     "flask-talisman>=1.1.0",
     "wtforms>=3.1.0",
@@ -115,6 +118,13 @@ test = [
 Homepage = "https://github.com/jschless/armymarkdown"
 Repository = "https://github.com/jschless/armymarkdown"
 Issues = "https://github.com/jschless/armymarkdown/issues"
+
+[dependency-groups]
+dev = [
+    "requests>=2.32.5",
+    "selenium>=4.35.0",
+    "webdriver-manager>=4.0.2",
+]
 
 # Ruff configuration
 [tool.ruff]
@@ -255,6 +265,8 @@ filterwarnings = [
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests",
+    "selenium: marks tests as selenium/browser tests",
+    "e2e: marks tests as end-to-end tests",
 ]
 
 # Bandit security linting configuration

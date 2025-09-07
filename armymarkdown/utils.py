@@ -52,35 +52,30 @@ key_converter = {
 
 inv_key_converter = {v: k for k, v in key_converter.items()}
 
-optional_keys = set(
-    [
-        "for_unit_name",
-        "for_unit_street_address",
-        "for_unit_city_state_zip",
-        "thru_unit_name",
-        "thru_unit_street_address",
-        "thru_unit_city_state_zip",
-        "suspense_date",
-        "document_mark",
-        "enclosures",
-        "distros",
-        "cfs",
-        "document_mark",
-        "authority",
-        "todays_date",
-    ]
-)
+optional_keys = {
+    "for_unit_name",
+    "for_unit_street_address",
+    "for_unit_city_state_zip",
+    "thru_unit_name",
+    "thru_unit_street_address",
+    "thru_unit_city_state_zip",
+    "suspense_date",
+    "document_mark",
+    "enclosures",
+    "distros",
+    "cfs",
+    "authority",
+    "todays_date",
+}
 
-list_keys = set(
-    [
-        "for_unit_name",
-        "for_unit_street_address",
-        "for_unit_city_state_zip",
-        "thru_unit_name",
-        "thru_unit_street_address",
-        "thru_unit_city_state_zip",
-        "enclosures",
-        "distros",
-        "cfs",
-    ]
-)
+list_keys = {
+    "for_unit_name",
+    "for_unit_street_address",
+    "for_unit_city_state_zip",
+    "thru_unit_name",
+    "thru_unit_street_address",
+    "thru_unit_city_state_zip",
+    "enclosures",
+    "distros",
+    "cfs",
+}

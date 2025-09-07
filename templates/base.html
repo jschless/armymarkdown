@@ -190,16 +190,6 @@
     }
 
     // Progress functions moved to tasks.js
-
-    function updateProgress(percentage) {
-      const fill = document.getElementById('progress-fill');
-      const text = document.getElementById('progress-percentage');
-      
-      if (fill && text) {
-        fill.style.width = percentage + '%';
-        text.textContent = Math.round(percentage) + '%';
-      }
-    }
   </script>
 
   {% block scripts %}{% endblock %}

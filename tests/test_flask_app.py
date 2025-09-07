@@ -374,5 +374,4 @@ class TestConfigurationHandling:
     def test_captcha_enable_config(self, app_context):
         """Test CAPTCHA enabled configuration."""
         # This would test with captcha enabled
-        app = app_context
         # Configuration should reflect environment

@@ -76,7 +76,7 @@ def history():
     user_id = current_user.id
     documents = get_user_documents(user_id)
     processed_documents = []
-    for doc_id, subject, content, created_at in documents:
+    for doc_id, subject, content, _created_at in documents:
         try:
             # Find the end of the subject line to get preview text
             subject_end = content.find("\n", content.find("SUBJECT"))
@@ -241,9 +241,7 @@ def validate_username(username):
     if len(username) > 20:
         return False
     # Allow alphanumeric, underscores, and hyphens based on test
-    if not all(c.isalnum() or c in "_-" for c in username):
-        return False
-    return True
+    return all(c.isalnum() or c in "_-" for c in username)
 
 
 def validate_email(email):
@@ -251,9 +249,7 @@ def validate_email(email):
     import re
 
     email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-    if not email or not re.match(email_pattern, email):
-        return False
-    return True
+    return not (not email or not re.match(email_pattern, email))
 
 
 def validate_password_strength(password):
@@ -264,9 +260,7 @@ def validate_password_strength(password):
         return False
     if not any(c.islower() for c in password):
         return False
-    if not any(c.isdigit() for c in password):
-        return False
-    return True
+    return any(c.isdigit() for c in password)
 
 
 def sanitize_user_input(input_string):

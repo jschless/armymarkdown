@@ -48,6 +48,8 @@ def test_latex_file():
     mw = writer.MemoWriter(m)
     mw.write(output_file=output_path)
 
-    created_output = open(output_path).read()
-    answer_output = open(answer_path).read()
+    with open(output_path) as f:
+        created_output = f.read()
+    with open(answer_path) as f:
+        answer_output = f.read()
     assert created_output == answer_output

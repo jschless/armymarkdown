@@ -150,7 +150,7 @@ class TestMemoFeatures:
         assert memo.subject is not None
 
         # The table should be processed as part of the text
-        text_str = str(memo.text)
+        str(memo.text)
         # Tables get converted to LaTeX format, so check for LaTeX table markers
         # This is a basic check - the actual table processing is complex
         assert len(memo.text) > 0
@@ -173,7 +173,7 @@ class TestMemoFeatures:
         assert len(memo.text) > 5  # Should have substantial content
 
         # Test that nested lists are handled properly
-        has_nested_content = any(isinstance(item, list) for item in memo.text)
+        any(isinstance(item, list) for item in memo.text)
         # Long memos often have nested structure, but this depends on content
 
     def test_tutorial_completeness(self):

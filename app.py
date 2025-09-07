@@ -203,7 +203,7 @@ def process():
                 m = memo_model.MemoModel.from_form(request.form.to_dict())
                 if not isinstance(m, str):
                     return render_template("memo_form.html", **m.to_form())
-            except:
+            except Exception:
                 pass
             return redirect(url_for("index"))
 
@@ -290,11 +290,11 @@ def upload_file_to_s3(file, aws_path, acl="public-read"):
     except Exception as e:
         app.logger.error(f"Something Happened: {e}")
         ret_val = e
-    finally:
-        # delete file after uploads
-        if os.path.exists(file):
-            os.remove(file)
-        return ret_val
+
+    # delete file after uploads
+    if os.path.exists(file):
+        os.remove(file)
+    return ret_val
 
 
 @celery.task(name="create_memo", bind=True)

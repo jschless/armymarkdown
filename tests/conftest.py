@@ -37,23 +37,24 @@ def mock_database_modules():
     # Mock login_user to actually set session and update user state
     def mock_login_user(user):
         from flask import session
+
         mock_user.is_authenticated = True
         mock_user.is_active = True
         mock_user.is_anonymous = False
         # Ensure we get actual values, not MagicMock objects
-        user_id = getattr(user, 'id', 1)
-        username = getattr(user, 'username', 'testuser')
+        user_id = getattr(user, "id", 1)
+        username = getattr(user, "username", "testuser")
         # Convert MagicMock to actual values if needed
-        if hasattr(user_id, '_mock_name'):
+        if hasattr(user_id, "_mock_name"):
             user_id = 1
-        if hasattr(username, '_mock_name'):
-            username = 'testuser'
+        if hasattr(username, "_mock_name"):
+            username = "testuser"
         mock_user.id = user_id
         mock_user.username = username
         mock_user.get_id.return_value = str(user_id)
         # Also set session for compatibility (use actual values)
-        session['user_id'] = user_id
-        session['username'] = username
+        session["user_id"] = user_id
+        session["username"] = username
         return True
 
     def mock_logout_user():
@@ -64,8 +65,9 @@ def mock_database_modules():
         mock_user.username = None
         mock_user.get_id.return_value = None
         from flask import session
-        session.pop('user_id', None)
-        session.pop('username', None)
+
+        session.pop("user_id", None)
+        session.pop("username", None)
 
     mock_flask_login.login_user = mock_login_user
     mock_flask_login.logout_user = mock_logout_user
@@ -81,27 +83,30 @@ def mock_database_modules():
             # Check if user is authenticated (either via mock_user or session)
             # Use try-catch for defensive programming in case of CI environment differences
             try:
-                is_authenticated = (
-                    getattr(mock_user, 'is_authenticated', False) or
-                    (hasattr(session, 'get') and session.get('user_id') is not None)
+                is_authenticated = getattr(mock_user, "is_authenticated", False) or (
+                    hasattr(session, "get") and session.get("user_id") is not None
                 )
-            except:
+            except Exception:
                 # In case session or mock_user is not available, default to not authenticated
                 is_authenticated = False
 
             if not is_authenticated:
                 from flask import redirect, request, url_for
+
                 try:
                     # Return 401 for API routes, 302 for HTML routes
-                    if request.path.startswith('/api/') or 'json' in request.headers.get('Accept', ''):
-                        return jsonify({'error': 'Authentication required'}), 401
+                    if request.path.startswith(
+                        "/api/"
+                    ) or "json" in request.headers.get("Accept", ""):
+                        return jsonify({"error": "Authentication required"}), 401
                     else:
                         # For protected routes like /history, return 302 redirect
-                        return redirect(url_for('login')), 302
-                except:
+                        return redirect(url_for("login")), 302
+                except Exception:
                     # Fallback: just return 401 if url_for fails
-                    return jsonify({'error': 'Authentication required'}), 401
+                    return jsonify({"error": "Authentication required"}), 401
             return f(*args, **kwargs)
+
         return wrapper
 
     mock_flask_login.login_required = mock_login_required
@@ -204,7 +209,7 @@ def test_app():
             def inject_user():
                 from flask_login import current_user
 
-                return dict(current_user=current_user)
+                return {"current_user": current_user}
 
             yield app
         except ImportError:
@@ -311,7 +316,7 @@ def sample_memo_dict():
 def sample_memo_text():
     """Sample memo in Army Markdown format."""
     return """ORGANIZATION_NAME=4th Engineer Battalion
-ORGANIZATION_STREET_ADDRESS=588 Wetzel Road  
+ORGANIZATION_STREET_ADDRESS=588 Wetzel Road
 ORGANIZATION_CITY_STATE_ZIP=Colorado Springs, CO 80904
 
 OFFICE_SYMBOL=ABC-DEF-GH
@@ -372,7 +377,7 @@ SUBJECT=Test Subject
 
 - This memo has an invalid date.""",
         "invalid_branch": """ORGANIZATION_NAME=Test Unit
-AUTHOR=John Smith  
+AUTHOR=John Smith
 RANK=CPT
 BRANCH=INVALID
 DATE=15 March 2024

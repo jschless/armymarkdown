@@ -144,6 +144,89 @@ jobs:
         source .venv/bin/activate
         pytest tests/test_integration.py -v || true
 
+  selenium-test:
+    runs-on: ubuntu-latest
+    needs: test
+    continue-on-error: true
+    
+    services:
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v2
+      with:
+        version: "latest"
+
+    - name: Set up Python
+      run: uv python install 3.11
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          fontconfig \
+          fonts-liberation \
+          texlive-base \
+          texlive-latex-base \
+          texlive-luatex \
+          latexmk
+
+    - name: Install Chrome
+      uses: browser-actions/setup-chrome@latest
+      with:
+        chrome-version: stable
+
+    - name: Create virtual environment and install dependencies
+      run: |
+        uv sync --group dev
+
+    - name: Build application container
+      run: |
+        docker compose -f docker-compose-dev.yaml build
+
+    - name: Start application services
+      env:
+        FLASK_SECRET: "test-secret-key-for-ci"
+        REDIS_URL: "redis://localhost:6379/0"
+        RECAPTCHA_PUBLIC_KEY: "test-public-key"
+        RECAPTCHA_PRIVATE_KEY: "test-private-key"
+        AWS_ACCESS_KEY_ID: "test-access-key"
+        AWS_SECRET_ACCESS_KEY: "test-secret-key"
+        DISABLE_CAPTCHA: "true"
+        DEVELOPMENT: "true"
+      run: |
+        docker compose -f docker-compose-dev.yaml up -d --wait
+        sleep 30  # Give services time to fully start
+
+    - name: Wait for application to be ready
+      run: |
+        timeout 60 bash -c 'until curl -s http://localhost:8000/health || curl -s http://localhost:8000; do sleep 2; done'
+
+    - name: Run Selenium tests
+      env:
+        TEST_APP_URL: "http://localhost:8000"
+        PYTHONPATH: .
+      run: |
+        source .venv/bin/activate
+        pytest tests/test_ui_selenium.py -v --tb=short
+
+    - name: Stop application services
+      if: always()
+      run: |
+        docker compose -f docker-compose-dev.yaml logs
+        docker compose -f docker-compose-dev.yaml down
+
   security-scan:
     runs-on: ubuntu-latest
     continue-on-error: true

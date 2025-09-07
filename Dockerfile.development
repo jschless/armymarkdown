@@ -13,8 +13,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     xz-utils
 
 # Install uv
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh
-ENV PATH="/root/.cargo/bin:$PATH"
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
+    /root/.local/bin/uv --version
+ENV PATH="/root/.local/bin:$PATH"
 
 RUN fc-cache -f -v
 
@@ -34,11 +35,11 @@ RUN apt-get clean \
 ENV PYTHONUNBUFFERED=1
 ENV DEVELOPMENT=1
 
+WORKDIR /app
+
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen
 
-COPY . /app
+COPY . .
 
-WORKDIR /app
-
-CMD gunicorn -w 3 -b 0.0.0.0:8000 -t 360 --reload app:app
+CMD uv run gunicorn -w 3 -b 0.0.0.0:8000 -t 360 --reload app:app

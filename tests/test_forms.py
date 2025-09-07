@@ -579,9 +579,7 @@ class TestFormEdgeCases:
             "password2": "Password123",
         }
 
-        form_data = MultiDict(
-            [(k, v) for k, v in unicode_data.items()] + [("csrf_token", "dummy")]
-        )
+        form_data = MultiDict([*list(unicode_data.items()), ("csrf_token", "dummy")])
 
         with (
             app_context.test_request_context(),
@@ -596,7 +594,7 @@ class TestFormEdgeCases:
             assert form.username.data == unicode_data["username"]
             assert form.email.data == unicode_data["email"]
             # Should validate successfully with valid data
-            is_valid = form.validate()
+            form.validate()
             # May fail due to other validation but should not crash
 
     def test_form_with_very_large_input(self, app_context):
@@ -618,7 +616,7 @@ class TestFormEdgeCases:
                 assert True
             except Exception as e:
                 # Should not crash with unhandled exceptions
-                assert False, f"Form validation crashed with large input: {e}"
+                raise AssertionError(f"Form validation crashed with large input: {e}")
 
     def test_empty_form_submission(self, app_context):
         """Test completely empty form submission."""

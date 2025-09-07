@@ -13,9 +13,9 @@ function findHighest(prefix) {
 
 let forCount = findHighest('for');
 let thruCount = findHighest('thru');
-let encCount = findHighest('enc');
-let distroCount = findHighest('distro');
-let cfCount = findHighest('cf');
+const encCount = findHighest('enc');
+const distroCount = findHighest('distro');
+const cfCount = findHighest('cf');
 
 const suffixToVarMap = {
     'for': forCount,
@@ -32,7 +32,6 @@ function addAddress(fields, is_for) {
     const newDiv = document.createElement('div');
     newDiv.classList.add('six');
     newDiv.classList.add('columns');
-    console.log(forCount, thruCount);
     if (is_for) {
         forCount++;
     } else {
@@ -76,7 +75,6 @@ function addAddress(fields, is_for) {
 
     newDiv.append(document.createElement('hr'));
     newRow.append(newDiv);
-    console.log('trying to add', newDiv);
     const whereToAdd = is_for ? 'forFieldContainer' : 'thruFieldContainer';
     document.getElementById(whereToAdd).prepend(newRow);
 
