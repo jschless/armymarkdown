@@ -18,8 +18,8 @@ from flask import (
 from flask_talisman import Talisman
 
 from armymarkdown import memo_model, writer
-import login
 from db.db import init_db
+import login
 
 # Load environment variables from .env file
 load_dotenv()
