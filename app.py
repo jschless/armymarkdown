@@ -18,6 +18,7 @@ from flask import (
 from flask_talisman import Talisman
 
 from armymarkdown import memo_model, writer
+import login
 from db.db import init_db
 
 # Load environment variables from .env file
@@ -69,8 +70,6 @@ s3 = boto3.client(
     aws_secret_access_key=get_required_env_var("AWS_SECRET_ACCESS_KEY"),
     config=boto3.session.Config(region_name="us-east-2", signature_version="s3v4"),
 )
-
-import login
 
 
 @app.after_request
