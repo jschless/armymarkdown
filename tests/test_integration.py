@@ -2,10 +2,11 @@
 Integration tests for Army Memo Maker - testing complete workflows.
 """
 
-import pytest
-import tempfile
 import os
-from unittest.mock import patch, Mock
+import tempfile
+from unittest.mock import Mock, patch
+
+import pytest
 
 
 class TestCompleteUserWorkflow:
@@ -172,7 +173,7 @@ class TestErrorRecoveryWorkflows:
 
     def test_invalid_memo_content_handling(self, client, invalid_memo_samples):
         """Test handling of invalid memo content."""
-        for sample_name, invalid_content in invalid_memo_samples.items():
+        for _sample_name, invalid_content in invalid_memo_samples.items():
             process_response = client.post(
                 "/process", data={"memo_text": invalid_content}
             )
@@ -270,10 +271,10 @@ class TestSecurityWorkflows:
     def test_session_security_workflow(self, client):
         """Test session security throughout user workflow."""
         # Test session fixation prevention
-        response1 = client.get("/login")
+        client.get("/login")
 
         with client.session_transaction() as sess:
-            old_session_id = sess.get("_id")  # Flask session ID if available
+            sess.get("_id")  # Flask session ID if available
 
         # Login should regenerate session
         with (
@@ -383,13 +384,7 @@ class TestEndToEndFeatureTests:
             response = client.get(page)
             if response.status_code == 200:
                 # Should contain theme toggle elements or dark mode CSS variables
-                data_lower = response.data.decode().lower()
-                has_dark_mode = (
-                    "theme" in data_lower
-                    or "dark" in data_lower
-                    or "--color" in data_lower
-                    or "data-theme" in data_lower
-                )
+                response.data.decode().lower()
                 # Dark mode integration present in most pages
 
     def test_captcha_integration_workflow(self, client):
@@ -446,9 +441,7 @@ class TestEndToEndFeatureTests:
                 accessibility_features = ["aria-", "role=", "alt=", "label", "title="]
 
                 # Should have some accessibility features
-                has_accessibility = any(
-                    feature in html_content for feature in accessibility_features
-                )
+                any(feature in html_content for feature in accessibility_features)
                 # Most pages should have basic accessibility features
 
     def test_error_handling_integration(self, client):

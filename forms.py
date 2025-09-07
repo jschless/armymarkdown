@@ -1,11 +1,10 @@
-import os
 from flask_wtf import FlaskForm
 from flask_wtf.recaptcha import RecaptchaField
+from wtforms import PasswordField, StringField, SubmitField
+from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError
 
-from wtforms import StringField, PasswordField, BooleanField, SubmitField
-from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, Length
-import sqlalchemy as sa
-from db.schema import User, db
+from db.schema import User
+
 # Removed local_config import - using environment variables instead
 
 

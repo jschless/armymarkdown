@@ -13,16 +13,16 @@ function findHighest(prefix) {
 
 let forCount = findHighest('for');
 let thruCount = findHighest('thru');
-let encCount = findHighest('enc');
-let distroCount = findHighest('distro');
-let cfCount = findHighest('cf');
+const encCount = findHighest('enc');
+const distroCount = findHighest('distro');
+const cfCount = findHighest('cf');
 
 const suffixToVarMap = {
     'for': forCount,
     'thru': thruCount,
     'enc': encCount,
     'distro': distroCount,
-    'cf': cfCount   
+    'cf': cfCount
 };
 
 function addAddress(fields, is_for) {
@@ -32,7 +32,6 @@ function addAddress(fields, is_for) {
     const newDiv = document.createElement('div');
     newDiv.classList.add('six');
     newDiv.classList.add('columns');
-    console.log(forCount, thruCount);
     if (is_for) {
         forCount++;
     } else {
@@ -40,7 +39,7 @@ function addAddress(fields, is_for) {
     }
 
     const suffix = is_for ? forCount : thruCount;
-    
+
     fields.forEach(function(field) {
         const label = document.createElement('label');
         label.textContent = field.label;
@@ -57,7 +56,7 @@ function addAddress(fields, is_for) {
         input.classList.add('u-full-width');
         input.classList.add('center');
 
-	
+
         newDiv.append(label);
         newDiv.append(input);
         newDiv.append(document.createElement('br')); // Add line break
@@ -76,7 +75,6 @@ function addAddress(fields, is_for) {
 
     newDiv.append(document.createElement('hr'));
     newRow.append(newDiv);
-    console.log('trying to add', newDiv);
     const whereToAdd = is_for ? 'forFieldContainer' : 'thruFieldContainer';
     document.getElementById(whereToAdd).prepend(newRow);
 
@@ -91,7 +89,7 @@ function removeAuthority() {
 }
 
 function addSuspense(){
-    addSingleField('Suspense Date', 'SUSPENSE', '08 May 2026', 'suspense', 'removeSuspense', removeSuspense, 'suspenseDiv', 'addSuspense');   
+    addSingleField('Suspense Date', 'SUSPENSE', '08 May 2026', 'suspense', 'removeSuspense', removeSuspense, 'suspenseDiv', 'addSuspense');
 }
 
 function removeSuspense(){
@@ -99,7 +97,7 @@ function removeSuspense(){
 }
 
 function addTitle(){
-    addSingleField('Title', 'TITLE', 'Lost Private', 'signature', 'removeTitle', removeTitle, 'titleDiv', 'addTitle');   
+    addSingleField('Title', 'TITLE', 'Lost Private', 'signature', 'removeTitle', removeTitle, 'titleDiv', 'addTitle');
 }
 
 function removeTitle(){
@@ -114,7 +112,7 @@ function addSingleField(name, id, value, targetDivId, deleteId, removeFunc, divI
     label.classList.add('u-full-width');
     label.classList.add('center');
     label.setAttribute('for', 'TITLE');
-    
+
     const input = document.createElement('input');
     input.type = 'text';
     input.id = id;
@@ -122,10 +120,10 @@ function addSingleField(name, id, value, targetDivId, deleteId, removeFunc, divI
     input.value = value;
     input.classList.add('u-full-width');
     input.classList.add('center');
-    
+
     div.append(label);
     div.append(input);
-    
+
     const deleteButton = document.createElement('button');
     const addButton = document.getElementById(addId);
 
@@ -136,7 +134,7 @@ function addSingleField(name, id, value, targetDivId, deleteId, removeFunc, divI
     deleteButton.classList.add('center');
     deleteButton.id = deleteId;
     deleteButton.addEventListener('click', removeFunc);
-    
+
     div.append(deleteButton);
     document.getElementById(targetDivId).append(div);
 }
@@ -172,7 +170,7 @@ function addField(suffix, labelText, inputValue, divId) {
     const label = document.createElement('label');
     suffixToVarMap[suffix]++;
     const count = suffixToVarMap[suffix];
-    
+
     label.textContent = labelText;
     label.classList.add('u-full-width');
     label.classList.add('center');
@@ -203,7 +201,7 @@ function addField(suffix, labelText, inputValue, divId) {
     });
     div.append(deleteButton);
     div.append(document.createElement('hr'));
-    document.getElementById(divId).prepend(div);      
+    document.getElementById(divId).prepend(div);
 }
 
 function addForAddress() {
@@ -229,11 +227,11 @@ function addThruAddress() {
 
 
 document.addEventListener('DOMContentLoaded', function() {
-    const currentDate = new Date();    
-    const options = { day: 'numeric', month: 'long', year: 'numeric' };    
+    const currentDate = new Date();
+    const options = { day: 'numeric', month: 'long', year: 'numeric' };
     const formattedDate = currentDate.toLocaleDateString('en-GB', options);
     document.getElementById('DATE').value = formattedDate;
-    
+
 
     document.getElementById('addFOR').addEventListener('click', addForAddress);
     document.getElementById('addTHRU').addEventListener('click', addThruAddress);
@@ -264,10 +262,10 @@ makeTabsWork('MEMO_TEXT');
 
 document.addEventListener('DOMContentLoaded', function() {
     const saveProgressButton = document.getElementById('save-progress');
-    
+
     if (saveProgressButton) {
         saveProgressButton.addEventListener('click', function(e) {
-            e.preventDefault(); 
+            e.preventDefault();
             saveData();
         });
     }
@@ -276,8 +274,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (memoForm) {
         memoForm.addEventListener('submit', function(e) {
-            e.preventDefault(); 
-            buttonPress('/process', updateProgress); 
+            e.preventDefault();
+            buttonPress('/process', updateProgress);
         });
     }
 });

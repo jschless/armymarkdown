@@ -1,9 +1,7 @@
 import os
 import sys
 
-
-from . import memo_model
-from . import writer
+from . import memo_model, writer
 
 
 def main():

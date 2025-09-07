@@ -8,7 +8,7 @@ This application now uses environment variables instead of a local configuration
 
 1. **FLASK_SECRET** - Secret key for Flask sessions and CSRF protection
 2. **RECAPTCHA_PUBLIC_KEY** - Google reCAPTCHA public key
-3. **RECAPTCHA_PRIVATE_KEY** - Google reCAPTCHA private key  
+3. **RECAPTCHA_PRIVATE_KEY** - Google reCAPTCHA private key
 4. **REDIS_URL** - Redis connection URL (defaults to `redis://redis:6379/0`)
 5. **AWS_ACCESS_KEY_ID** - AWS access key for S3 storage
 6. **AWS_SECRET_ACCESS_KEY** - AWS secret key for S3 storage

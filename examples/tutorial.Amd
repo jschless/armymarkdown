@@ -27,9 +27,9 @@ SUBJECT = Army Markdown Tutorial
 
 # Insert bolds, italics, or underlines as follows. **text** will make text bold, *text* will make it in italics, and ***text*** will underline it.
 
-- **Look** at *this* special ***formatting***. 
+- **Look** at *this* special ***formatting***.
 
-You can also add a second paragraph to the same bullet by simply skipping a line *without* a new hyphen. 
+You can also add a second paragraph to the same bullet by simply skipping a line *without* a new hyphen.
 
 - Press the "Create Memo PDF" button when you're done and wait for your memo to load! Don't close the tab!
 

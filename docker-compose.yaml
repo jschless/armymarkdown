@@ -1,12 +1,10 @@
-version: '3'
-
 services:
   redis:
     image: redis:latest
     restart: unless-stopped
 
   flask_app:
-    build: 
+    build:
       context: ./
       dockerfile: Dockerfile.production
     ports:
@@ -28,7 +26,7 @@ services:
     restart: unless-stopped
 
   celery:
-    build: 
+    build:
       context: ./
       dockerfile: Dockerfile.production
     volumes:

@@ -1,14 +1,16 @@
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, field, fields
 from datetime import date
-import re
-import pandas as pd
 from io import StringIO
+import re
+
+import pandas as pd
 from tabulate import tabulate
 
-from armymarkdown.utils import branch_to_abbrev, abbrev_to_branch
 from armymarkdown.utils import (
-    key_converter,
+    abbrev_to_branch,
+    branch_to_abbrev,
     inv_key_converter,
+    key_converter,
     list_keys,
     optional_keys,
 )
@@ -39,7 +41,7 @@ class MemoModel:
 
     memo_type: str = "MEMORANDUM FOR RECORD"
     # options: MFR, MEMORANDUM FOR, MEMORANDUM THRU
-    todays_date: str = date.today().strftime("%d %B %Y")
+    todays_date: str = field(default_factory=lambda: date.today().strftime("%d %B %Y"))
 
     # optional, less frequently used parameters
     for_unit_name: list = None
@@ -70,10 +72,7 @@ class MemoModel:
             )
 
     def _check_branch(self, branch):
-        if (
-            branch not in abbrev_to_branch.keys()
-            and branch not in branch_to_abbrev.keys()
-        ):
+        if branch not in abbrev_to_branch and branch not in branch_to_abbrev:
             return f"{branch} is mispelled or not a valid Army branch"
 
     def _check_admin(self):
@@ -106,6 +105,7 @@ class MemoModel:
                     self.for_unit_name,
                     self.for_unit_street_address,
                     self.for_unit_city_state_zip,
+                    strict=False,
                 )
             )
 
@@ -115,6 +115,7 @@ class MemoModel:
                     self.thru_unit_name,
                     self.thru_unit_street_address,
                     self.thru_unit_city_state_zip,
+                    strict=False,
                 )
             )
 
@@ -126,7 +127,7 @@ class MemoModel:
 
     def to_amd(self):
         str_builder = ""
-        present_fields = fields(self)
+        fields(self)
         for write_key, attrib in [
             ("ORGANIZATION_NAME", "unit_name"),
             ("ORGANIZATION_STREET_ADDRESS", "unit_street_address"),
@@ -148,6 +149,7 @@ class MemoModel:
                 self.for_unit_name,
                 self.for_unit_street_address,
                 self.for_unit_city_state_zip,
+                strict=False,
             ):
                 str_builder += "\n"
                 str_builder += f"FOR_ORGANIZATION_NAME = {a}\n"
@@ -159,6 +161,7 @@ class MemoModel:
                 self.thru_unit_name,
                 self.thru_unit_street_address,
                 self.thru_unit_city_state_zip,
+                strict=False,
             ):
                 str_builder += "\n"
                 str_builder += f"THRU_ORGANIZATION_NAME = {a}\n"
@@ -238,7 +241,7 @@ class MemoModel:
 
     @classmethod
     def from_file(cls, filepath):
-        with open(filepath, "r") as f:
+        with open(filepath) as f:
             file_lines = f.readlines()
 
         return parse_lines(file_lines)
@@ -278,7 +281,7 @@ def parse_memo_body(lines):
         line_text = add_latex_escape_chars(line[begin_line:].strip())
         proper_indent_level = master_list  # start at level 0
 
-        for i in list(filter(lambda x: x < dash_loc, sorted(list(indent_levels)))):
+        for _i in list(filter(lambda x: x < dash_loc, sorted(indent_levels))):
             if isinstance(proper_indent_level[-1], list):
                 proper_indent_level = proper_indent_level[-1]
 
@@ -305,8 +308,8 @@ def parse_lines(file_lines):
         )
     )
     try:
-        memo_begin_loc = [i for i, s in enumerate(file_lines) if "SUBJECT" in s][0]
-    except IndexError:
+        memo_begin_loc = next(i for i, s in enumerate(file_lines) if "SUBJECT" in s)
+    except StopIteration:
         return (
             "ERROR: missing the keyword SUBJECT. "
             "Please add SUBJECT=(your subject) above the start of your memo"
@@ -415,5 +418,5 @@ def process_table(line_list):
             .iloc[1:]
         )
         return tabulate(table, table.columns, tablefmt="latex")
-    except Exception as e:
+    except Exception:
         return ""

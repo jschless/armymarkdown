@@ -49,7 +49,7 @@
 %   % signatureblock
 % %  % \begin{minipage}[t]{0.49\textwidth}
 %   %   % consider changing this to an \addtosig{}
-%   %   % \am@author\\ 
+%   %   % \am@author\\
 %   %   % \am@rank, \am@branch\\
 %   %   % \am@title
 % %  % \end{minipage}
@@ -416,7 +416,7 @@
   }{}
   \thispagestyle{plain}%
 \begin{picture}(0,0)
-\setlength{\unitlength}{1pc}    	
+\setlength{\unitlength}{1pc}
 \put(-2.8,2.8){\includegraphics[height=1in]{./latex/DA_LOGO}}
 \end{picture}
 \begin{picture}(0,0)
@@ -433,7 +433,7 @@
 \parbox{\textwidth}{\centering \textbf{\getnthelement{2}}}}%
 \put(0, 4.4){%
 \parbox{\textwidth}{\centering \textbf{\getnthelement{3}}}}%
-\end{picture} 
+\end{picture}
 
   \par%there must be a \par here, or things break!
   \vspace{-2\baselineskip}

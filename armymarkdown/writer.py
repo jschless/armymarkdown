@@ -1,5 +1,5 @@
-import subprocess
 import os
+import subprocess
 
 
 class MemoWriter:
@@ -22,15 +22,24 @@ class MemoWriter:
 
     def generate_memo(self):
         import time
-        print(f"[{time.strftime('%H:%M:%S')}] Starting LaTeX compilation for {self.output_file}")
-        result = subprocess.run(["lualatex", self.output_file], capture_output=True, text=True)
-        print(f"[{time.strftime('%H:%M:%S')}] LaTeX compilation finished. Return code: {result.returncode}")
+
+        print(
+            f"[{time.strftime('%H:%M:%S')}] Starting LaTeX compilation for {self.output_file}"
+        )
+        result = subprocess.run(
+            ["lualatex", self.output_file], capture_output=True, text=True
+        )
+        print(
+            f"[{time.strftime('%H:%M:%S')}] LaTeX compilation finished. Return code: {result.returncode}"
+        )
         if result.stdout:
             print(f"LaTeX stdout: {result.stdout[-500:]}")  # Last 500 chars
         if result.stderr:
             print(f"LaTeX stderr: {result.stderr[-500:]}")  # Last 500 chars
         if result.returncode != 0:
-            raise subprocess.CalledProcessError(result.returncode, result.args, result.stdout, result.stderr)
+            raise subprocess.CalledProcessError(
+                result.returncode, result.args, result.stdout, result.stderr
+            )
 
     def _write_for_lines(self) -> list:
         ans = []
@@ -43,6 +52,7 @@ class MemoWriter:
                 self.data.for_unit_name,
                 self.data.for_unit_street_address,
                 self.data.for_unit_city_state_zip,
+                strict=False,
             ):
                 if len(self.data.for_unit_name) == 1:
                     ans.append(f"\\memoline{{{prefix} {name}, {add}, {csz}}}")
@@ -56,6 +66,7 @@ class MemoWriter:
             self.data.thru_unit_name,
             self.data.thru_unit_street_address,
             self.data.thru_unit_city_state_zip,
+            strict=False,
         ):
             if len(self.data.thru_unit_name) == 1:
                 ans.append(f"\\addmemoline{{MEMORANDUM THRU {name}, {add}, {csz} }}")
@@ -129,7 +140,7 @@ class MemoWriter:
         s4 = -3  # end before the bottom rule
         return "\n".join(
             [
-                s.replace("\\\\", "\\\\\hline")
+                s.replace("\\\\", "\\\\\\hline")
                 if i >= s3 and i < len(new_a.split("\n")) + s4
                 else s
                 for i, s in enumerate(new_a.split("\n"))

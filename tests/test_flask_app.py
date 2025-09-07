@@ -2,11 +2,12 @@
 Comprehensive tests for Flask application routes and functionality.
 """
 
-import pytest
 import json
 import os
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
+
 from flask import url_for
+import pytest
 
 
 class TestRoutes:
@@ -373,5 +374,4 @@ class TestConfigurationHandling:
     def test_captcha_enable_config(self, app_context):
         """Test CAPTCHA enabled configuration."""
         # This would test with captcha enabled
-        app = app_context
         # Configuration should reflect environment

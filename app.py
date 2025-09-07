@@ -1,24 +1,25 @@
-import random
+import logging
 import os
-import sys
+import random
+
+import boto3
+from botocore.exceptions import ClientError
+from celery import Celery
 from dotenv import load_dotenv
 from flask import (
     Flask,
+    flash,
+    jsonify,
+    redirect,
     render_template,
     request,
     url_for,
-    jsonify,
-    redirect,
-    session,
-    flash,
 )
-from celery import Celery
-import logging
-import boto3
-from botocore.exceptions import ClientError
-from armymarkdown import memo_model, writer
 from flask_talisman import Talisman
+
+from armymarkdown import memo_model, writer
 from db.db import init_db
+import login
 
 # Load environment variables from .env file
 load_dotenv()
@@ -46,6 +47,12 @@ app.config["DISABLE_CAPTCHA"] = (
     get_optional_env_var("DISABLE_CAPTCHA", "false").lower() == "true"
 )
 
+# Initialize login manager
+login.login_manager.init_app(app)
+
+# Register login routes
+login.register_login_routes(app)
+
 celery = Celery(
     app.name,
     broker=get_required_env_var("REDIS_URL"),
@@ -70,8 +77,6 @@ s3 = boto3.client(
     config=boto3.session.Config(region_name="us-east-2", signature_version="s3v4"),
 )
 
-import login
-
 
 @app.after_request
 def add_csp(response):
@@ -93,7 +98,7 @@ def index():
 
     return render_template(
         "index.html",
-        memo_text=open(os.path.join("./examples", example_file), "r").read(),
+        memo_text=open(os.path.join("./examples", example_file)).read(),
     )
 
 
@@ -203,7 +208,7 @@ def process():
                 m = memo_model.MemoModel.from_form(request.form.to_dict())
                 if not isinstance(m, str):
                     return render_template("memo_form.html", **m.to_form())
-            except:
+            except Exception:
                 pass
             return redirect(url_for("index"))
 
@@ -224,7 +229,7 @@ def process_task(task, result_func):
         # Task failed with an exception
         response = {
             "state": task.state,
-            "status": f"Task failed: {str(task.info)}",
+            "status": f"Task failed: {task.info!s}",
             "error": str(task.info),
         }
         app.logger.error(f"Task {task.id} failed: {task.info}")
@@ -232,7 +237,7 @@ def process_task(task, result_func):
         # Task is being retried
         response = {
             "state": task.state,
-            "status": f"Task failed, retrying... ({str(task.info)})",
+            "status": f"Task failed, retrying... ({task.info!s})",
         }
     elif task.state == "REVOKED":
         # Task was revoked/cancelled
@@ -290,11 +295,11 @@ def upload_file_to_s3(file, aws_path, acl="public-read"):
     except Exception as e:
         app.logger.error(f"Something Happened: {e}")
         ret_val = e
-    finally:
-        # delete file after uploads
-        if os.path.exists(file):
-            os.remove(file)
-        return ret_val
+
+    # delete file after uploads
+    if os.path.exists(file):
+        os.remove(file)
+    return ret_val
 
 
 @celery.task(name="create_memo", bind=True)

@@ -2,11 +2,12 @@
 Tests for authentication and user management functionality.
 """
 
-import pytest
-import tempfile
 import os
 import sqlite3
-from unittest.mock import patch, Mock
+import tempfile
+from unittest.mock import Mock, patch
+
+import pytest
 from werkzeug.security import generate_password_hash
 
 
@@ -17,7 +18,7 @@ class TestUserAuthentication:
         """Test authentication with valid credentials."""
         # Since the actual login module uses Flask-Login and database models,
         # we'll test the overall authentication behavior instead
-        from werkzeug.security import generate_password_hash, check_password_hash
+        from werkzeug.security import check_password_hash, generate_password_hash
 
         # Test password hashing functionality that would be used
         password = "test_password"
@@ -110,7 +111,7 @@ class TestUserRegistration:
 
     def test_password_hashing(self):
         """Test that passwords are properly hashed."""
-        from werkzeug.security import generate_password_hash, check_password_hash
+        from werkzeug.security import check_password_hash, generate_password_hash
 
         password = "test_password_123"
         hashed = generate_password_hash(password)
@@ -185,39 +186,61 @@ class TestSessionManagement:
         # In case of test environment differences, also accept 200 if it redirects to login page content
         if response.status_code == 200:
             # Check if the response contains login-related content (indicating redirect worked)
-            response_text = response.data.decode('utf-8').lower()
-            assert any(keyword in response_text for keyword in ['login', 'sign in', 'username', 'password']), \
+            response_text = response.data.decode("utf-8").lower()
+            assert any(
+                keyword in response_text
+                for keyword in ["login", "sign in", "username", "password"]
+            ), (
                 f"Expected redirect to login but got 200 with content: {response_text[:200]}"
+            )
         else:
-            assert response.status_code in [302, 401], \
-                f"Expected 302/401 but got {response.status_code}"
+            assert response.status_code in [
+                302,
+                401,
+            ], f"Expected 302/401 but got {response.status_code}"
 
 
 class TestDocumentManagement:
     """Test document saving and retrieval."""
 
-    @patch("db.schema.db.session")
-    def test_save_document_logged_in(self, mock_db_session, auth_user):
+    @patch("login.db.session")
+    @patch("login.Document")
+    def test_save_document_logged_in(
+        self, mock_document_class, mock_db_session, auth_user, test_app
+    ):
         """Test saving document when logged in."""
         # Mock database operations
         mock_db_session.add = Mock()
         mock_db_session.commit = Mock()
+        mock_db_session.rollback = Mock()
+
+        # Mock the Document constructor to return a mock instance
+        mock_document_instance = Mock()
+        mock_document_class.return_value = mock_document_instance
+
+        # Mock existing document query to return None (no duplicate)
+        mock_document_class.query.filter_by.return_value.first.return_value = None
+        mock_document_class.query.filter_by.return_value.count.return_value = 0
 
         # Authenticate user
         auth_user.login(user_id=1, username="testuser")
 
-        # Mock existing document query to return None (no duplicate)
-        with patch("db.schema.Document.query") as mock_query:
-            mock_query.filter_by.return_value.first.return_value = None
-            mock_query.filter_by.return_value.count.return_value = 0
-
+        # Run within application context
+        with test_app.app_context():
             from login import save_document
 
             result = save_document("Test memo content")
 
-        assert isinstance(result, str)
-        # Should indicate success
-        assert "saved" in result.lower() or "success" in result.lower()
+            assert isinstance(result, str)
+            # Should indicate success
+            assert "saved" in result.lower() or "success" in result.lower()
+
+            # Verify the Document was created and added to session
+            mock_document_class.assert_called_once_with(
+                content="Test memo content", user_id=1
+            )
+            mock_db_session.add.assert_called_once_with(mock_document_instance)
+            mock_db_session.commit.assert_called_once()
 
     def test_save_document_not_logged_in(self, auth_user):
         """Test saving document when not logged in."""
@@ -325,7 +348,7 @@ class TestDatabaseOperations:
         # Create user
         cursor.execute(
             """
-            INSERT INTO users (username, email, password_hash) 
+            INSERT INTO users (username, email, password_hash)
             VALUES (?, ?, ?)
         """,
             ("testuser", "test@example.com", generate_password_hash("password")),
@@ -368,7 +391,7 @@ class TestDatabaseOperations:
         # First create a user
         cursor.execute(
             """
-            INSERT INTO users (username, email, password_hash) 
+            INSERT INTO users (username, email, password_hash)
             VALUES (?, ?, ?)
         """,
             ("testuser", "test@example.com", generate_password_hash("password")),
@@ -378,7 +401,7 @@ class TestDatabaseOperations:
         # Create document
         cursor.execute(
             """
-            INSERT INTO documents (user_id, title, content) 
+            INSERT INTO documents (user_id, title, content)
             VALUES (?, ?, ?)
         """,
             (user_id, "Test Document", "Test content"),

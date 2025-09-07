@@ -3,13 +3,18 @@ FROM ubuntu:22.04
 RUN echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | debconf-set-selections
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 python3-pip git \
-    fontconfig ttf-mscorefonts-installer \ 
+    python3.11 python3.11-venv curl git \
+    fontconfig ttf-mscorefonts-installer \
     texlive-base \
     texlive-latex-base \
     texlive-luatex \
     latexmk \
     xz-utils
+
+# Install uv
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
+    /root/.local/bin/uv --version
+ENV PATH="/root/.local/bin:$PATH"
 
 RUN fc-cache -f -v
 
@@ -32,8 +37,8 @@ RUN apt-get clean \
 
 ENV PYTHONUNBUFFERED=1
 
-COPY requirements.txt .
-RUN pip install -r requirements.txt
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-dev
 
 COPY . /app
 

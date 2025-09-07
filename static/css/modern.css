@@ -5,15 +5,15 @@
   --color-primary: #ff6b35;
   --color-primary-light: #ff8c5a;
   --color-primary-dark: #e5531f;
-  
+
   --color-secondary: #2563eb;
   --color-secondary-light: #3b82f6;
   --color-secondary-dark: #1d4ed8;
-  
+
   --color-accent: #10b981;
   --color-warning: #f59e0b;
   --color-error: #ef4444;
-  
+
   /* Neutral Colors - Light Mode */
   --color-white: #ffffff;
   --color-gray-50: #f9fafb;
@@ -26,7 +26,7 @@
   --color-gray-700: #374151;
   --color-gray-800: #1f2937;
   --color-gray-900: #111827;
-  
+
   /* Background Colors */
   --bg-primary: var(--color-white);
   --bg-secondary: var(--color-gray-50);
@@ -34,11 +34,11 @@
   --text-secondary: var(--color-gray-600);
   --border-primary: var(--color-gray-200);
   --border-secondary: var(--color-gray-300);
-  
+
   /* Typography */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
-  
+
   --font-size-xs: 0.75rem;   /* 12px */
   --font-size-sm: 0.875rem;  /* 14px */
   --font-size-base: 1rem;    /* 16px */
@@ -47,16 +47,16 @@
   --font-size-2xl: 1.5rem;   /* 24px */
   --font-size-3xl: 1.875rem; /* 30px */
   --font-size-4xl: 2.25rem;  /* 36px */
-  
+
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
-  
+
   --line-height-tight: 1.25;
   --line-height-normal: 1.5;
   --line-height-relaxed: 1.75;
-  
+
   /* Spacing */
   --spacing-px: 1px;
   --spacing-0: 0;
@@ -72,13 +72,13 @@
   --spacing-16: 4rem;     /* 64px */
   --spacing-20: 5rem;     /* 80px */
   --spacing-24: 6rem;     /* 96px */
-  
+
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  
+
   /* Border Radius */
   --radius-sm: 0.25rem;   /* 4px */
   --radius-md: 0.375rem;  /* 6px */
@@ -86,12 +86,12 @@
   --radius-xl: 0.75rem;   /* 12px */
   --radius-2xl: 1rem;     /* 16px */
   --radius-full: 9999px;
-  
+
   /* Transitions */
   --transition-fast: 150ms ease;
   --transition-normal: 200ms ease;
   --transition-slow: 300ms ease;
-  
+
   /* Layout */
   --max-width-xs: 20rem;   /* 320px */
   --max-width-sm: 24rem;   /* 384px */
@@ -120,7 +120,7 @@
   --color-gray-700: #f3f4f6;
   --color-gray-800: #f9fafb;
   --color-gray-900: #ffffff;
-  
+
   /* Background Colors - Dark Mode */
   --bg-primary: #111827;
   --bg-secondary: #1f2937;
@@ -306,7 +306,7 @@ body {
   .mobile-nav-toggle {
     display: block;
   }
-  
+
   .modern-nav-links {
     display: none;
     position: absolute;
@@ -320,11 +320,11 @@ body {
     gap: var(--spacing-2);
     box-shadow: var(--shadow-lg);
   }
-  
+
   .modern-nav-links.open {
     display: flex;
   }
-  
+
   .modern-nav-links a {
     width: 100%;
     text-align: center;
@@ -673,7 +673,7 @@ textarea.u-full-height {
   top: 0;
   width: 50%;
   height: 100%;
-  background: linear-gradient(90deg, 
+  background: linear-gradient(90deg,
     transparent,
     var(--color-primary-light),
     var(--color-primary),
@@ -713,7 +713,7 @@ textarea.u-full-height {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(90deg, 
+  background: linear-gradient(90deg,
     transparent 30%,
     rgba(255, 255, 255, 0.5) 50%,
     transparent 70%
@@ -1077,13 +1077,13 @@ hr {
 
 /* Fade-in Animation */
 @keyframes fadeIn {
-  from { 
-    opacity: 0; 
-    transform: translateY(20px); 
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
-  to { 
-    opacity: 1; 
-    transform: translateY(0); 
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

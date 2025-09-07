@@ -189,7 +189,7 @@ DEVELOPMENT=true
 The `pyproject.toml` file contains configuration for:
 - **Project metadata** and dependencies
 - **Ruff** linting and formatting rules
-- **MyPy** type checking settings  
+- **MyPy** type checking settings
 - **Pytest** test configuration
 - **Coverage** reporting settings
 - **Bandit** security scanning
@@ -280,7 +280,7 @@ Use pytest markers for test organization:
 def test_expensive_operation():
     pass
 
-@pytest.mark.integration  
+@pytest.mark.integration
 def test_full_workflow():
     pass
 ```

@@ -14,7 +14,7 @@
   <!-- Stylesheets -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/normalize.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/modern.css') }}">
-  
+
   <!-- Legacy fallback -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
 
@@ -37,7 +37,7 @@
   <header class="modern-header">
     <nav class="modern-nav">
       <a href="/" class="logo">Army Memo Maker</a>
-      
+
       <!-- Mobile menu toggle -->
       <button class="mobile-nav-toggle" aria-label="Toggle navigation" id="mobile-nav-toggle">
         <span></span>
@@ -113,13 +113,13 @@
       // Mobile nav
       const toggle = document.getElementById('mobile-nav-toggle');
       const navLinks = document.getElementById('nav-links');
-      
+
       if (toggle && navLinks) {
         toggle.addEventListener('click', function() {
           navLinks.classList.toggle('open');
           toggle.classList.toggle('active');
         });
-        
+
         // Close mobile menu when clicking on a link
         navLinks.addEventListener('click', function(e) {
           if (e.target.tagName === 'A') {
@@ -128,7 +128,7 @@
           }
         });
       }
-      
+
       // Dark mode functionality
       initTheme();
     });
@@ -137,12 +137,12 @@
     window.showStatusMessage = function(message, type = 'info') {
       const statusAlert = document.getElementById('status-alert');
       const statusElement = document.getElementById('status');
-      
+
       if (statusAlert && statusElement) {
         statusElement.textContent = message;
         statusAlert.className = `modern-alert modern-alert-${type} fade-in`;
         statusAlert.style.display = 'flex';
-        
+
         // Auto-hide after 5 seconds for non-error messages
         if (type !== 'error') {
           setTimeout(() => {
@@ -156,50 +156,40 @@
     function initTheme() {
       const themeToggle = document.getElementById('theme-toggle');
       const themeIcon = document.querySelector('.theme-icon');
-      
+
       // Check for saved theme preference or default to light mode
       const savedTheme = localStorage.getItem('theme') || 'light';
       const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-      
+
       // Apply saved theme
       if (savedTheme !== currentTheme) {
         document.documentElement.setAttribute('data-theme', savedTheme);
         updateThemeIcon(savedTheme);
       }
-      
+
       // Theme toggle event listener
       if (themeToggle) {
         themeToggle.addEventListener('click', () => {
           const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
           const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-          
+
           document.documentElement.setAttribute('data-theme', newTheme);
           localStorage.setItem('theme', newTheme);
           updateThemeIcon(newTheme);
         });
       }
-      
+
       function updateThemeIcon(theme) {
         if (themeIcon) {
           themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
         }
       }
-      
+
       // Initialize icon
       updateThemeIcon(savedTheme);
     }
 
     // Progress functions moved to tasks.js
-
-    function updateProgress(percentage) {
-      const fill = document.getElementById('progress-fill');
-      const text = document.getElementById('progress-percentage');
-      
-      if (fill && text) {
-        fill.style.width = percentage + '%';
-        text.textContent = Math.round(percentage) + '%';
-      }
-    }
   </script>
 
   {% block scripts %}{% endblock %}
