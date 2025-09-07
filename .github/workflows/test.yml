@@ -197,7 +197,9 @@ jobs:
         DISABLE_CAPTCHA: "true"
         DEVELOPMENT: "true"
       run: |
-        docker compose -f docker-compose-dev.yaml up -d --wait
+        docker compose -f docker-compose-dev.yaml up -d
+        # Wait for the main services to be ready (sqlite_db exits after creating the database file)
+        docker compose -f docker-compose-dev.yaml wait redis flask_app celery proxy
         sleep 30  # Give services time to fully start
 
     - name: Wait for application to be ready
