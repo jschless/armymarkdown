@@ -1,10 +1,9 @@
 name: Deploy to DigitalOcean
 
 on:
-  # Disabled automatic deployment - manual deployment only
   workflow_dispatch:
-  # push:
-  #   branches: [ main ]
+  push:
+    branches: [ main ]
 
 jobs:
   deploy:

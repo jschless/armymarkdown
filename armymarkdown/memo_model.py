@@ -127,7 +127,6 @@ class MemoModel:
 
     def to_amd(self):
         str_builder = ""
-        fields(self)
         for write_key, attrib in [
             ("ORGANIZATION_NAME", "unit_name"),
             ("ORGANIZATION_STREET_ADDRESS", "unit_street_address"),

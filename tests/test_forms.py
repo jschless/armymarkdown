@@ -618,7 +618,7 @@ class TestFormEdgeCases:
                 # Should not crash with unhandled exceptions
                 raise AssertionError(
                     f"Form validation crashed with large input: {e}"
-                ) from None
+                ) from e
 
     def test_empty_form_submission(self, app_context):
         """Test completely empty form submission."""

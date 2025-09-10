@@ -1,12 +1,7 @@
-from typing import TYPE_CHECKING
-
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.security import check_password_hash, generate_password_hash
-
-if TYPE_CHECKING:
-    pass
 
 
 class Base(DeclarativeBase):

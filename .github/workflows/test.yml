@@ -57,7 +57,7 @@ jobs:
 
     - name: Run security checks
       run: |
-        uv run bandit -r . -c pyproject.toml -f json || true
+        uv run bandit -r app.py armymarkdown/ db/ login.py forms.py clear-redis.py monitor-celery.py -f json || true
         uv run safety check || true
 
     - name: Run unit tests with coverage
@@ -244,4 +244,4 @@ jobs:
 
     - name: Run bandit security scan
       run: |
-        uv run bandit -r . -c pyproject.toml -f json || true
+        uv run bandit -r app.py armymarkdown/ db/ login.py forms.py clear-redis.py monitor-celery.py -f json || true

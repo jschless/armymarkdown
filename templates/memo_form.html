@@ -122,13 +122,13 @@
 
   <div class="row">
     <label for="SUBJECT">Subject</label>
-    <input class="u-full-width" type="text" value="{{ subject | default('This is your memo subject') }}" name="SUBJECT" id="SUBJECT">
+    <input class="u-full-width" type="text" value="{{ subject | default('This is your memo subject') }}" name="SUBJECT" id="SUBJECT" spellcheck="true">
   </div>
 
 
   <div class="row">
     <label for="MEMO_TEXT">Memo Text</label>
-    <textarea class="u-full-width u-half-height" name="MEMO_TEXT" id="MEMO_TEXT">{{text | default('- This memo is a demo.
+    <textarea class="u-full-width u-half-height" name="MEMO_TEXT" id="MEMO_TEXT" spellcheck="true">{{text | default('- This memo is a demo.
 
 - This item contains sub items.
     - Thing one.

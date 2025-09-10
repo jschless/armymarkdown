@@ -194,10 +194,9 @@ class TestSessionManagement:
                 f"Expected redirect to login but got 200 with content: {response_text[:200]}"
             )
         else:
-            assert response.status_code in [
-                302,
-                401,
-            ], f"Expected 302/401 but got {response.status_code}"
+            assert response.status_code in [302, 401], (
+                f"Expected 302/401 but got {response.status_code}"
+            )
 
 
 class TestDocumentManagement:
