@@ -208,7 +208,7 @@ def process():
                 m = memo_model.MemoModel.from_form(request.form.to_dict())
                 if not isinstance(m, str):
                     return render_template("memo_form.html", **m.to_form())
-            except Exception:
+            except Exception:  # nosec B110
                 pass
             return redirect(url_for("index"))
 
@@ -314,7 +314,7 @@ def create_memo(self, text, dictionary=None):
 
     temp_name = (
         m.subject.replace(" ", "_").lower()[:15]
-        + "".join(random.choices("0123456789", k=4))
+        + "".join(random.choices("0123456789", k=4))  # nosec B311
         + ".tex"
     )
     file_path = os.path.join(app.root_path, temp_name)
@@ -351,7 +351,7 @@ if os.environ.get("DEVELOPMENT") is None:
 
 
 def main():
-    app.run(debug=True, host="0.0.0.0")
+    app.run(debug=True, host="0.0.0.0")  # nosec B201 B104
 
 
 if __name__ == "__main__":

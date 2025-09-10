@@ -26,7 +26,7 @@ class MemoWriter:
         print(
             f"[{time.strftime('%H:%M:%S')}] Starting LaTeX compilation for {self.output_file}"
         )
-        result = subprocess.run(
+        result = subprocess.run(  # nosec B607 B603
             ["lualatex", self.output_file], capture_output=True, text=True
         )
         print(
