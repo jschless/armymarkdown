@@ -13,7 +13,7 @@ class BatchUploader {
     }
 
     init() {
-        // DOM elements
+        // DOM elements with error checking
         this.modal = document.getElementById('batch-upload-modal');
         this.openBtn = document.getElementById('batch-upload-btn');
         this.closeBtn = document.getElementById('batch-modal-close');
@@ -28,6 +28,31 @@ class BatchUploader {
         this.statusDiv = document.getElementById('batch-status');
         this.resultsDiv = document.getElementById('batch-results');
         this.resultsList = document.getElementById('results-list');
+
+        // Check for missing elements
+        const requiredElements = {
+            modal: this.modal,
+            openBtn: this.openBtn,
+            closeBtn: this.closeBtn,
+            fileInput: this.fileInput,
+            uploadArea: this.uploadArea,
+            fileList: this.fileList,
+            selectedFilesList: this.selectedFilesList,
+            clearBtn: this.clearBtn,
+            processBtn: this.processBtn,
+            progressDiv: this.progressDiv,
+            progressBar: this.progressBar,
+            statusDiv: this.statusDiv,
+            resultsDiv: this.resultsDiv,
+            resultsList: this.resultsList
+        };
+
+        for (const [name, element] of Object.entries(requiredElements)) {
+            if (!element) {
+                console.error(`BatchUploader: Missing element ${name} (${name === 'modal' ? 'batch-upload-modal' : name === 'openBtn' ? 'batch-upload-btn' : name === 'closeBtn' ? 'batch-modal-close' : 'unknown-id'})`);
+                return; // Don't bind events if elements are missing
+            }
+        }
 
         this.bindEvents();
     }

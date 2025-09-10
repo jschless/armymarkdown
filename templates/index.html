@@ -54,9 +54,59 @@
     </div>
   </form>
 </div>
+
+<!-- Batch Upload Modal -->
+<div id="batch-upload-modal" class="modern-modal" style="display: none;">
+  <div class="modern-modal-content">
+    <div class="modern-modal-header">
+      <h3>Batch Upload Files</h3>
+      <button id="batch-modal-close" class="modern-modal-close">&times;</button>
+    </div>
+    
+    <div class="modern-modal-body">
+      <!-- File Upload Area -->
+      <div id="file-upload-area" class="upload-area">
+        <div class="upload-text">
+          <strong>📁 Click to select files or drag and drop</strong>
+          <p>Upload up to 5 text files (max 50KB each)</p>
+          <p style="font-size: 0.875rem; color: var(--color-gray-500);">
+            Supported: .txt, .md, .text, .markdown, .amd files
+          </p>
+        </div>
+        <input type="file" id="file-input" multiple accept=".txt,.md,.text,.markdown,.amd" style="display: none;">
+      </div>
+      
+      <!-- Selected Files List -->
+      <div id="file-list" style="display: none;">
+        <h4>Selected Files:</h4>
+        <ul id="selected-files" class="selected-files-list"></ul>
+        <div style="margin-top: var(--spacing-4);">
+          <button id="clear-files" class="modern-btn modern-btn-ghost modern-btn-sm">Clear All</button>
+          <button id="process-files" class="modern-btn modern-btn-primary" disabled>Process Files</button>
+        </div>
+      </div>
+      
+      <!-- Progress -->
+      <div id="batch-progress" style="display: none;">
+        <h4>Processing Files...</h4>
+        <div class="modern-progress-bar">
+          <div id="batch-progress-bar" class="modern-progress-fill" style="width: 0%"></div>
+        </div>
+        <div id="batch-status" class="batch-status"></div>
+      </div>
+      
+      <!-- Results -->
+      <div id="batch-results" style="display: none;">
+        <h4>Results:</h4>
+        <ul id="results-list" class="results-list"></ul>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='tasks.js') }}"></script>
 <script src="{{ url_for('static', filename='index.js') }}"></script>
+<script src="{{ url_for('static', filename='batch-upload.js') }}"></script>
 {% endblock %}
