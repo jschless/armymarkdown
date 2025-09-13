@@ -55,7 +55,9 @@ class TestExampleMemos:
                 os.path.join(TEST_DIR, "expected_tutorial.tex"),
             ),
             (
-                os.path.join(ROOT_DIR, "resources/examples/additional_duty_appointment.Amd"),
+                os.path.join(
+                    ROOT_DIR, "resources/examples/additional_duty_appointment.Amd"
+                ),
                 os.path.join(TEST_DIR, "expected_additional_duty_appointment.tex"),
             ),
             (

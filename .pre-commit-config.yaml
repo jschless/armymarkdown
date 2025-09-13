@@ -1,0 +1,51 @@
+repos:
+  # Basic file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: check-json
+      - id: detect-private-key
+
+  # Python linting and formatting with ruff
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
+  # Security scanning
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.10
+    hooks:
+      - id: bandit
+        args: ['-r', 'app/', 'db/', '-f', 'json', '--exit-zero']
+        pass_filenames: false
+
+  # JavaScript linting
+  - repo: local
+    hooks:
+      - id: eslint
+        name: eslint
+        entry: npx eslint
+        language: node
+        files: \.(js)$
+        args: [-c, config/eslint.config.js, --fix]
+        additional_dependencies:
+          - eslint@9.34.0
+
+  # HTML linting
+  - repo: local
+    hooks:
+      - id: htmlhint
+        name: htmlhint
+        entry: npx htmlhint
+        language: node
+        files: \.(html)$
+        additional_dependencies:
+          - htmlhint@1.6.3

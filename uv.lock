@@ -108,6 +108,7 @@ test = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "pre-commit" },
     { name = "requests" },
     { name = "webdriver-manager" },
 ]
@@ -170,6 +171,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "pre-commit", specifier = ">=4.3.0" },
     { name = "requests", specifier = ">=2.32.5" },
     { name = "webdriver-manager", specifier = ">=4.0.2" },
 ]

@@ -105,9 +105,12 @@ def add_csp(response):
 def index():
     example_file = process_example_file(request.args)
 
+    with open(os.path.join("./resources/examples", example_file)) as f:
+        memo_text = f.read()
+
     return render_template(
         "index.html",
-        memo_text=open(os.path.join("./resources/examples", example_file)).read(),
+        memo_text=memo_text,
         examples=get_example_files(),
     )
 
