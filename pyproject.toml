@@ -121,7 +121,6 @@ Issues = "https://github.com/jschless/armymarkdown/issues"
 [dependency-groups]
 dev = [
     "requests>=2.32.5",
-    "selenium>=4.35.0",
     "webdriver-manager>=4.0.2",
 ]
 
@@ -252,7 +251,6 @@ filterwarnings = [
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests",
-    "selenium: marks tests as selenium/browser tests",
     "e2e: marks tests as end-to-end tests",
 ]
 

@@ -584,7 +584,7 @@ class TestErrorHandling:
             from app.auth.login import create_user
 
             # Simulate race condition by creating same user twice quickly
-            success1, msg1 = create_user("raceuser", "race1@example.com", "password")
+            success1, _ = create_user("raceuser", "race1@example.com", "password")
 
             # Reset mocks for second call - now username exists
             mock_get_user.side_effect = [
