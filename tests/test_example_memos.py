@@ -54,6 +54,26 @@ class TestExampleMemos:
                 os.path.join(ROOT_DIR, "resources/examples/tutorial.Amd"),
                 os.path.join(TEST_DIR, "expected_tutorial.tex"),
             ),
+            (
+                os.path.join(ROOT_DIR, "resources/examples/additional_duty_appointment.Amd"),
+                os.path.join(TEST_DIR, "expected_additional_duty_appointment.tex"),
+            ),
+            (
+                os.path.join(ROOT_DIR, "resources/examples/cif_turn_in.Amd"),
+                os.path.join(TEST_DIR, "expected_cif_turn_in.tex"),
+            ),
+            (
+                os.path.join(ROOT_DIR, "resources/examples/cq_sop.Amd"),
+                os.path.join(TEST_DIR, "expected_cq_sop.tex"),
+            ),
+            (
+                os.path.join(ROOT_DIR, "resources/examples/leave_pass_policy.Amd"),
+                os.path.join(TEST_DIR, "expected_leave_pass_policy.tex"),
+            ),
+            (
+                os.path.join(ROOT_DIR, "resources/examples/lost_cac_card.Amd"),
+                os.path.join(TEST_DIR, "expected_lost_cac_card.tex"),
+            ),
         ],
     )
     def test_memo_parsing_and_latex_generation(self, memo_file, expected_file):
@@ -206,6 +226,11 @@ class TestMemoValidation:
             "resources/examples/memo_multi_for.Amd",
             "resources/examples/memo_thru.Amd",
             "resources/examples/tutorial.Amd",
+            "resources/examples/additional_duty_appointment.Amd",
+            "resources/examples/cif_turn_in.Amd",
+            "resources/examples/cq_sop.Amd",
+            "resources/examples/leave_pass_policy.Amd",
+            "resources/examples/lost_cac_card.Amd",
         ],
     )
     def test_memo_validation_passes(self, memo_file):

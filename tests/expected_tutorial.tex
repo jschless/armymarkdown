@@ -1,31 +1,61 @@
-\documentclass{./latex/armymemo-notikz}
-\address{205th Military Police Battalion}
-\address{1234 Charles Road}
-\address{Colorado Springs, CO 80904}
-\author{James F. Ryan}\rank{PVT}\branch{IN}
-\officesymbol{ABC-DEF-GH}
+\documentclass{/app/resources/latex/armymemo-notikz}
+\address{1st Training Battalion (Example)}
+\address{1234 Army Drive}
+\address{Fort Liberty, NC 28310}
+\author{Sarah M. Johnson}\rank{CPT}\branch{MI}
+\officesymbol{ATZB-CD-E}
 \signaturedate{02 September 2025}
-\subject{Army Markdown Tutorial}
+\subject{Army Markdown Tutorial and Formatting Guide}
 \memoline{{MEMORANDUM FOR RECORD}}
-\title{Lost Private}
+\title{Company Commander}
 \begin{document}
 \begin{enumerate}
-\item This memo is a demonstration of Army markdown, a new way to quickly create memos that will ALWAYS be perfectly formatted IAW with AR 25-50.
-\item Don't worry about numbering or lettering. Simply begin each line with a "-", we'll take care of everything else.
-\item To create an indented section, simply indent the next line 4 spaces (or hit tab in the browser).
+\item \textbf{PURPOSE}: This memorandum serves as a comprehensive tutorial for using Army Markdown to create professional military correspondence that is always perfectly formatted in accordance with AR 25-50.
+\item \textbf{BACKGROUND}: Traditional word processors often result in formatting inconsistencies and errors in military memos. Army Markdown eliminates these issues by using simple text formatting that automatically generates properly formatted memos.
+\item \textbf{BASIC FORMATTING RULES}:
 \begin{enumerate}
-\item This indented section will begin with (a).
+\item Begin each main point with a dash (-) followed by a space
+\item Sub-points are created by indenting 4 spaces (or one tab) before the dash
+\item Further sub-points can be created with additional 4-space indentations
+\item The system automatically handles numbering (1., 2., 3.) and lettering ((a), (b), (c))
+\end{enumerate}
+\item \textbf{TEXT FORMATTING OPTIONS}:
 \begin{enumerate}
-\item We can indent even further.
+\item \textbf{Bold text}: Surround text with double asterisks: \textbf{this will be bold}
+\item \textit{Italic text}: Surround text with single asterisks: \textit{this will be italicized}
+\item \underline{Underlined text}: Surround text with triple asterisks: \underline{this will be underlined}
+\item You can combine formatting: \underline{Bold and underlined} or \textbf{bold with \textit{italics} inside}
+\end{enumerate}
+\item \textbf{PARAGRAPH CONTINUATION}: You can add additional paragraphs to the same bullet point by leaving a blank line and continuing without a new dash, just like this paragraph demonstrates.
+\item \textbf{DETAILED EXAMPLE OF NESTED STRUCTURE}:
 \begin{enumerate}
-\item We can try to indent further, but it will only change from numbers to letters.
+\item This is a first-level sub-point (will show as "a.")
+\item This is another first-level sub-point (will show as "b.")
+\begin{enumerate}
+\item This is a second-level sub-point (will show as "(1)")
+\item Another second-level sub-point (will show as "(2)")
+\begin{enumerate}
+\item This is a third-level sub-point (will show as "(a)")
+\item Final third-level sub-point (will show as "(b)")
 \end{enumerate}
 \end{enumerate}
+\item Back to first-level (will show as "c.")
 \end{enumerate}
-\item \textbf{Look} at \textit{this} special \underline{formatting}.
-
-You can also add a second paragraph to the same bullet by simply skipping a line \textit{without} a new hyphen.
-\item Press the "Create Memo PDF" button when you're done and wait for your memo to load! Don't close the tab!
-\item The point of contact for this memorandum is the undersigned available at james.f.ryan@army.mil or (123) 867-5309.
+\item \textbf{COMMON ARMY MEMO ELEMENTS}:
+\begin{enumerate}
+\item \textbf{Recommendations}: Use clear, actionable language
+\item \textbf{Timelines}: Include specific dates and suspense requirements
+\item \textbf{References}: Cite applicable regulations, policies, or directives
+\item \textbf{Coordination}: Identify who needs to be informed or take action
+\end{enumerate}
+\item \textbf{BEST PRACTICES}:
+\begin{enumerate}
+\item Keep sentences concise and direct
+\item Use active voice whenever possible
+\item Avoid unnecessary jargon or acronyms without definition
+\item Ensure each point flows logically to the next
+\item Always include point of contact information
+\end{enumerate}
+\item \textbf{POINT OF CONTACT}: The point of contact for this memorandum is the undersigned at sarah.m.johnson@army.mil or (910) 555-0123.
 \end{enumerate}
 \end{document}
