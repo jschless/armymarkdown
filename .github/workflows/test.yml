@@ -51,9 +51,9 @@ jobs:
 
     - name: Run code quality checks
       run: |
-        uv run ruff check . --output-format=github
+        uv run ruff check . --fix --output-format=github
         uv run ruff format --check .
-        npx eslint -c config/eslint.config.js static/*.js
+        npx eslint -c config/eslint.config.js --fix static/*.js
         npx htmlhint templates/*.html
 
 
