@@ -1,4 +1,4 @@
-from armymarkdown import memo_model
+from app.models import memo_model
 
 test_dict = {
     "unit_name": "4th Engineer Battalion",

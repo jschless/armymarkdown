@@ -1,0 +1,57 @@
+# EXAMPLE: CIF Turn-in Memorandum - Based on Army template from armywriter.com
+
+ORGANIZATION_NAME = Bravo Company, 2nd Battalion, 75th Ranger Regiment
+ORGANIZATION_STREET_ADDRESS = 5800 Ranger Drive
+ORGANIZATION_CITY_STATE_ZIP = Fort Moore, GA 31905
+
+OFFICE_SYMBOL = AFZP-RGR-B
+
+AUTHOR = William T. Sherman
+RANK = SSG
+BRANCH = IN
+TITLE = Squad Leader
+
+MEMO_TYPE = MEMORANDUM FOR
+
+FOR_ORGANIZATION_NAME = Central Issue Facility (CIF)
+FOR_ORGANIZATION_STREET_ADDRESS = Building 2900, Clothing Sales Complex
+FOR_ORGANIZATION_CITY_STATE_ZIP = Fort Moore, GA 31905
+
+SUBJECT = Equipment Turn-in and Clearing Procedures
+
+- **PURPOSE**: To coordinate the turn-in of organizational clothing and individual equipment (OCIE) and complete clearing procedures prior to permanent change of station (PCS).
+
+- **PERSONAL INFORMATION**:
+    - **Name**: William T. Sherman
+    - **Rank**: Staff Sergeant (SSG)
+    - **SSN**: XXX-XX-1234
+    - **Unit**: B/2-75 RGR
+    - **PCS Date**: 15 February 2024
+    - **Gaining Unit**: 1st Special Forces Group (Airborne), Fort Liberty, NC
+
+- **EQUIPMENT STATUS**:
+    - All issued organizational clothing and equipment is accounted for and serviceable
+    - No lost, damaged, or missing items to report
+    - All equipment has been cleaned and is ready for inspection
+    - Special equipment (NVGs, weapons accessories) has been separately coordinated through unit supply
+
+- **REQUIRED ACTIONS**:
+    - Schedule appointment for final CIF clearing no later than 10 February 2024
+    - Complete clothing record review and update sizing as needed
+    - Verify all outstanding hand receipts are properly closed
+    - Obtain final CIF clearance signature for clearing papers
+
+- **SPECIAL EQUIPMENT NOTES**:
+    - Body armor and helmet returned to unit supply (cleared 10 January 2024)
+    - Specialized cold weather gear returned to unit supply (cleared 12 January 2024)
+    - No organizational tools or test equipment on hand receipt
+    - Personal protective equipment (eye/ear protection) retained IAW unit policy
+
+- **CONTACT INFORMATION**:
+    - **Primary**: SSG William T. Sherman, (706) 555-0189, william.t.sherman@army.mil
+    - **Unit POC**: SFC Robert L. Taylor, (706) 555-0190, robert.l.taylor@army.mil
+    - **CIF Appointment**: Scheduled for 12 February 2024 at 0900 hours
+
+- **COORDINATION**: This memorandum has been coordinated with unit supply sergeant and company commander prior to submission.
+
+- **POINT OF CONTACT**: The point of contact for this memorandum is the undersigned.

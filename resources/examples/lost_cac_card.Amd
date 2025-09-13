@@ -1,0 +1,42 @@
+# EXAMPLE: Lost CAC Card Report - Based on real Army template from armywriter.com
+
+ORGANIZATION_NAME = Alpha Company, 1st Battalion, 504th Parachute Infantry Regiment
+ORGANIZATION_STREET_ADDRESS = 2000 Bragg Boulevard
+ORGANIZATION_CITY_STATE_ZIP = Fort Liberty, NC 28310
+
+OFFICE_SYMBOL = AFZA-ABC-1
+
+AUTHOR = Marcus A. Thompson
+RANK = SPC
+BRANCH = IN
+TITLE = Paratrooper
+
+SUBJECT = Report of Lost Common Access Card (CAC)
+
+- I, SPC Marcus A. Thompson, an employee of Alpha Company, 1st Battalion, 504th Parachute Infantry Regiment, hereby report the loss of my Common Access Card (CAC), effective 10 January 2024. The details of the incident are as follows:
+
+- **EMPLOYEE DETAILS**:
+    - **Employee Name**: Marcus A. Thompson
+    - **Rank**: Specialist (SPC)
+    - **Employee ID**: 123456789
+    - **Unit**: Alpha Company, 1st Battalion, 504th PIR
+    - **Date of Last Use**: 9 January 2024
+    - **Description of CAC**: Brown card, contact chip, expires 15 March 2027
+
+- **CIRCUMSTANCES OF LOSS**: The CAC was last used on 9 January 2024 to access the company operations center, and I discovered it was missing on 10 January 2024 during morning formation. I believe it may have been lost during PT or while changing uniforms.
+
+- **IMMEDIATE ACTIONS TAKEN**: Immediate steps have been taken to mitigate potential security risks associated with the lost CAC:
+    - Notified my immediate supervisor (SGT Johnson) and the Security Office of the loss
+    - Initiated the process for reporting the lost CAC and requesting a replacement
+    - Changed passwords and access codes associated with the CAC
+    - Completed initial incident report with company security manager
+
+- **REQUEST FOR ASSISTANCE**: I request the support and assistance of the Security Office and relevant personnel in expediting the replacement process and ensuring the security of our systems and facilities.
+
+- **CONTACT INFORMATION**:
+    - **Primary**: SPC Marcus A. Thompson, (910) 555-0178, marcus.a.thompson@army.mil
+    - **Supervisor**: SGT Robert L. Johnson, (910) 555-0179, robert.l.johnson@army.mil
+
+- This memorandum serves as formal notification of the lost CAC, and I appreciate your prompt attention to this matter.
+
+- **POINT OF CONTACT**: The point of contact for this memorandum is the undersigned.

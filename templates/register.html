@@ -52,7 +52,7 @@
       {% endfor %}
     </div>
 
-    {% if not config.DISABLE_CAPTCHA and config.RECAPTCHA_PUBLIC_KEY %}
+    {% if form.recaptcha %}
     <div class="modern-form-group">
       {{ form.recaptcha }}
     </div>

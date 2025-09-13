@@ -37,19 +37,18 @@ class RegistrationForm(FlaskForm):
     password2 = PasswordField(
         "Repeat Password", validators=[DataRequired(), EqualTo("password")]
     )
-    recaptcha = RecaptchaField()
     submit = SubmitField("Register")
 
-    def validate_recaptcha(self, field):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Only add recaptcha field if it's enabled and configured
         from flask import current_app
 
-        # Skip recaptcha validation if disabled or no keys configured
-        if current_app.config.get("DISABLE_CAPTCHA") or not current_app.config.get(
+        if not current_app.config.get("DISABLE_CAPTCHA") and current_app.config.get(
             "RECAPTCHA_PUBLIC_KEY"
         ):
-            return
-        # Otherwise, let the RecaptchaField handle validation
-        return field.validate(self)
+            self.recaptcha = RecaptchaField()
 
     def validate_username(self, username):
         user = User.query.filter_by(username=username.data).first()

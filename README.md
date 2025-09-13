@@ -65,7 +65,9 @@
 
 3. **Start development environment**
    ```bash
-   docker-compose -f docker-compose-dev.yaml up --build
+   make docker-dev-build
+   # or manually:
+   # docker compose -f infrastructure/compose/docker-compose-dev.yaml up --build
    ```
 
 4. **Access the application**
@@ -94,10 +96,13 @@
 3. **Run the application**
    ```bash
    # Start Redis (if not using Docker)
-   redis-server
+   make redis
 
    # Start the Flask app
-   uv run python app.py
+   make run
+
+   # Start Celery worker (in another terminal)
+   make celery
    ```
 
 ### Production Deployment
@@ -114,7 +119,9 @@
 
 2. **Deploy with Docker Compose**
    ```bash
-   docker-compose up --build -d
+   make docker-prod
+   # or manually:
+   # docker compose -f infrastructure/compose/docker-compose.yaml up --build -d
    ```
 
 3. **Optional: Disable CAPTCHA for testing**
@@ -218,35 +225,37 @@ The application includes several security measures:
 
 ## 🧪 Testing
 
-### Running Tests with uv
+### Running Tests with Make Commands
 
 ```bash
 # Run all tests with coverage
-uv run pytest tests/ --cov=. --cov-report=term-missing
+make test-cov
 
-# Run specific test categories
-uv run pytest tests/test_input_validation.py -v
-uv run pytest tests/test_latex_escape_chars.py -v
+# Run all tests (excluding selenium)
+make test
+
+# Run fast tests only
+make test-fast
+
+# Run verbose tests
+make test-verbose
+
+# Run specific test file
+PYTHONPATH=. uv run pytest tests/test_input_validation.py -v
 
 # Run tests matching a pattern
-uv run pytest tests/ -k "test_memo" -v
-
-# Run Selenium end-to-end tests (requires running server)
-uv run pytest tests/ -m selenium -v
-
-# Run all tests except slow/selenium tests
-uv run pytest tests/ -m "not slow and not selenium" -v
+PYTHONPATH=. uv run pytest tests/ -k "test_memo" -v
 ```
 
 ### Docker Testing Environment
 
 ```bash
 # Run tests in Docker container
-docker-compose -f docker-compose-dev.yaml exec flask_app uv run pytest tests/
+docker compose -f infrastructure/compose/docker-compose-dev.yaml exec flask_app make test
 
 # Or build and run tests in isolated container
-docker build -f Dockerfile.development -t armymarkdown-test .
-docker run --rm armymarkdown-test uv run pytest tests/ --tb=short
+docker build -f infrastructure/docker/Dockerfile.development -t armymarkdown-test .
+docker run --rm armymarkdown-test make test
 ```
 
 ### Test Environment Variables
@@ -312,11 +321,11 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 4. **Make your changes with tests**
    ```bash
    # Run tests frequently during development
-   uv run pytest tests/ -v
+   make test
 
    # Check code quality
-   uv run ruff check .
-   uv run ruff format .
+   make lint
+   make format
    ```
 
 5. **Commit and push**
@@ -343,18 +352,17 @@ Before submitting a PR, ensure these pass:
 
 ```bash
 # Code formatting and linting
-uv run ruff check .
-uv run ruff format .
-
-# Type checking
-uv run mypy . --ignore-missing-imports
+make format
+make lint
 
 # Security scanning
-uv run bandit -r . -x tests/
-uv run safety check
+make security
 
 # Full test suite with coverage
-PYTHONPATH=. uv run pytest tests/ --cov=. --cov-report=term-missing
+make test-cov
+
+# Run all quality checks
+make check
 ```
 
 ### Development Tools & Configuration
@@ -364,7 +372,6 @@ The project uses modern Python tooling for development:
 - **`pyproject.toml`** - Centralized project configuration
 - **`uv.lock`** - Locked dependency versions for reproducible builds
 - **`ruff`** - Fast Python linter and formatter (replaces flake8, black, isort)
-- **`mypy`** - Static type checking
 - **`bandit`** - Security vulnerability scanning
 - **`safety`** - Dependency vulnerability checking
 - **`pytest`** - Testing framework with coverage reporting

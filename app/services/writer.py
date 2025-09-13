@@ -10,7 +10,7 @@ class MemoWriter:
     def write(self, output_file=None):
         self.output_file = output_file
 
-        self.lines.append("\\documentclass{./latex/armymemo-notikz}")
+        self.lines.append("\\documentclass{/app/resources/latex/armymemo-notikz}")
         self._write_admin()
         self._write_body()
         self.temp_dir = os.path.join(os.getcwd(), "assets")
@@ -26,8 +26,12 @@ class MemoWriter:
         print(
             f"[{time.strftime('%H:%M:%S')}] Starting LaTeX compilation for {self.output_file}"
         )
+        # Change to the directory containing the .tex file so PDF is created in the same location
+        tex_dir = os.path.dirname(self.output_file)
+        tex_filename = os.path.basename(self.output_file)
+
         result = subprocess.run(  # nosec B607 B603
-            ["lualatex", self.output_file], capture_output=True, text=True
+            ["lualatex", tex_filename], capture_output=True, text=True, cwd=tex_dir
         )
         print(
             f"[{time.strftime('%H:%M:%S')}] LaTeX compilation finished. Return code: {result.returncode}"

@@ -1,80 +1,58 @@
 services:
   redis:
-    image: redis:latest
+    image: redis/redis-stack:latest
+    ports:
+      - "6379:6379"
     networks:
       - army_net
 
   flask_app:
     build:
-      context: ./
-      dockerfile: Dockerfile.development
+      context: ../../
+      dockerfile: infrastructure/docker/Dockerfile.development
     ports:
-      - 8000:8000
+      - "8000:8000"
     volumes:
-      - ./app.py:/app/app.py
-      - ./armymarkdown:/app/armymarkdown
-      - ./forms.py:/app/forms.py
-      - ./login.py:/app/login.py
-      - ./templates:/app/templates
-      - ./static:/app/static
-      - ./examples:/app/examples
-      - /etc/letsencrypt:/etc/letsencrypt
+      - ../../app:/app/app
+      - ../../templates:/app/templates
+      - ../../static:/app/static
+      - ../../resources:/app/resources
       - db-data:/data
+    env_file:
+      - ../../.env
     environment:
-      - FLASK_SECRET=${FLASK_SECRET:-dev-secret-key-change-in-production}
-      - RECAPTCHA_PUBLIC_KEY=${RECAPTCHA_PUBLIC_KEY}
-      - RECAPTCHA_PRIVATE_KEY=${RECAPTCHA_PRIVATE_KEY}
-      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - DEVELOPMENT=1
+      - DISABLE_CAPTCHA=true
     depends_on:
       - redis
       - sqlite_db
     networks:
       - army_net
 
-
   celery:
     build:
-      context: ./
-      dockerfile: Dockerfile.development
+      context: ../../
+      dockerfile: infrastructure/docker/Dockerfile.development
     volumes:
-      - ./app.py:/app/app.py
-      - ./armymarkdown:/app/armymarkdown
-      - ./forms.py:/app/forms.py
-      - ./login.py:/app/login.py
+      - ../../app:/app/app
+      - ../../resources:/app/resources
       - db-data:/data
     container_name: cel01
-    command: uv run celery -A app.celery worker -l info
+    command: uv run celery -A app.main.celery worker -l info
+    env_file:
+      - ../../.env
     environment:
-      - FLASK_SECRET=${FLASK_SECRET:-dev-secret-key-change-in-production}
-      - RECAPTCHA_PUBLIC_KEY=${RECAPTCHA_PUBLIC_KEY}
-      - RECAPTCHA_PRIVATE_KEY=${RECAPTCHA_PRIVATE_KEY}
-      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - DEVELOPMENT=1
-    links:
+    depends_on:
       - redis
     networks:
       - army_net
 
   sqlite_db:
-    build: ./db
+    image: alpine:latest
+    command: sh -c "mkdir -p /data && touch /data/users.db && tail -f /dev/null"
     volumes:
       - db-data:/data
-    networks:
-      - army_net
-
-  proxy:
-    build: ./proxy
-    ports:
-      - 80:80
-    links:
-      - flask_app
-    depends_on:
-      - flask_app
     networks:
       - army_net
 

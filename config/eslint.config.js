@@ -2,7 +2,7 @@ module.exports = [
   {
     files: ["**/*.js"],
     languageOptions: {
-      ecmaVersion: 2015,
+      ecmaVersion: 2019,
       sourceType: "script",
       globals: {
         console: "readonly",
@@ -14,7 +14,10 @@ module.exports = [
         makeTabsWork: "readonly",
         saveData: "readonly",
         buttonPress: "readonly",
-        updateProgress: "readonly"
+        updateProgress: "readonly",
+        FileReader: "readonly",
+        URLSearchParams: "readonly",
+        alert: "readonly"
       }
     },
     rules: {

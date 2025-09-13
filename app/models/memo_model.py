@@ -6,7 +6,7 @@ import re
 import pandas as pd
 from tabulate import tabulate
 
-from armymarkdown.utils import (
+from app.services.utils import (
     abbrev_to_branch,
     branch_to_abbrev,
     inv_key_converter,

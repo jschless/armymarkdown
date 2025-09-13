@@ -417,7 +417,7 @@
   \thispagestyle{plain}%
 \begin{picture}(0,0)
 \setlength{\unitlength}{1pc}
-\put(-2.8,2.8){\includegraphics[height=1in]{./latex/DA_LOGO}}
+\put(-2.8,2.8){\includegraphics[height=1in]{/app/resources/latex/DA_LOGO.png}}
 \end{picture}
 \begin{picture}(0,0)
 \setstretch{0.7}\fontfamily\sfdefault\selectfont%

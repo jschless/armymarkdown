@@ -53,11 +53,13 @@ jobs:
       run: |
         uv run ruff check . --output-format=github
         uv run ruff format --check .
+        npx eslint -c config/eslint.config.js static/*.js
+        npx htmlhint templates/*.html
 
 
     - name: Run security checks
       run: |
-        uv run bandit -r app.py armymarkdown/ db/ login.py forms.py clear-redis.py monitor-celery.py -f json || true
+        uv run bandit -r app/ db/ -f json || true
         uv run safety check || true
 
     - name: Run unit tests with coverage
@@ -184,7 +186,7 @@ jobs:
 
     - name: Build application container
       run: |
-        docker compose -f docker-compose-dev.yaml build
+        docker compose -f infrastructure/compose/docker-compose-dev.yaml build
 
     - name: Start application services
       env:
@@ -197,9 +199,9 @@ jobs:
         DISABLE_CAPTCHA: "true"
         DEVELOPMENT: "true"
       run: |
-        docker compose -f docker-compose-dev.yaml up -d
+        docker compose -f infrastructure/compose/docker-compose-dev.yaml up -d
         # Check status of services (sqlite_db exits after creating the database file, which is expected)
-        docker compose -f docker-compose-dev.yaml ps
+        docker compose -f infrastructure/compose/docker-compose-dev.yaml ps
         # Give services time to start
         sleep 30
 
@@ -217,8 +219,8 @@ jobs:
     - name: Stop application services
       if: always()
       run: |
-        docker compose -f docker-compose-dev.yaml logs
-        docker compose -f docker-compose-dev.yaml down
+        docker compose -f infrastructure/compose/docker-compose-dev.yaml logs
+        docker compose -f infrastructure/compose/docker-compose-dev.yaml down
 
   security-scan:
     runs-on: ubuntu-latest
@@ -244,4 +246,4 @@ jobs:
 
     - name: Run bandit security scan
       run: |
-        uv run bandit -r app.py armymarkdown/ db/ login.py forms.py clear-redis.py monitor-celery.py -f json || true
+        uv run bandit -r app/ db/ -f json || true

@@ -1,4 +1,4 @@
-from armymarkdown import memo_model
+from app.models import memo_model
 
 
 def test_escapes():

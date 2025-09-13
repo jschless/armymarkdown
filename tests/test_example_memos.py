@@ -8,7 +8,8 @@ from unittest.mock import patch
 
 import pytest
 
-from armymarkdown import memo_model, writer
+from app.models import memo_model
+from app.services import writer
 
 # Get the directory containing this test file
 TEST_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -22,35 +23,35 @@ class TestExampleMemos:
         "memo_file,expected_file",
         [
             (
-                os.path.join(ROOT_DIR, "examples/basic_mfr.Amd"),
+                os.path.join(ROOT_DIR, "resources/examples/basic_mfr.Amd"),
                 os.path.join(TEST_DIR, "expected_basic_mfr.tex"),
             ),
             (
-                os.path.join(ROOT_DIR, "examples/basic_mfr_w_table.Amd"),
+                os.path.join(ROOT_DIR, "resources/examples/basic_mfr_w_table.Amd"),
                 os.path.join(TEST_DIR, "expected_basic_mfr_w_table.tex"),
             ),
             (
-                os.path.join(ROOT_DIR, "examples/long_memo.Amd"),
+                os.path.join(ROOT_DIR, "resources/examples/long_memo.Amd"),
                 os.path.join(TEST_DIR, "expected_long_memo.tex"),
             ),
             (
-                os.path.join(ROOT_DIR, "examples/memo_extra_features.Amd"),
+                os.path.join(ROOT_DIR, "resources/examples/memo_extra_features.Amd"),
                 os.path.join(TEST_DIR, "expected_memo_extra_features.tex"),
             ),
             (
-                os.path.join(ROOT_DIR, "examples/memo_for.Amd"),
+                os.path.join(ROOT_DIR, "resources/examples/memo_for.Amd"),
                 os.path.join(TEST_DIR, "expected_memo_for.tex"),
             ),
             (
-                os.path.join(ROOT_DIR, "examples/memo_multi_for.Amd"),
+                os.path.join(ROOT_DIR, "resources/examples/memo_multi_for.Amd"),
                 os.path.join(TEST_DIR, "expected_memo_multi_for.tex"),
             ),
             (
-                os.path.join(ROOT_DIR, "examples/memo_thru.Amd"),
+                os.path.join(ROOT_DIR, "resources/examples/memo_thru.Amd"),
                 os.path.join(TEST_DIR, "expected_memo_thru.tex"),
             ),
             (
-                os.path.join(ROOT_DIR, "examples/tutorial.Amd"),
+                os.path.join(ROOT_DIR, "resources/examples/tutorial.Amd"),
                 os.path.join(TEST_DIR, "expected_tutorial.tex"),
             ),
         ],
@@ -102,7 +103,7 @@ class TestMemoFeatures:
 
     def test_basic_mfr_features(self):
         """Test basic Memorandum for Record features."""
-        memo = memo_model.MemoModel.from_file("examples/basic_mfr.Amd")
+        memo = memo_model.MemoModel.from_file("resources/examples/basic_mfr.Amd")
 
         assert memo.memo_type == "MEMORANDUM FOR RECORD"
         assert memo.unit_name is not None
@@ -113,7 +114,7 @@ class TestMemoFeatures:
 
     def test_memo_for_features(self):
         """Test Memorandum For features."""
-        memo = memo_model.MemoModel.from_file("examples/memo_for.Amd")
+        memo = memo_model.MemoModel.from_file("resources/examples/memo_for.Amd")
 
         assert memo.memo_type == "MEMORANDUM FOR"
         assert memo.for_unit_name is not None
@@ -123,7 +124,7 @@ class TestMemoFeatures:
 
     def test_memo_thru_features(self):
         """Test Memorandum Thru features."""
-        memo = memo_model.MemoModel.from_file("examples/memo_thru.Amd")
+        memo = memo_model.MemoModel.from_file("resources/examples/memo_thru.Amd")
 
         assert memo.memo_type == "MEMORANDUM THRU"
         assert memo.thru_unit_name is not None
@@ -133,7 +134,7 @@ class TestMemoFeatures:
 
     def test_memo_multi_for_features(self):
         """Test memo with multiple FOR recipients."""
-        memo = memo_model.MemoModel.from_file("examples/memo_multi_for.Amd")
+        memo = memo_model.MemoModel.from_file("resources/examples/memo_multi_for.Amd")
 
         assert memo.memo_type == "MEMORANDUM FOR"
         assert memo.for_unit_name is not None
@@ -143,7 +144,9 @@ class TestMemoFeatures:
 
     def test_table_features(self):
         """Test memo with table formatting."""
-        memo = memo_model.MemoModel.from_file("examples/basic_mfr_w_table.Amd")
+        memo = memo_model.MemoModel.from_file(
+            "resources/examples/basic_mfr_w_table.Amd"
+        )
 
         # Check that the memo was parsed successfully
         assert isinstance(memo, memo_model.MemoModel)
@@ -157,7 +160,9 @@ class TestMemoFeatures:
 
     def test_extra_features(self):
         """Test memo with enclosures, distributions, and other extras."""
-        memo = memo_model.MemoModel.from_file("examples/memo_extra_features.Amd")
+        memo = memo_model.MemoModel.from_file(
+            "resources/examples/memo_extra_features.Amd"
+        )
 
         assert isinstance(memo, memo_model.MemoModel)
         # These fields may or may not be present depending on the example content
@@ -167,7 +172,7 @@ class TestMemoFeatures:
 
     def test_long_memo_features(self):
         """Test handling of longer memo content."""
-        memo = memo_model.MemoModel.from_file("examples/long_memo.Amd")
+        memo = memo_model.MemoModel.from_file("resources/examples/long_memo.Amd")
 
         assert isinstance(memo, memo_model.MemoModel)
         assert len(memo.text) > 5  # Should have substantial content
@@ -178,7 +183,7 @@ class TestMemoFeatures:
 
     def test_tutorial_completeness(self):
         """Test that tutorial memo demonstrates key features."""
-        memo = memo_model.MemoModel.from_file("examples/tutorial.Amd")
+        memo = memo_model.MemoModel.from_file("resources/examples/tutorial.Amd")
 
         assert isinstance(memo, memo_model.MemoModel)
         assert memo.subject is not None
@@ -193,14 +198,14 @@ class TestMemoValidation:
     @pytest.mark.parametrize(
         "memo_file",
         [
-            "examples/basic_mfr.Amd",
-            "examples/basic_mfr_w_table.Amd",
-            "examples/long_memo.Amd",
-            "examples/memo_extra_features.Amd",
-            "examples/memo_for.Amd",
-            "examples/memo_multi_for.Amd",
-            "examples/memo_thru.Amd",
-            "examples/tutorial.Amd",
+            "resources/examples/basic_mfr.Amd",
+            "resources/examples/basic_mfr_w_table.Amd",
+            "resources/examples/long_memo.Amd",
+            "resources/examples/memo_extra_features.Amd",
+            "resources/examples/memo_for.Amd",
+            "resources/examples/memo_multi_for.Amd",
+            "resources/examples/memo_thru.Amd",
+            "resources/examples/tutorial.Amd",
         ],
     )
     def test_memo_validation_passes(self, memo_file):
@@ -219,10 +224,10 @@ class TestMemoValidation:
     @pytest.mark.parametrize(
         "memo_file",
         [
-            "examples/basic_mfr.Amd",
-            "examples/memo_for.Amd",
-            "examples/memo_thru.Amd",
-            "examples/tutorial.Amd",
+            "resources/examples/basic_mfr.Amd",
+            "resources/examples/memo_for.Amd",
+            "resources/examples/memo_thru.Amd",
+            "resources/examples/tutorial.Amd",
         ],
     )
     def test_memo_roundtrip_conversion(self, memo_file):

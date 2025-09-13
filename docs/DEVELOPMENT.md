@@ -6,12 +6,28 @@ This document contains comprehensive information for developers working on the A
 
 ### Prerequisites
 
-- Python 3.9+
+- Python 3.11+
 - [uv](https://github.com/astral-sh/uv) for fast Python package management
+- Docker and Docker Compose (recommended for development)
 - Redis (for Celery task queue)
-- LaTeX distribution (for PDF generation)
+- LaTeX distribution (for PDF generation, included in Docker)
 
-### Setup with uv (Recommended)
+### Docker Development (Recommended)
+
+```bash
+# Clone the repository
+git clone https://github.com/jschless/armymarkdown.git
+cd armymarkdown
+
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your actual values
+
+# Start development environment
+make docker-dev-build
+```
+
+### Local Development with uv
 
 ```bash
 # Install uv if you haven't already
@@ -22,34 +38,48 @@ git clone https://github.com/jschless/armymarkdown.git
 cd armymarkdown
 
 # Create virtual environment and install dependencies
-uv venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-uv pip install -r requirements.txt
-uv pip install -r requirements-test.txt
+uv sync --extra dev
 
 # Set up environment variables
 cp .env.example .env
 # Edit .env with your actual values
 
 # Install pre-commit hooks
-pre-commit install
+uv run pre-commit install
 
 # Run the application
-flask run
+make run
 ```
 
-### Alternative Setup with pip
+## Available Make Commands
+
+The project includes a comprehensive Makefile with common development tasks:
 
 ```bash
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# Development
+make run          # Start Flask development server
+make celery       # Start Celery worker
+make redis        # Start Redis server
 
-# Install dependencies
-pip install -r requirements.txt
-pip install -r requirements-test.txt
+# Docker
+make docker-dev        # Start development environment
+make docker-dev-build  # Build and start development environment
+make docker-prod       # Start production environment
 
-# Continue with environment setup as above
+# Code Quality
+make format       # Format code with ruff
+make lint         # Run linting checks
+make pre-commit   # Run pre-commit hooks
+
+# Testing
+make test         # Run all tests (excluding selenium)
+make test-cov     # Run tests with coverage
+make test-fast    # Run fast tests only
+make test-verbose # Run tests with verbose output
+
+# Utilities
+make clean        # Clean up temporary files
+make setup        # Complete development environment setup
 ```
 
 ## Development Workflow
@@ -60,16 +90,16 @@ We use **ruff** for both linting and code formatting, replacing multiple tools w
 
 ```bash
 # Check code quality
-ruff check .
+make lint
 
 # Fix auto-fixable issues
-ruff check . --fix
+make lint-fix
 
 # Format code
-ruff format .
+make format
 
-# Check formatting without making changes
-ruff format --check .
+# Run all quality checks
+make check
 ```
 
 ### Pre-commit Hooks
@@ -78,18 +108,17 @@ Pre-commit hooks automatically run quality checks before each commit:
 
 ```bash
 # Install hooks (one-time setup)
-pre-commit install
+make setup
 
 # Run hooks manually on all files
-pre-commit run --all-files
+make pre-commit
 
 # Update hook repositories
-pre-commit autoupdate
+uv run pre-commit autoupdate
 ```
 
 Our pre-commit configuration includes:
 - **Ruff** for linting and formatting
-- **MyPy** for type checking
 - **Bandit** for security linting
 - **Safety** for vulnerability checking
 - Basic file checks (trailing whitespace, merge conflicts, etc.)
@@ -98,30 +127,21 @@ Our pre-commit configuration includes:
 
 ```bash
 # Run all tests
-pytest
+make test
 
 # Run with coverage report
-pytest --cov=. --cov-report=html
+make test-cov
 
 # Run specific test file
-pytest tests/test_specific.py
+PYTHONPATH=. uv run pytest tests/test_specific.py
 
 # Run tests with verbose output
-pytest -v
+make test-verbose
 
 # Run only fast tests (skip slow/integration tests)
-pytest -m "not slow"
+make test-fast
 ```
 
-### Type Checking
-
-```bash
-# Run MyPy type checking
-mypy --ignore-missing-imports armymarkdown/
-
-# Check specific files
-mypy armymarkdown/memo_model.py
-```
 
 ### Security Scanning
 
@@ -139,22 +159,28 @@ bandit -r .
 
 ```
 armymarkdown/
-├── armymarkdown/           # Main application package
-│   ├── __init__.py
-│   ├── memo_model.py      # Core memo parsing logic
-│   └── writer.py          # LaTeX generation
-├── templates/             # Jinja2 templates
-├── static/               # CSS, JS, and static assets
-├── tests/               # Test suite
-├── latex/              # LaTeX class files
-├── examples/           # Example memo files (.Amd)
+├── app/                   # Main application package
+│   ├── auth/             # Authentication modules
+│   ├── models/           # Data models
+│   ├── services/         # Business logic services
+│   ├── main.py          # Flask application entry point
+│   └── forms.py         # WTForms definitions
+├── db/                   # Database modules
+│   ├── schema.py        # SQLAlchemy models
+│   └── db.py           # Database initialization
+├── infrastructure/      # Docker and deployment config
+│   ├── compose/         # Docker Compose files
+│   └── docker/          # Dockerfiles
+├── resources/           # LaTeX class files and assets
+│   └── latex/          # LaTeX templates and styles
+├── templates/           # Jinja2 templates
+├── static/             # CSS, JS, and static assets
+├── tests/              # Test suite
+├── docs/               # Documentation
 ├── .github/workflows/  # CI/CD configuration
-├── app.py             # Flask application entry point
-├── forms.py           # WTForms definitions
-├── login.py           # Authentication logic
-├── pyproject.toml     # Project configuration
-├── requirements.txt   # Production dependencies
-├── requirements-test.txt  # Development dependencies
+├── pyproject.toml      # Project configuration
+├── uv.lock            # Locked dependencies
+├── Makefile           # Development commands
 └── .env.example       # Environment variables template
 ```
 
@@ -189,7 +215,6 @@ DEVELOPMENT=true
 The `pyproject.toml` file contains configuration for:
 - **Project metadata** and dependencies
 - **Ruff** linting and formatting rules
-- **MyPy** type checking settings
 - **Pytest** test configuration
 - **Coverage** reporting settings
 - **Bandit** security scanning
@@ -200,36 +225,26 @@ The `pyproject.toml` file contains configuration for:
 
 ```bash
 # Run Flask development server
-flask run
+make run
 
-# Run with debug mode
-FLASK_DEBUG=1 flask run
+# Run with Docker
+make docker-dev
 
-# Run on specific host/port
-flask run --host=0.0.0.0 --port=8000
-```
-
-### Background Tasks
-
-```bash
-# Start Celery worker (in separate terminal)
-celery -A app.celery worker --loglevel=info
-
-# Start Celery flower monitoring (optional)
-celery -A app.celery flower
+# Start individual services
+make celery  # Celery worker
+make redis   # Redis server
 ```
 
 ### Database Operations
 
+The application uses SQLite with automatic migration handling:
+
 ```bash
-# Initialize database
-flask db init
+# Database initialization happens automatically on app startup
+# Check logs to verify database creation
 
-# Create migration
-flask db migrate -m "Description of changes"
-
-# Apply migration
-flask db upgrade
+# For manual database operations (if needed):
+# SQLite database is stored in /data/users.db (in Docker)
 ```
 
 ## Code Style Guidelines
@@ -360,10 +375,14 @@ Production deployment requires:
 Use the provided Docker configuration:
 ```bash
 # Development
-docker-compose -f docker-compose-dev.yaml up
+make docker-dev-build
 
 # Production
-docker-compose up
+make docker-prod
+
+# Manual Docker commands:
+# docker compose -f infrastructure/compose/docker-compose-dev.yaml up --build
+# docker compose -f infrastructure/compose/docker-compose.yaml up --build
 ```
 
 ## Resources

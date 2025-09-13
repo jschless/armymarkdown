@@ -17,12 +17,16 @@ from flask import (
 )
 from flask_talisman import Talisman
 
-from armymarkdown import memo_model, writer
+from app.auth import login
+from app.models import memo_model
+from app.services import writer
 from db.db import init_db
-import login
 
 # Load environment variables from .env file
 load_dotenv()
+
+# Get the project root directory (one level up from app/)
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def get_required_env_var(var_name):
@@ -39,7 +43,12 @@ def get_optional_env_var(var_name, default=None):
 
 
 # Load configuration from environment variables
-app = Flask(__name__, static_url_path="/static")
+app = Flask(
+    __name__,
+    static_url_path="/static",
+    static_folder=os.path.join(project_root, "static"),
+    template_folder=os.path.join(project_root, "templates"),
+)
 app.secret_key = get_required_env_var("FLASK_SECRET")
 app.config["RECAPTCHA_PUBLIC_KEY"] = get_optional_env_var("RECAPTCHA_PUBLIC_KEY")
 app.config["RECAPTCHA_PRIVATE_KEY"] = get_optional_env_var("RECAPTCHA_PRIVATE_KEY")
@@ -98,15 +107,47 @@ def index():
 
     return render_template(
         "index.html",
-        memo_text=open(os.path.join("./examples", example_file)).read(),
+        memo_text=open(os.path.join("./resources/examples", example_file)).read(),
+        examples=get_example_files(),
     )
+
+
+def get_example_files():
+    """Get list of example files with display names"""
+    examples_dir = "./resources/examples"
+    files = [f for f in os.listdir(examples_dir) if f.endswith(".Amd")]
+
+    # Create display name mapping
+    display_names = {
+        "tutorial.Amd": "Tutorial - Complete Guide",
+        "long_memo.Amd": "Long Memorandum (Figure 2-2 from AR 25-50)",
+        "basic_mfr.Amd": "Memorandum for Record",
+        "basic_mfr_w_table.Amd": "Memorandum for Record with Table",
+        "memo_for.Amd": "Memorandum For",
+        "memo_multi_for.Amd": "Memorandum For Multiple",
+        "memo_thru.Amd": "Memorandum Thru",
+        "memo_extra_features.Amd": "Memorandum with Enclosures, Distros, Suspense Dates",
+        "lost_cac_card.Amd": "Lost CAC Card Report",
+        "additional_duty_appointment.Amd": "Additional Duty Appointment",
+        "cq_sop.Amd": "Charge of Quarters Standard Operating Procedures",
+        "leave_pass_policy.Amd": "Leave and Pass Policy",
+        "cif_turn_in.Amd": "CIF Turn-in and Clearing Procedures",
+    }
+
+    # Sort files to put tutorial first, then alphabetically
+    files.sort(key=lambda x: (x != "tutorial.Amd", x))
+
+    return [
+        (f, display_names.get(f, f.replace(".Amd", "").replace("_", " ").title()))
+        for f in files
+    ]
 
 
 def process_example_file(args):
     example_file = args.get("example_file", "tutorial.Amd")
 
-    if example_file not in os.listdir("./examples"):
-        example_file = "./tutorial.Amd"
+    if example_file not in os.listdir("./resources/examples"):
+        example_file = "tutorial.Amd"
 
     return example_file
 
@@ -115,8 +156,11 @@ def process_example_file(args):
 def form():
     example_file = process_example_file(request.args)
 
-    m = memo_model.MemoModel.from_file(os.path.join("./examples", example_file))
+    m = memo_model.MemoModel.from_file(
+        os.path.join("./resources/examples", example_file)
+    )
     memo_dict = m.to_form()
+    memo_dict["examples"] = get_example_files()
 
     return render_template("memo_form.html", **memo_dict)
 
@@ -127,7 +171,8 @@ def save_progress():
         text = request.form.get("memo_text")
         try:
             res = login.save_document(text)
-            flash(res)
+            if res:
+                flash(res)
         except Exception as e:
             app.logger.error(f"Error saving document: {e}")
             flash("Error saving document. Please try again.")
@@ -142,7 +187,8 @@ def save_progress():
         text = m.to_amd()
         try:
             res = login.save_document(text)
-            flash(res)
+            if res:
+                flash(res)
         except Exception as e:
             app.logger.error(f"Error saving document: {e}")
             flash("Error saving document. Please try again.")
@@ -181,7 +227,8 @@ def process():
 
         try:
             res = login.save_document(text)
-            flash(res)
+            if res:
+                flash(res)
         except Exception as e:
             app.logger.error(f"Error saving document during processing: {e}")
             flash("Document could not be saved, but processing continues.")

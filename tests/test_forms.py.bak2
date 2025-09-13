@@ -236,10 +236,6 @@ class TestFormSecurity:
 
         try:
             with test_app.test_client() as client:
-                # Ensure clean session for this test
-                with client.session_transaction() as sess:
-                    sess.clear()
-
                 response = client.get("/register")
 
                 assert response.status_code == 200
@@ -328,9 +324,9 @@ class TestFormIntegration:
     def test_login_form_post_success(self, client):
         """Test successful login form submission."""
         with (
-            patch("app.auth.login.authenticate_user", return_value=True),
+            patch("login.authenticate_user", return_value=True),
             patch(
-                "app.auth.login.get_user_by_username",
+                "login.get_user_by_username",
                 return_value={"id": 1, "username": "testuser"},
             ),
         ):
@@ -342,9 +338,6 @@ class TestFormIntegration:
 
             # Should redirect or show success
             assert response.status_code == 200
-
-            # Logout to clean up session for subsequent tests
-            client.get("/logout")
 
     def test_login_form_post_failure(self, client):
         """Test failed login form submission."""
@@ -364,8 +357,7 @@ class TestFormIntegration:
         """Test successful registration form submission."""
         with (
             patch(
-                "app.auth.login.create_user",
-                return_value=(True, "User created successfully"),
+                "login.create_user", return_value=(True, "User created successfully")
             ),
             patch("db.schema.User.query") as mock_query,
         ):

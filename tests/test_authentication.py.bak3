@@ -30,7 +30,7 @@ class TestUserAuthentication:
 
     def test_authenticate_invalid_user(self):
         """Test authentication with non-existent user."""
-        with patch("app.auth.login.get_user_by_username") as mock_get_user:
+        with patch("login.get_user_by_username") as mock_get_user:
             mock_get_user.return_value = None
 
             from app.auth.login import authenticate_user
@@ -43,7 +43,7 @@ class TestUserAuthentication:
     def test_authenticate_wrong_password(self):
         """Test authentication with wrong password."""
         with (
-            patch("app.auth.login.get_user_by_username") as mock_get_user,
+            patch("login.get_user_by_username") as mock_get_user,
             patch("werkzeug.security.check_password_hash") as mock_check_pass,
         ):
             mock_get_user.return_value = {
@@ -172,7 +172,7 @@ class TestSessionManagement:
         auth_user.login(user_id=1, username="testuser")
 
         # Mock login_required decorator to bypass authentication
-        with patch("app.auth.login.login_required", lambda f: f):
+        with patch("login.login_required", lambda f: f):
             response = client.get("/history")
 
             # Should allow access
@@ -261,7 +261,7 @@ class TestDocumentManagement:
         # Mock the Document.query to return some test documents
         with (
             patch("db.schema.Document.query") as mock_query,
-            patch("app.auth.login.login_required", lambda f: f),
+            patch("login.login_required", lambda f: f),
         ):
             mock_doc1 = Mock()
             mock_doc1.id = 1
@@ -295,7 +295,7 @@ class TestDocumentManagement:
         # Mock the Document.query to return a test document owned by user
         with (
             patch("db.schema.Document.query") as mock_query,
-            patch("app.auth.login.login_required", lambda f: f),
+            patch("login.login_required", lambda f: f),
         ):
             mock_doc = Mock()
             mock_doc.user_id = 1  # Same as authenticated user
@@ -566,9 +566,9 @@ class TestErrorHandling:
         """Test handling of concurrent user registration attempts."""
         # Mock the database operations to simulate concurrent registration
         with (
-            patch("app.auth.login.get_user_by_username") as mock_get_user,
-            patch("app.auth.login.get_user_by_email") as mock_get_email,
-            patch("app.auth.login.create_user_in_db") as mock_create,
+            patch("login.get_user_by_username") as mock_get_user,
+            patch("login.get_user_by_email") as mock_get_email,
+            patch("login.create_user_in_db") as mock_create,
         ):
             # First call: no existing user, creation succeeds
             mock_get_user.side_effect = [

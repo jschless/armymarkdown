@@ -9,9 +9,9 @@ from flask_login import (
     logout_user,
 )
 
-from armymarkdown import memo_model
+from app.forms import LoginForm, RegistrationForm
+from app.models import memo_model
 from db.schema import Document, User, db
-from forms import LoginForm, RegistrationForm
 
 login_manager = LoginManager()
 
@@ -48,19 +48,60 @@ def login_route():
 
 
 def register_route():
+    from flask import current_app
+
     if current_user.is_authenticated:
         return url_for("index", example_file="tutorial.Amd")
     form = RegistrationForm()
-    if form.validate_on_submit():
-        user = User(username=form.username.data, email=form.email.data)
-        user.set_password(form.password.data)
-        db.session.add(user)
-        db.session.commit()
-        flash("Congratulations, you are now a registered user!")
-        from flask import current_app
+    current_app.logger.info(f"Registration form submitted: {form.validate_on_submit()}")
 
-        current_app.logger.info(f"{form.username.data} created an account")
-        return render_template("login.html", title="Sign In", form=form)
+    if form.validate_on_submit():
+        current_app.logger.info(
+            f"Form validation passed for username: {form.username.data}, email: {form.email.data}"
+        )
+
+        try:
+            # Check if database connection is working
+            current_app.logger.info("Testing database connection...")
+            from sqlalchemy import text
+
+            test_query = db.session.execute(text("SELECT 1")).fetchone()
+            current_app.logger.info(f"Database connection test result: {test_query}")
+
+            # Check if user already exists
+            existing_user = User.query.filter_by(username=form.username.data).first()
+            current_app.logger.info(f"Existing user check result: {existing_user}")
+
+            user = User(username=form.username.data, email=form.email.data)
+            current_app.logger.info(f"Created User object: {user}")
+
+            user.set_password(form.password.data)
+            current_app.logger.info("Password set for user")
+
+            db.session.add(user)
+            current_app.logger.info("User added to session")
+
+            db.session.commit()
+            current_app.logger.info(
+                f"User {form.username.data} successfully committed to database"
+            )
+
+            flash("Congratulations, you are now a registered user!")
+            current_app.logger.info(
+                f"{form.username.data} created an account successfully"
+            )
+            return render_template("login.html", title="Sign In", form=form)
+
+        except Exception as e:
+            current_app.logger.error(f"Error during registration: {e!s}")
+            current_app.logger.error(f"Exception type: {type(e)}")
+            db.session.rollback()
+            flash("Registration failed. Please try again.")
+            return render_template("register.html", title="Register", form=form)
+    else:
+        if form.errors:
+            current_app.logger.info(f"Form validation errors: {form.errors}")
+
     return render_template("register.html", title="Register", form=form)
 
 
@@ -136,7 +177,7 @@ def get_document_route(document_id):
 
 def save_document(text):
     if not current_user.is_authenticated:
-        return
+        return None
 
     user_id = current_user.id
 

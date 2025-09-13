@@ -12,7 +12,7 @@ from unittest.mock import MagicMock, Mock, patch
 from flask import Flask
 import pytest
 
-from armymarkdown import memo_model
+from app.models import memo_model
 
 
 # Mock the database and login modules before they get imported
@@ -197,7 +197,7 @@ def test_app():
     with patch.dict(os.environ, test_env):
         try:
             # Import app after setting environment variables and mocks
-            from app import app
+            from app.main import app
 
             app.config["TESTING"] = True
             app.config["WTF_CSRF_ENABLED"] = False
@@ -225,7 +225,17 @@ def test_app():
 @pytest.fixture
 def client(test_app):
     """Create a test client for the Flask application."""
-    return test_app.test_client()
+    client = test_app.test_client()
+
+    # Ensure clean session for each test
+    with client.session_transaction() as sess:
+        sess.clear()
+
+    yield client
+
+    # Clean up session after test
+    with client.session_transaction() as sess:
+        sess.clear()
 
 
 @pytest.fixture
