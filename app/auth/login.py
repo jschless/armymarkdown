@@ -170,9 +170,16 @@ def get_document_route(document_id):
     if use_form_editor == "True":
         m = memo_model.MemoModel.from_text(document.content)
         d = m.to_form()
+        from app.main import get_example_files
+
+        d["examples"] = get_example_files()
         return render_template("memo_form.html", **d)
     else:
-        return render_template("index.html", memo_text=document.content)
+        from app.main import get_example_files
+
+        return render_template(
+            "index.html", memo_text=document.content, examples=get_example_files()
+        )
 
 
 def save_document(text):

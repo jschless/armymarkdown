@@ -50,6 +50,7 @@
         <li><a href="/form" {% if request.endpoint == 'form' %}class="active"{% endif %}>Form Builder</a></li>
         {% if current_user.is_authenticated %}
         <li><a href="/history" {% if request.endpoint == 'history' %}class="active"{% endif %}>History</a></li>
+        <li><a href="/profile" {% if request.endpoint == 'profile' %}class="active"{% endif %}>Profile</a></li>
         <li>
           <div class="user-menu">
             <span class="username">{{ current_user.username }}</span>

@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}Profile Settings - Army Memo Maker{% endblock %}
+
+{% block content %}
+<div class="modern-card fade-in" style="max-width: 600px; margin: var(--spacing-16) auto;">
+  <div class="modern-card-header">
+    <h2 class="modern-card-title">Profile Settings</h2>
+    <p class="modern-card-description">Set your default information to automatically populate in all memos</p>
+  </div>
+
+  <form action="" method="post" novalidate class="modern-form">
+    {{ form.hidden_tag() }}
+
+    <!-- Personal Information Section -->
+    <div style="margin-bottom: var(--spacing-8);">
+      <h3 class="section-heading">Personal Information</h3>
+      <div class="section-divider"></div>
+
+      <div class="modern-form-group">
+        <label for="{{ form.full_name.id }}" class="modern-form-label">{{ form.full_name.label.text }}</label>
+        {{ form.full_name(class="modern-form-input") }}
+        {% for error in form.full_name.errors %}
+        <div class="modern-alert modern-alert-error" style="margin-top: var(--spacing-2);">
+          {{ error }}
+        </div>
+        {% endfor %}
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr 2fr; gap: var(--spacing-4);">
+        <div class="modern-form-group">
+          <label for="{{ form.rank.id }}" class="modern-form-label">{{ form.rank.label.text }}</label>
+          {{ form.rank(class="modern-form-input") }}
+          {% for error in form.rank.errors %}
+          <div class="modern-alert modern-alert-error" style="margin-top: var(--spacing-2);">
+            {{ error }}
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="modern-form-group">
+          <label for="{{ form.branch.id }}" class="modern-form-label">{{ form.branch.label.text }}</label>
+          {{ form.branch(class="modern-form-input") }}
+          {% for error in form.branch.errors %}
+          <div class="modern-alert modern-alert-error" style="margin-top: var(--spacing-2);">
+            {{ error }}
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="modern-form-group">
+          <label for="{{ form.title.id }}" class="modern-form-label">{{ form.title.label.text }}</label>
+          {{ form.title(class="modern-form-input") }}
+          {% for error in form.title.errors %}
+          <div class="modern-alert modern-alert-error" style="margin-top: var(--spacing-2);">
+            {{ error }}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Organization Information Section -->
+    <div style="margin-bottom: var(--spacing-8);">
+      <h3 class="section-heading">Organization Information</h3>
+      <div class="section-divider"></div>
+
+      <div class="modern-form-group">
+        <label for="{{ form.organization_name.id }}" class="modern-form-label">{{ form.organization_name.label.text }}</label>
+        {{ form.organization_name(class="modern-form-input") }}
+        {% for error in form.organization_name.errors %}
+        <div class="modern-alert modern-alert-error" style="margin-top: var(--spacing-2);">
+          {{ error }}
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="modern-form-group">
+        <label for="{{ form.organization_street.id }}" class="modern-form-label">{{ form.organization_street.label.text }}</label>
+        {{ form.organization_street(class="modern-form-input") }}
+        {% for error in form.organization_street.errors %}
+        <div class="modern-alert modern-alert-error" style="margin-top: var(--spacing-2);">
+          {{ error }}
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="modern-form-group">
+        <label for="{{ form.organization_city_state_zip.id }}" class="modern-form-label">{{ form.organization_city_state_zip.label.text }}</label>
+        {{ form.organization_city_state_zip(class="modern-form-input") }}
+        {% for error in form.organization_city_state_zip.errors %}
+        <div class="modern-alert modern-alert-error" style="margin-top: var(--spacing-2);">
+          {{ error }}
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="modern-form-group">
+        <label for="{{ form.office_symbol.id }}" class="modern-form-label">{{ form.office_symbol.label.text }}</label>
+        {{ form.office_symbol(class="modern-form-input") }}
+        {% for error in form.office_symbol.errors %}
+        <div class="modern-alert modern-alert-error" style="margin-top: var(--spacing-2);">
+          {{ error }}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div style="display: flex; gap: var(--spacing-4); justify-content: flex-end;">
+      <a href="{{ url_for('index') }}" class="modern-btn modern-btn-secondary">Cancel</a>
+      {{ form.submit(class="modern-btn modern-btn-primary") }}
+    </div>
+  </form>
+</div>
+
+<div class="modern-card fade-in fade-in-delay-1" style="max-width: 600px; margin: var(--spacing-8) auto; background: linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-gray-100) 100%);">
+  <div class="text-center">
+    <h3 class="font-semibold mb-4">How Profile Settings Work</h3>
+    <div class="text-sm" style="color: var(--color-gray-600); line-height: var(--line-height-relaxed);">
+      <div style="margin-bottom: var(--spacing-3);">📝 Your profile information automatically populates in memo forms</div>
+      <div style="margin-bottom: var(--spacing-3);">🔄 Text files use placeholders that get replaced with your values</div>
+      <div style="margin-bottom: var(--spacing-3);">⚡ Saves time by eliminating repetitive data entry</div>
+      <div>🎯 Ensures consistency across all your military correspondence</div>
+    </div>
+  </div>
+</div>
+
+<style>
+.section-heading {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-gray-900);
+  margin-bottom: var(--spacing-3);
+}
+
+.section-divider {
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+  border-radius: 1px;
+  margin-bottom: var(--spacing-6);
+}
+
+@media (max-width: 768px) {
+  div[style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+</style>
+{% endblock %}

@@ -1,6 +1,7 @@
 # Army Memo Maker
 
 [![Deploy to DigitalOcean](https://github.com/jschless/armymarkdown/actions/workflows/deploy.yml/badge.svg)](https://github.com/jschless/armymarkdown/actions/workflows/deploy.yml)
+[![codecov](https://codecov.io/gh/jschless/armymarkdown/graph/badge.svg)](https://codecov.io/gh/jschless/armymarkdown)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 

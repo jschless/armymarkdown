@@ -1,7 +1,14 @@
 from flask_wtf import FlaskForm
 from flask_wtf.recaptcha import RecaptchaField
 from wtforms import PasswordField, StringField, SubmitField
-from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError
+from wtforms.validators import (
+    DataRequired,
+    Email,
+    EqualTo,
+    Length,
+    Optional,
+    ValidationError,
+)
 
 from db.schema import User
 
@@ -37,18 +44,19 @@ class RegistrationForm(FlaskForm):
     password2 = PasswordField(
         "Repeat Password", validators=[DataRequired(), EqualTo("password")]
     )
+    recaptcha = RecaptchaField()
     submit = SubmitField("Register")
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        # Only add recaptcha field if it's enabled and configured
+    def validate_recaptcha(self, field):
+        # Only validate recaptcha if it's enabled and configured
         from flask import current_app
 
-        if not current_app.config.get("DISABLE_CAPTCHA") and current_app.config.get(
+        if current_app.config.get("DISABLE_CAPTCHA") or not current_app.config.get(
             "RECAPTCHA_PUBLIC_KEY"
         ):
-            self.recaptcha = RecaptchaField()
+            return True
+        # Let the default RecaptchaField validation handle it
+        return super().validate_recaptcha(field)
 
     def validate_username(self, username):
         user = User.query.filter_by(username=username.data).first()
@@ -63,3 +71,51 @@ class RegistrationForm(FlaskForm):
             raise ValidationError(
                 "Email address already has an associated account. Please use a different email address."
             )
+
+
+class UserProfileForm(FlaskForm):
+    # Personal Information
+    full_name = StringField(
+        "Full Name",
+        validators=[Optional(), Length(max=128)],
+        render_kw={"placeholder": "e.g., Sarah M. Johnson"},
+    )
+    rank = StringField(
+        "Rank",
+        validators=[Optional(), Length(max=32)],
+        render_kw={"placeholder": "e.g., CPT, MAJ, LTC"},
+    )
+    branch = StringField(
+        "Branch",
+        validators=[Optional(), Length(max=16)],
+        render_kw={"placeholder": "e.g., MI, IN, AR"},
+    )
+    title = StringField(
+        "Title/Position",
+        validators=[Optional(), Length(max=128)],
+        render_kw={"placeholder": "e.g., Company Commander, S-3"},
+    )
+
+    # Organization Information
+    organization_name = StringField(
+        "Organization Name",
+        validators=[Optional(), Length(max=256)],
+        render_kw={"placeholder": "e.g., 1st Training Battalion"},
+    )
+    organization_street = StringField(
+        "Street Address",
+        validators=[Optional(), Length(max=256)],
+        render_kw={"placeholder": "e.g., 1234 Army Drive"},
+    )
+    organization_city_state_zip = StringField(
+        "City, State ZIP",
+        validators=[Optional(), Length(max=128)],
+        render_kw={"placeholder": "e.g., Fort Liberty, NC 28310"},
+    )
+    office_symbol = StringField(
+        "Office Symbol",
+        validators=[Optional(), Length(max=32)],
+        render_kw={"placeholder": "e.g., ATZB-CD-E"},
+    )
+
+    submit = SubmitField("Save Profile")
