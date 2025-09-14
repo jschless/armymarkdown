@@ -275,7 +275,7 @@ class BatchUploader {
         });
 
         if (!response.ok) {
-            const errorText = await response.text();
+            await response.text(); // Read error text but don't use it
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
 
@@ -316,7 +316,7 @@ class BatchUploader {
             let result;
             try {
                 result = JSON.parse(responseText);
-            } catch (e) {
+            } catch {
                 throw new Error('Invalid status response format');
             }
 

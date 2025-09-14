@@ -13,7 +13,7 @@ class TestFormCreation:
 
     def test_login_form_creation(self, app_context):
         """Test LoginForm creation and fields."""
-        from forms import LoginForm
+        from app.forms import LoginForm
 
         form = LoginForm()
 
@@ -25,7 +25,7 @@ class TestFormCreation:
     def test_register_form_creation(self, app_context):
         """Test RegistrationForm creation and fields."""
         try:
-            from forms import RegistrationForm
+            from app.forms import RegistrationForm
 
             form = RegistrationForm()
 
@@ -47,7 +47,7 @@ class TestFormCreation:
             "RECAPTCHA_PUBLIC_KEY": "test-key",
         }.get(key, default)
 
-        from forms import RegistrationForm
+        from app.forms import RegistrationForm
 
         # Create form within request context
         with app_context.test_request_context():
@@ -64,7 +64,7 @@ class TestFormCreation:
             "RECAPTCHA_PUBLIC_KEY": "test-key",
         }.get(key, default)
 
-        from forms import RegistrationForm
+        from app.forms import RegistrationForm
 
         with app_context.test_request_context():
             form = RegistrationForm()
@@ -80,7 +80,7 @@ class TestFormCreation:
             "RECAPTCHA_PUBLIC_KEY": None,
         }.get(key, default)
 
-        from forms import RegistrationForm
+        from app.forms import RegistrationForm
 
         with app_context.test_request_context():
             form = RegistrationForm()
@@ -94,7 +94,7 @@ class TestFormValidation:
 
     def test_login_form_valid_data(self, app_context):
         """Test LoginForm with valid data."""
-        from forms import LoginForm
+        from app.forms import LoginForm
 
         form_data = MultiDict(
             [
@@ -113,7 +113,7 @@ class TestFormValidation:
 
     def test_login_form_empty_fields(self, app_context):
         """Test LoginForm with empty required fields."""
-        from forms import LoginForm
+        from app.forms import LoginForm
 
         form_data = MultiDict(
             [("username", ""), ("password", ""), ("csrf_token", "dummy_token")]
@@ -130,7 +130,7 @@ class TestFormValidation:
 
     def test_register_form_valid_data(self, app_context):
         """Test RegistrationForm with valid data."""
-        from forms import RegistrationForm
+        from app.forms import RegistrationForm
 
         form_data = MultiDict(
             [
@@ -160,7 +160,7 @@ class TestFormValidation:
 
     def test_register_form_password_mismatch(self, app_context):
         """Test RegistrationForm with mismatched passwords."""
-        from forms import RegistrationForm
+        from app.forms import RegistrationForm
 
         form_data = MultiDict(
             [
@@ -195,7 +195,7 @@ class TestFormValidation:
 
     def test_register_form_invalid_email(self, app_context):
         """Test RegistrationForm with invalid email format."""
-        from forms import RegistrationForm
+        from app.forms import RegistrationForm
 
         form_data = MultiDict(
             [
@@ -236,6 +236,10 @@ class TestFormSecurity:
 
         try:
             with test_app.test_client() as client:
+                # Ensure clean session for this test
+                with client.session_transaction() as sess:
+                    sess.clear()
+
                 response = client.get("/register")
 
                 assert response.status_code == 200
@@ -263,7 +267,7 @@ class TestFormSecurity:
 
     def test_input_sanitization(self, app_context):
         """Test that form inputs are properly sanitized."""
-        from forms import RegistrationForm
+        from app.forms import RegistrationForm
 
         malicious_input = '<script>alert("xss")</script>'
         form_data = MultiDict(
@@ -297,7 +301,7 @@ class TestFormSecurity:
 
     def test_sql_injection_protection(self, app_context):
         """Test protection against SQL injection in form fields."""
-        from forms import LoginForm
+        from app.forms import LoginForm
 
         malicious_input = "'; DROP TABLE users; --"
         form_data = MultiDict(
@@ -324,9 +328,9 @@ class TestFormIntegration:
     def test_login_form_post_success(self, client):
         """Test successful login form submission."""
         with (
-            patch("login.authenticate_user", return_value=True),
+            patch("app.auth.login.authenticate_user", return_value=True),
             patch(
-                "login.get_user_by_username",
+                "app.auth.login.get_user_by_username",
                 return_value={"id": 1, "username": "testuser"},
             ),
         ):
@@ -338,6 +342,9 @@ class TestFormIntegration:
 
             # Should redirect or show success
             assert response.status_code == 200
+
+            # Logout to clean up session for subsequent tests
+            client.get("/logout")
 
     def test_login_form_post_failure(self, client):
         """Test failed login form submission."""
@@ -357,7 +364,8 @@ class TestFormIntegration:
         """Test successful registration form submission."""
         with (
             patch(
-                "login.create_user", return_value=(True, "User created successfully")
+                "app.auth.login.create_user",
+                return_value=(True, "User created successfully"),
             ),
             patch("db.schema.User.query") as mock_query,
         ):
@@ -468,7 +476,7 @@ class TestFieldValidators:
 
     def test_username_length_validation(self, app_context):
         """Test username length validation."""
-        from forms import RegistrationForm
+        from app.forms import RegistrationForm
 
         # Test very long username
         long_username = "a" * 100
@@ -503,7 +511,7 @@ class TestFieldValidators:
 
     def test_password_strength_validation(self, app_context):
         """Test password strength validation."""
-        from forms import RegistrationForm
+        from app.forms import RegistrationForm
 
         weak_passwords = ["123", "abc", ""]  # Passwords that are too short or empty
 
@@ -535,7 +543,7 @@ class TestFieldValidators:
 
     def test_email_format_validation(self, app_context):
         """Test email format validation."""
-        from forms import RegistrationForm
+        from app.forms import RegistrationForm
 
         invalid_emails = ["notanemail", "missing@", "@missing.com"]
 
@@ -570,7 +578,7 @@ class TestFormEdgeCases:
 
     def test_form_with_unicode_input(self, app_context):
         """Test form handling of unicode characters."""
-        from forms import RegistrationForm
+        from app.forms import RegistrationForm
 
         unicode_data = {
             "username": "user_name",  # Use ASCII for username to pass validation
@@ -599,7 +607,7 @@ class TestFormEdgeCases:
 
     def test_form_with_very_large_input(self, app_context):
         """Test form handling of extremely large input."""
-        from forms import LoginForm
+        from app.forms import LoginForm
 
         very_large_input = "x" * 1000  # 1KB of data
         form_data = MultiDict(
@@ -622,7 +630,7 @@ class TestFormEdgeCases:
 
     def test_empty_form_submission(self, app_context):
         """Test completely empty form submission."""
-        from forms import LoginForm
+        from app.forms import LoginForm
 
         form_data = MultiDict([])
 

@@ -7,8 +7,8 @@ import tempfile
 
 import pytest
 
-from armymarkdown import memo_model
-from armymarkdown.memo_model import (
+from app.models import memo_model
+from app.models.memo_model import (
     MemoModel,
     add_latex_escape_chars,
     remove_latex_escape_chars,
@@ -480,7 +480,7 @@ class TestComplexScenarios:
         assert "José María González-Smith" in amd_text  # Unicode in author name
 
         # Test LaTeX escaping functionality separately
-        from armymarkdown.memo_model import add_latex_escape_chars
+        from app.models.memo_model import add_latex_escape_chars
 
         escaped_subject = add_latex_escape_chars(memo.subject)
         assert "\\$" in escaped_subject  # $ should be escaped in LaTeX

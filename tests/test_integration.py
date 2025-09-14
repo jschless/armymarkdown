@@ -17,11 +17,12 @@ class TestCompleteUserWorkflow:
         # Mock database operations
         with (
             patch(
-                "login.create_user", return_value=(True, "User created successfully")
+                "app.auth.login.create_user",
+                return_value=(True, "User created successfully"),
             ),
-            patch("login.authenticate_user", return_value=True),
+            patch("app.auth.login.authenticate_user", return_value=True),
             patch(
-                "login.get_user_by_username",
+                "app.auth.login.get_user_by_username",
                 return_value={"id": 1, "username": "testuser"},
             ),
         ):
@@ -52,8 +53,8 @@ class TestCompleteUserWorkflow:
             history_response = client.get("/history")
             assert history_response.status_code == 200
 
-    @patch("app.create_memo.delay")
-    @patch("login.save_document")
+    @patch("app.main.create_memo.delay")
+    @patch("app.auth.login.save_document")
     def test_memo_creation_workflow_text_editor(
         self, mock_save, mock_task, client, sample_memo_text
     ):
@@ -86,8 +87,8 @@ class TestCompleteUserWorkflow:
                 404,
             ]  # 404 if task not found in test
 
-    @patch("app.create_memo.delay")
-    @patch("login.save_document")
+    @patch("app.main.create_memo.delay")
+    @patch("app.auth.login.save_document")
     def test_memo_creation_workflow_form_builder(
         self, mock_save, mock_task, client, sample_form_data
     ):
@@ -113,9 +114,12 @@ class TestCompleteUserWorkflow:
     def test_authenticated_document_management_workflow(self, client):
         """Test document management workflow for authenticated users."""
         with (
-            patch("login.save_document", return_value="Document saved successfully"),
             patch(
-                "login.get_user_documents",
+                "app.auth.login.save_document",
+                return_value="Document saved successfully",
+            ),
+            patch(
+                "app.auth.login.get_user_documents",
                 return_value=[
                     (1, "Test Document 1", "Content 1", "2024-01-01"),
                     (2, "Test Document 2", "Content 2", "2024-01-02"),
@@ -145,7 +149,9 @@ class TestErrorRecoveryWorkflows:
 
     def test_database_error_recovery(self, client, sample_memo_text):
         """Test workflow when database operations fail."""
-        with patch("login.save_document", side_effect=Exception("Database error")):
+        with patch(
+            "app.auth.login.save_document", side_effect=Exception("Database error")
+        ):
             # Should handle database errors gracefully
             save_response = client.post(
                 "/save_progress", data={"memo_text": sample_memo_text}
@@ -160,7 +166,7 @@ class TestErrorRecoveryWorkflows:
                     or b"memo_text" in save_response.data
                 )
 
-    @patch("app.create_memo.delay")
+    @patch("app.main.create_memo.delay")
     def test_celery_task_failure_handling(self, mock_task, client, sample_memo_text):
         """Test handling when Celery task fails."""
         mock_task.side_effect = Exception("Celery connection failed")
@@ -245,7 +251,7 @@ class TestSecurityWorkflows:
         malicious_input = "'; DROP TABLE users; --"
 
         # Test in login
-        with patch("login.authenticate_user", return_value=False):
+        with patch("app.auth.login.authenticate_user", return_value=False):
             login_response = client.post(
                 "/login", data={"username": malicious_input, "password": "password"}
             )
@@ -254,7 +260,9 @@ class TestSecurityWorkflows:
             assert login_response.status_code in [200, 302, 401]
 
         # Test in registration
-        with patch("login.create_user", return_value=(False, "Invalid username")):
+        with patch(
+            "app.auth.login.create_user", return_value=(False, "Invalid username")
+        ):
             register_response = client.post(
                 "/register",
                 data={
@@ -278,9 +286,9 @@ class TestSecurityWorkflows:
 
         # Login should regenerate session
         with (
-            patch("login.authenticate_user", return_value=True),
+            patch("app.auth.login.authenticate_user", return_value=True),
             patch(
-                "login.get_user_by_username",
+                "app.auth.login.get_user_by_username",
                 return_value={"id": 1, "username": "testuser"},
             ),
         ):
@@ -328,8 +336,8 @@ SUBJECT=Large Test Memo
                 )
 
         with (
-            patch("login.save_document", return_value="Large document saved"),
-            patch("app.create_memo.delay", return_value=Mock(id="large-task-123")),
+            patch("app.auth.login.save_document", return_value="Large document saved"),
+            patch("app.main.create_memo.delay", return_value=Mock(id="large-task-123")),
         ):
             # Should handle large content without timeout
             save_response = client.post(
@@ -352,8 +360,10 @@ SUBJECT=Large Test Memo
         )
 
         with (
-            patch("login.save_document", return_value="Saved"),
-            patch("app.create_memo.delay", return_value=Mock(id="concurrent-task")),
+            patch("app.auth.login.save_document", return_value="Saved"),
+            patch(
+                "app.main.create_memo.delay", return_value=Mock(id="concurrent-task")
+            ),
         ):
             # Simulate multiple requests quickly
             responses = []
@@ -396,7 +406,7 @@ class TestEndToEndFeatureTests:
 
         # Should not require CAPTCHA validation when disabled
         with (
-            patch("login.create_user", return_value=(True, "User created")),
+            patch("app.auth.login.create_user", return_value=(True, "User created")),
             patch("db.schema.User.query") as mock_query,
         ):
             # Mock no existing users

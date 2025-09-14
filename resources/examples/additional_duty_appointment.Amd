@@ -1,0 +1,41 @@
+# EXAMPLE: Additional Duty Appointment - Based on real Army template from armywriter.com
+
+ORGANIZATION_NAME = Foxtrot Company, 3rd Battalion, 82nd General Support Aviation Battalion
+ORGANIZATION_STREET_ADDRESS = 1200 Normandy Drive
+ORGANIZATION_CITY_STATE_ZIP = Fort Liberty, NC 28310
+
+OFFICE_SYMBOL = AFVC-ECF
+
+AUTHOR = Michael J. Jones
+RANK = CPT
+BRANCH = AV
+TITLE = Commanding
+
+# This creates a distribution memo
+DISTRO = All Company Personnel
+DISTRO = Battalion S1
+
+SUBJECT = Additional Duty Appointment
+
+- **EFFECTIVE DATE**: Effective 30 April 2024, the individuals of F/3-82 GSAB (WDDRF0) listed below are assigned the following additional duty: Unit Prevention Leader (UPL).
+    - **Primary**: SGT Isaiah C. Weiner
+    - **Alternate**: SPC Jennifer L. Rodriguez
+
+- **AUTHORITY**: AR 600-85, Army Substance Abuse Program.
+
+- **PURPOSE**: To perform duties outlined by the governing regulations, specifically:
+    - Conduct unit urinalysis testing programs
+    - Maintain chain of custody procedures
+    - Coordinate with installation Drug and Alcohol Testing Coordinator
+    - Ensure compliance with all ASAP requirements
+    - Conduct unit prevention education programs
+
+- **SPECIAL INSTRUCTIONS**:
+    - Become familiar with and maintain publications pertaining to assigned area of responsibility
+    - Complete required UPL training within 30 days of appointment
+    - Report any problems or discrepancies through the chain of command
+    - Maintain strict confidentiality regarding testing procedures and results
+
+- **ADDITIONAL INSTRUCTIONS**: These orders will remain in effect until superseded or rescinded by competent authority.
+
+- **POINT OF CONTACT**: The point of contact for this document is the undersigned at michael.j.jones@army.mil or (910) 555-0145.

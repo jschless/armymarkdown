@@ -64,7 +64,6 @@ dependencies = [
 dev = [
     # Code quality and formatting
     "ruff>=0.7.0",
-    "mypy>=1.13.0",
     "pre-commit>=4.0.0",
 
     # Security scanning
@@ -121,8 +120,8 @@ Issues = "https://github.com/jschless/armymarkdown/issues"
 
 [dependency-groups]
 dev = [
+    "pre-commit>=4.3.0",
     "requests>=2.32.5",
-    "selenium>=4.35.0",
     "webdriver-manager>=4.0.2",
 ]
 
@@ -168,7 +167,6 @@ exclude = [
     ".git",
     ".git-rewrite",
     ".hg",
-    ".mypy_cache",
     ".nox",
     ".pants.d",
     ".pytype",
@@ -233,17 +231,6 @@ exclude_lines = [
     "@(abc\\.)?abstractmethod",
 ]
 
-# MyPy configuration
-[tool.mypy]
-python_version = "3.11"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = false  # Gradually enable this
-ignore_missing_imports = true
-show_error_codes = true
-strict_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = true
 
 # Pytest configuration
 [tool.pytest.ini_options]
@@ -265,7 +252,6 @@ filterwarnings = [
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests",
-    "selenium: marks tests as selenium/browser tests",
     "e2e: marks tests as end-to-end tests",
 ]
 

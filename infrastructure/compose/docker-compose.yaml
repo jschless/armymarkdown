@@ -1,0 +1,86 @@
+services:
+  redis:
+    image: redis:latest
+    restart: unless-stopped
+    networks:
+      - army_net
+
+  flask_app:
+    build:
+      context: ../../
+      dockerfile: infrastructure/docker/Dockerfile
+    ports:
+      - "8443:8443"
+      - "8000:8000"
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+      - ../../resources:/app/resources
+      - db-data:/data
+    environment:
+      - FLASK_SECRET=${FLASK_SECRET}
+      - RECAPTCHA_PUBLIC_KEY=${RECAPTCHA_PUBLIC_KEY}
+      - RECAPTCHA_PRIVATE_KEY=${RECAPTCHA_PRIVATE_KEY}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+    depends_on:
+      - redis
+      - sqlite_db
+    restart: unless-stopped
+    networks:
+      - army_net
+
+  celery:
+    build:
+      context: ../../
+      dockerfile: infrastructure/docker/Dockerfile
+    volumes:
+      - ../../resources:/app/resources
+      - db-data:/data
+    container_name: cel01
+    command: uv run celery -A app.main.celery worker -l info --without-heartbeat --without-gossip
+    environment:
+      - FLASK_SECRET=${FLASK_SECRET}
+      - RECAPTCHA_PUBLIC_KEY=${RECAPTCHA_PUBLIC_KEY}
+      - RECAPTCHA_PRIVATE_KEY=${RECAPTCHA_PRIVATE_KEY}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+    deploy:
+      resources:
+        limits:
+          memory: 750M  # Limit to 750MB, leave 250MB for system
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - army_net
+
+  sqlite_db:
+    image: alpine:latest
+    command: sh -c "mkdir -p /data && touch /data/users.db && tail -f /dev/null"
+    volumes:
+      - db-data:/data
+    networks:
+      - army_net
+
+  proxy:
+    build:
+      context: ../../
+      dockerfile: infrastructure/proxy/Dockerfile
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - flask_app
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+    restart: unless-stopped
+    networks:
+      - army_net
+
+volumes:
+  db-data:
+
+networks:
+  army_net:

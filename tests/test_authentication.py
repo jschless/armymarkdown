@@ -30,10 +30,10 @@ class TestUserAuthentication:
 
     def test_authenticate_invalid_user(self):
         """Test authentication with non-existent user."""
-        with patch("login.get_user_by_username") as mock_get_user:
+        with patch("app.auth.login.get_user_by_username") as mock_get_user:
             mock_get_user.return_value = None
 
-            from login import authenticate_user
+            from app.auth.login import authenticate_user
 
             result = authenticate_user("nonexistent", "password")
 
@@ -43,7 +43,7 @@ class TestUserAuthentication:
     def test_authenticate_wrong_password(self):
         """Test authentication with wrong password."""
         with (
-            patch("login.get_user_by_username") as mock_get_user,
+            patch("app.auth.login.get_user_by_username") as mock_get_user,
             patch("werkzeug.security.check_password_hash") as mock_check_pass,
         ):
             mock_get_user.return_value = {
@@ -53,7 +53,7 @@ class TestUserAuthentication:
             }
             mock_check_pass.return_value = False
 
-            from login import authenticate_user
+            from app.auth.login import authenticate_user
 
             result = authenticate_user("testuser", "wrong_password")
 
@@ -65,9 +65,9 @@ class TestUserAuthentication:
 class TestUserRegistration:
     """Test user registration functionality."""
 
-    @patch("login.get_user_by_username")
-    @patch("login.get_user_by_email")
-    @patch("login.create_user_in_db")
+    @patch("app.auth.login.get_user_by_username")
+    @patch("app.auth.login.get_user_by_email")
+    @patch("app.auth.login.create_user_in_db")
     def test_create_user_success(self, mock_create_db, mock_get_email, mock_get_user):
         """Test successful user creation."""
         # Mock no existing user
@@ -75,7 +75,7 @@ class TestUserRegistration:
         mock_get_email.return_value = None
         mock_create_db.return_value = True
 
-        from login import create_user
+        from app.auth.login import create_user
 
         success, message = create_user("newuser", "test@example.com", "password123")
 
@@ -83,26 +83,26 @@ class TestUserRegistration:
         assert "success" in message.lower() or "created" in message.lower()
         mock_create_db.assert_called_once()
 
-    @patch("login.get_user_by_username")
+    @patch("app.auth.login.get_user_by_username")
     def test_create_user_duplicate_username(self, mock_get_user):
         """Test user creation with duplicate username."""
         mock_get_user.return_value = {"id": 1, "username": "existing"}
 
-        from login import create_user
+        from app.auth.login import create_user
 
         success, message = create_user("existing", "new@example.com", "password123")
 
         assert success is False
         assert "username" in message.lower() and "exists" in message.lower()
 
-    @patch("login.get_user_by_username")
-    @patch("login.get_user_by_email")
+    @patch("app.auth.login.get_user_by_username")
+    @patch("app.auth.login.get_user_by_email")
     def test_create_user_duplicate_email(self, mock_get_email, mock_get_user):
         """Test user creation with duplicate email."""
         mock_get_user.return_value = None
         mock_get_email.return_value = {"id": 1, "email": "existing@example.com"}
 
-        from login import create_user
+        from app.auth.login import create_user
 
         success, message = create_user("newuser", "existing@example.com", "password123")
 
@@ -172,7 +172,7 @@ class TestSessionManagement:
         auth_user.login(user_id=1, username="testuser")
 
         # Mock login_required decorator to bypass authentication
-        with patch("login.login_required", lambda f: f):
+        with patch("app.auth.login.login_required", lambda f: f):
             response = client.get("/history")
 
             # Should allow access
@@ -194,16 +194,17 @@ class TestSessionManagement:
                 f"Expected redirect to login but got 200 with content: {response_text[:200]}"
             )
         else:
-            assert response.status_code in [302, 401], (
-                f"Expected 302/401 but got {response.status_code}"
-            )
+            assert response.status_code in [
+                302,
+                401,
+            ], f"Expected 302/401 but got {response.status_code}"
 
 
 class TestDocumentManagement:
     """Test document saving and retrieval."""
 
-    @patch("login.db.session")
-    @patch("login.Document")
+    @patch("app.auth.login.db.session")
+    @patch("app.auth.login.Document")
     def test_save_document_logged_in(
         self, mock_document_class, mock_db_session, auth_user, test_app
     ):
@@ -226,7 +227,7 @@ class TestDocumentManagement:
 
         # Run within application context
         with test_app.app_context():
-            from login import save_document
+            from app.auth.login import save_document
 
             result = save_document("Test memo content")
 
@@ -246,7 +247,7 @@ class TestDocumentManagement:
         # Ensure user is logged out
         auth_user.logout()
 
-        from login import save_document
+        from app.auth.login import save_document
 
         result = save_document("Test memo content")
 
@@ -261,7 +262,7 @@ class TestDocumentManagement:
         # Mock the Document.query to return some test documents
         with (
             patch("db.schema.Document.query") as mock_query,
-            patch("login.login_required", lambda f: f),
+            patch("app.auth.login.login_required", lambda f: f),
         ):
             mock_doc1 = Mock()
             mock_doc1.id = 1
@@ -295,7 +296,7 @@ class TestDocumentManagement:
         # Mock the Document.query to return a test document owned by user
         with (
             patch("db.schema.Document.query") as mock_query,
-            patch("login.login_required", lambda f: f),
+            patch("app.auth.login.login_required", lambda f: f),
         ):
             mock_doc = Mock()
             mock_doc.user_id = 1  # Same as authenticated user
@@ -446,7 +447,7 @@ class TestInputValidation:
 
     def test_username_validation(self):
         """Test username validation rules."""
-        from login import validate_username
+        from app.auth.login import validate_username
 
         # Valid usernames
         assert validate_username("user123") is True
@@ -461,7 +462,7 @@ class TestInputValidation:
 
     def test_email_validation(self):
         """Test email validation."""
-        from login import validate_email
+        from app.auth.login import validate_email
 
         # Valid emails
         assert validate_email("test@example.com") is True
@@ -475,7 +476,7 @@ class TestInputValidation:
 
     def test_password_strength_validation(self):
         """Test password strength requirements."""
-        from login import validate_password_strength
+        from app.auth.login import validate_password_strength
 
         # Valid passwords
         assert validate_password_strength("StrongPass123!") is True
@@ -494,7 +495,7 @@ class TestInputValidation:
         # Try SQL injection in username
         malicious_username = "'; DROP TABLE users; --"
 
-        from login import get_user_by_username
+        from app.auth.login import get_user_by_username
 
         # This should not break the database
         try:
@@ -518,7 +519,7 @@ class TestInputValidation:
         """Test XSS prevention in user data storage and retrieval."""
         malicious_content = '<script>alert("xss")</script>'
 
-        from login import sanitize_user_input
+        from app.auth.login import sanitize_user_input
 
         cleaned_content = sanitize_user_input(malicious_content)
 
@@ -530,12 +531,12 @@ class TestInputValidation:
 class TestErrorHandling:
     """Test error handling in authentication."""
 
-    @patch("login.get_user_by_username")
+    @patch("app.auth.login.get_user_by_username")
     def test_database_connection_error(self, mock_get_user):
         """Test handling of database connection errors."""
         mock_get_user.side_effect = Exception("Database connection failed")
 
-        from login import authenticate_user
+        from app.auth.login import authenticate_user
 
         # Should handle exception gracefully
         try:
@@ -551,7 +552,7 @@ class TestErrorHandling:
         """Test handling of database query errors."""
         mock_query.filter_by.side_effect = Exception("Query failed")
 
-        from login import get_user_by_username
+        from app.auth.login import get_user_by_username
 
         # Should handle exception gracefully
         try:
@@ -566,9 +567,9 @@ class TestErrorHandling:
         """Test handling of concurrent user registration attempts."""
         # Mock the database operations to simulate concurrent registration
         with (
-            patch("login.get_user_by_username") as mock_get_user,
-            patch("login.get_user_by_email") as mock_get_email,
-            patch("login.create_user_in_db") as mock_create,
+            patch("app.auth.login.get_user_by_username") as mock_get_user,
+            patch("app.auth.login.get_user_by_email") as mock_get_email,
+            patch("app.auth.login.create_user_in_db") as mock_create,
         ):
             # First call: no existing user, creation succeeds
             mock_get_user.side_effect = [
@@ -581,10 +582,10 @@ class TestErrorHandling:
                 False,
             ]  # First succeeds, second fails due to race condition
 
-            from login import create_user
+            from app.auth.login import create_user
 
             # Simulate race condition by creating same user twice quickly
-            success1, msg1 = create_user("raceuser", "race1@example.com", "password")
+            success1, _ = create_user("raceuser", "race1@example.com", "password")
 
             # Reset mocks for second call - now username exists
             mock_get_user.side_effect = [

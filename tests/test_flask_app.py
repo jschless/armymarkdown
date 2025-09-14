@@ -55,8 +55,8 @@ class TestRoutes:
 class TestProcessing:
     """Test memo processing functionality."""
 
-    @patch("app.create_memo.delay")
-    @patch("login.save_document")
+    @patch("app.main.create_memo.delay")
+    @patch("app.auth.login.save_document")
     def test_process_route_text_input(
         self, mock_save, mock_task, client, sample_memo_text
     ):
@@ -71,8 +71,8 @@ class TestProcessing:
         mock_task.assert_called_once()
         mock_save.assert_called_once()
 
-    @patch("app.create_memo.delay")
-    @patch("login.save_document")
+    @patch("app.main.create_memo.delay")
+    @patch("app.auth.login.save_document")
     def test_process_route_form_input(
         self, mock_save, mock_task, client, sample_form_data
     ):
@@ -93,7 +93,7 @@ class TestProcessing:
         # Should handle gracefully - either error page or redirect
         assert response.status_code in [200, 302, 400]
 
-    @patch("login.save_document")
+    @patch("app.auth.login.save_document")
     def test_save_progress_text(self, mock_save, client, sample_memo_text):
         """Test saving progress from text editor."""
         mock_save.return_value = "Progress saved"
@@ -104,7 +104,7 @@ class TestProcessing:
         assert b"memo_text" in response.data  # Should return to text editor
         mock_save.assert_called_once()
 
-    @patch("login.save_document")
+    @patch("app.auth.login.save_document")
     def test_save_progress_form(self, mock_save, client, sample_form_data):
         """Test saving progress from form."""
         mock_save.return_value = "Progress saved"
@@ -141,10 +141,12 @@ class TestAuthentication:
         # Should redirect after logout
         assert response.status_code in [200, 302]
 
-    @patch("login.authenticate_user")
-    def test_login_post_valid(self, mock_auth, client):
+    @patch("app.auth.login.authenticate_user")
+    @patch("app.auth.login.get_user_by_username")
+    def test_login_post_valid(self, mock_get_user, mock_auth, client):
         """Test POST login with valid credentials."""
         mock_auth.return_value = True
+        mock_get_user.return_value = {"id": 1, "username": "testuser"}
 
         response = client.post(
             "/login", data={"username": "testuser", "password": "testpass"}
@@ -152,6 +154,9 @@ class TestAuthentication:
 
         # Should redirect on successful login
         assert response.status_code in [200, 302]
+
+        # Logout to clean up session for subsequent tests
+        client.get("/logout")
 
     def test_login_post_invalid(self, client):
         """Test POST login with invalid credentials."""
@@ -168,7 +173,7 @@ class TestAuthentication:
             # Check that it redirects to login page
             assert "/login" in response.location or response.location == "/"
 
-    @patch("login.create_user")
+    @patch("app.auth.login.create_user")
     def test_register_post_valid(self, mock_create, client):
         """Test POST register with valid data."""
         mock_create.return_value = (True, "User created")
@@ -254,7 +259,7 @@ class TestErrorHandling:
 
         assert response.status_code == 405
 
-    @patch("app.memo_model.MemoModel.from_text")
+    @patch("app.models.memo_model.MemoModel.from_text")
     def test_memo_processing_error_handling(self, mock_from_text, client):
         """Test handling of memo processing errors."""
         # Make parsing fail

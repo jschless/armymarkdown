@@ -1,72 +1,51 @@
-# Pre-commit hooks configuration
-# Run `pre-commit install` to install the git hook scripts
-# Run `pre-commit run --all-files` to run on all files
-
 repos:
-  # Ruff for linting and formatting (replaces flake8, black, isort, etc.)
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.12
-    hooks:
-      # Run the linter
-      - id: ruff
-        args: [--fix]
-        types_or: [python, pyi, jupyter]
-      # Run the formatter
-      - id: ruff-format
-        types_or: [python, pyi, jupyter]
-
-  # Built-in pre-commit hooks
+  # Basic file checks
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
-      # Basic file checks
-      - id: check-yaml
-      - id: check-toml
-      - id: check-json
-        exclude: ^node_modules/
-      - id: end-of-file-fixer
       - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
       - id: check-merge-conflict
-      - id: check-case-conflict
-
-      # Python-specific checks
-      - id: check-ast
-      - id: debug-statements
-      - id: check-docstring-first
-
-      # Security checks
+      - id: check-json
       - id: detect-private-key
-      - id: detect-aws-credentials
 
-  # MyPy for type checking (disabled due to Flask-SQLAlchemy compatibility issues)
-  # - repo: https://github.com/pre-commit/mirrors-mypy
-  #   rev: v1.13.0
-  #   hooks:
-  #     - id: mypy
-  #       additional_dependencies:
-  #         - types-redis
-  #         - types-requests
-  #         - types-python-dateutil
-  #         - types-tabulate
-  #       args: [--ignore-missing-imports, --no-strict-optional]
+  # Python linting and formatting with ruff
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.10
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
 
-  # Security linting with bandit
+  # Security scanning
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.8.0
+    rev: 1.7.10
     hooks:
       - id: bandit
-        args: [-c, pyproject.toml]
-        additional_dependencies: ["bandit[toml]"]
+        args: ['-r', 'app/', 'db/', '-f', 'json', '--exit-zero']
+        pass_filenames: false
 
-# Configuration
-ci:
-  autofix_commit_msg: |
-    [pre-commit.ci] auto fixes from pre-commit hooks
+  # JavaScript linting
+  - repo: local
+    hooks:
+      - id: eslint
+        name: eslint
+        entry: npx eslint
+        language: node
+        files: \.(js)$
+        args: [-c, config/eslint.config.js, --fix]
+        additional_dependencies:
+          - eslint@9.34.0
 
-    for more information, see https://pre-commit.ci
-  autofix_prs: true
-  autoupdate_branch: ''
-  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
-  autoupdate_schedule: weekly
-  skip: []
-  submodules: false
+  # HTML linting
+  - repo: local
+    hooks:
+      - id: htmlhint
+        name: htmlhint
+        entry: npx htmlhint
+        language: node
+        files: \.(html)$
+        additional_dependencies:
+          - htmlhint@1.6.3

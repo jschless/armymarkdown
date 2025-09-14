@@ -1,6 +1,7 @@
 import os
 
-from armymarkdown import memo_model, writer
+from app.models import memo_model
+from app.services import writer
 
 # Get the directory containing this test file
 TEST_DIR = os.path.dirname(os.path.abspath(__file__))

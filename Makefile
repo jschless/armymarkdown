@@ -28,8 +28,9 @@ help:
 	@echo "  make redis        Start Redis server (if installed locally)"
 	@echo ""
 	@echo "Docker:"
-	@echo "  make docker-dev   Start development environment with Docker"
-	@echo "  make docker-prod  Start production environment with Docker"
+	@echo "  make docker-dev       Start development environment with Docker (Ctrl+C to stop)"
+	@echo "  make docker-dev-build Build and start development environment with Docker"
+	@echo "  make docker-prod      Start production environment with Docker"
 	@echo ""
 	@echo "Utilities:"
 	@echo "  make clean        Clean up temporary files and caches"
@@ -38,12 +39,11 @@ help:
 # Environment setup
 install:
 	@echo "Installing production dependencies with uv..."
-	uv pip install -r requirements.txt
+	uv sync --no-dev
 
 install-dev:
 	@echo "Installing development dependencies with uv..."
-	uv pip install -r requirements.txt
-	uv pip install -r requirements-test.txt
+	uv sync
 
 setup: install-dev
 	@echo "Setting up development environment..."
@@ -58,52 +58,56 @@ setup: install-dev
 # Code quality
 format:
 	@echo "Formatting code with ruff..."
-	ruff format .
+	uv run ruff format .
 
 lint:
 	@echo "Running lint checks with ruff..."
-	ruff check .
+	uv run ruff check .
 
 lint-fix:
 	@echo "Running lint checks with auto-fix..."
-	ruff check . --fix
+	uv run ruff check . --fix
 
 pre-commit:
 	@echo "Running pre-commit hooks..."
-	pre-commit run --all-files
+	uv run pre-commit run --all-files
 
 security:
 	@echo "Running security checks..."
-	bandit -r . -f text || true
+	uv run bandit -r . -f text || true
 	@echo ""
-	safety check || true
+	uv run safety check || true
 
 # Testing
 test:
-	@echo "Running all tests..."
-	pytest
+	@echo "Running all tests (excluding selenium)..."
+	PYTHONPATH=. uv run pytest --ignore=tests/test_pdf_generation_e2e.py --ignore=tests/test_selenium_e2e.py --ignore=tests/test_ui_selenium.py
 
 test-cov:
 	@echo "Running tests with coverage..."
-	pytest --cov=. --cov-report=html --cov-report=term-missing
+	PYTHONPATH=. uv run pytest --cov=. --cov-report=html --cov-report=term-missing --ignore=tests/test_pdf_generation_e2e.py --ignore=tests/test_selenium_e2e.py --ignore=tests/test_ui_selenium.py
 
 test-fast:
 	@echo "Running fast tests only..."
-	pytest -m "not slow"
+	PYTHONPATH=. uv run pytest -m "not slow" --ignore=tests/test_pdf_generation_e2e.py --ignore=tests/test_selenium_e2e.py --ignore=tests/test_ui_selenium.py
 
 test-verbose:
 	@echo "Running tests with verbose output..."
-	pytest -v
+	PYTHONPATH=. uv run pytest -v --ignore=tests/test_pdf_generation_e2e.py --ignore=tests/test_selenium_e2e.py --ignore=tests/test_ui_selenium.py
+
+test-all:
+	@echo "Running ALL tests (including selenium - requires selenium to be installed)..."
+	PYTHONPATH=. uv run pytest -v
 
 # Development servers
 run:
 	@echo "Starting Flask development server..."
 	@echo "Make sure Redis is running and .env is configured!"
-	flask run --debug
+	FLASK_APP=app.main uv run flask run --debug
 
 celery:
 	@echo "Starting Celery worker..."
-	celery -A app.celery worker --loglevel=info
+	uv run celery -A app.main.celery worker --loglevel=info
 
 redis:
 	@echo "Starting Redis server..."
@@ -112,15 +116,21 @@ redis:
 # Docker commands
 docker-dev:
 	@echo "Starting development environment with Docker..."
-	docker-compose -f docker-compose-dev.yaml up --build
+	@echo "Press Ctrl+C to stop all services"
+	docker compose -f infrastructure/compose/docker-compose-dev.yaml up
+
+docker-dev-build:
+	@echo "Building and starting development environment with Docker..."
+	@echo "Press Ctrl+C to stop all services"
+	docker compose -f infrastructure/compose/docker-compose-dev.yaml up --build
 
 docker-prod:
 	@echo "Starting production environment with Docker..."
-	docker-compose up --build
+	docker compose -f infrastructure/compose/docker-compose.yaml up --build
 
 docker-stop:
 	@echo "Stopping Docker containers..."
-	docker-compose down
+	docker compose down
 
 # Utilities
 clean:
@@ -130,7 +140,6 @@ clean:
 	find . -type d -name "*.egg-info" -delete
 	find . -type d -name ".pytest_cache" -delete
 	find . -type d -name ".ruff_cache" -delete
-	find . -type d -name ".mypy_cache" -delete
 	rm -rf htmlcov/
 	rm -rf dist/
 	rm -rf build/
@@ -148,17 +157,14 @@ ci: lint security test-cov
 # Quick start for new developers
 quickstart:
 	@echo "Quick start for new developers:"
-	@echo "1. Creating virtual environment..."
-	uv venv
-	@echo "2. Installing dependencies..."
-	@$(MAKE) install-dev
-	@echo "3. Setting up pre-commit..."
-	pre-commit install
-	@echo "4. Creating .env file..."
+	@echo "1. Creating virtual environment and installing dependencies..."
+	uv sync
+	@echo "2. Setting up pre-commit..."
+	uv run pre-commit install
+	@echo "3. Creating .env file..."
 	@if [ ! -f .env ]; then cp .env.example .env; fi
 	@echo ""
 	@echo "✅ Setup complete! Next steps:"
-	@echo "   - Activate virtual environment: source .venv/bin/activate"
 	@echo "   - Edit .env with your configuration"
 	@echo "   - Start Redis: make redis (in another terminal)"
 	@echo "   - Run the app: make run"
