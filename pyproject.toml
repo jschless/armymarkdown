@@ -78,7 +78,6 @@ dev = [
     "pytest-xdist>=3.6.0",
     "pytest-forked>=1.6.0",
     "coverage>=7.6.0",
-    "coverage-badge>=1.1.0",
 
     # Test data generation
     "factory-boy>=3.3.0",
@@ -122,7 +121,6 @@ Issues = "https://github.com/jschless/armymarkdown/issues"
 dev = [
     "pre-commit>=4.3.0",
     "requests>=2.32.5",
-    "webdriver-manager>=4.0.2",
 ]
 
 # Ruff configuration

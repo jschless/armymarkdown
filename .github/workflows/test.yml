@@ -60,7 +60,7 @@ jobs:
     - name: Run security checks
       run: |
         uv run bandit -r app/ db/ -f json || true
-        uv run safety check || true
+        uv run safety scan || true
 
     - name: Run unit tests with coverage
       env:
@@ -74,7 +74,7 @@ jobs:
         DISABLE_CAPTCHA: "true"
         DEVELOPMENT: "true"
       run: |
-        uv run pytest tests/ -m "not selenium" --cov=. --cov-report=xml --cov-report=html --cov-report=term-missing --continue-on-collection-errors --forked --tb=short --maxfail=10 -v || true
+        uv run pytest tests/ --cov=. --cov-report=xml --cov-report=html --cov-report=term-missing --continue-on-collection-errors --forked --tb=short --maxfail=10 -v || true
 
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v3
@@ -84,10 +84,6 @@ jobs:
         name: codecov-umbrella
         fail_ci_if_error: false
 
-    - name: Generate coverage badge
-      run: |
-        uv run coverage-badge -o coverage.svg || true
-
     - name: Archive coverage results
       uses: actions/upload-artifact@v4
       with:
@@ -95,7 +91,6 @@ jobs:
         path: |
           coverage.xml
           htmlcov/
-          coverage.svg
 
   integration-test:
     runs-on: ubuntu-latest
@@ -135,7 +130,7 @@ jobs:
         DISABLE_CAPTCHA: "true"
         DEVELOPMENT: "true"
       run: |
-        uv run pytest tests/test_integration.py -m "not selenium" -v || true
+        uv run pytest tests/test_integration.py -v || true
 
 
   security-scan:
@@ -156,9 +151,9 @@ jobs:
       run: |
         uv sync --all-extras
 
-    - name: Run safety check
+    - name: Run safety scan
       run: |
-        uv run safety check --json || true
+        uv run safety scan --json || true
 
     - name: Run bandit security scan
       run: |
