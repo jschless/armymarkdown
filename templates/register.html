@@ -52,9 +52,14 @@
       {% endfor %}
     </div>
 
-    {% if form.recaptcha %}
+    {% if config.RECAPTCHA_PUBLIC_KEY and not config.DISABLE_CAPTCHA %}
     <div class="modern-form-group">
-      {{ form.recaptcha }}
+      {{ form.recaptcha() }}
+      {% for error in form.recaptcha.errors %}
+      <div class="modern-alert modern-alert-error" style="margin-top: var(--spacing-2);">
+        {{ error }}
+      </div>
+      {% endfor %}
     </div>
     {% endif %}
 

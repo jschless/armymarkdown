@@ -4,7 +4,11 @@
     <label for="examples">Example List</label>
     <select id="linkSelector">
       {% for filename, display_name in examples %}
-      <option value="{{url_for(url, example_file=filename)}}">{{display_name}}</option>
+        {% if filename == "---" %}
+          <option value="" disabled style="background-color: #f0f0f0; font-style: italic;">{{display_name}}</option>
+        {% else %}
+          <option value="{{url_for(url, example_file=filename)}}">{{display_name}}</option>
+        {% endif %}
       {% endfor %}
     </select>
   </div>
