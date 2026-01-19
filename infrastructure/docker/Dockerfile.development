@@ -1,8 +1,9 @@
 FROM ubuntu:22.04
 
-# mscorefonts EULA
+# Accept MS fonts EULA
 RUN echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | debconf-set-selections
 
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3.11 python3.11-venv curl git \
     fontconfig ttf-mscorefonts-installer \
@@ -10,36 +11,51 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     texlive-latex-base \
     texlive-luatex \
     latexmk \
-    xz-utils
+    xz-utils \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install uv
+# Install uv package manager
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
     /root/.local/bin/uv --version
 ENV PATH="/root/.local/bin:$PATH"
 
+# Build font cache
 RUN fc-cache -f -v
 
+# Install additional LaTeX packages
 RUN tlmgr init-usertree
 RUN tlmgr option repository ftp://tug.org/historic/systems/texlive/2021/tlnet-final
 RUN tlmgr install koma-script etoolbox fontspec xkeyval \
-    	  	  xcolor datetime fmtcount background csquotes \
-		  pgf background enumitem setspace booktabs \
-		  microtype pdftexcmds infwarerr everypage ragged2e
+    xcolor datetime fmtcount background csquotes \
+    pgf background enumitem setspace booktabs \
+    microtype pdftexcmds infwarerr everypage ragged2e
 
-RUN export OSFONTDIR=/usr/share/fonts
+# Set font directory and build font cache for LuaLaTeX
+ENV OSFONTDIR=/usr/share/fonts
 RUN luaotfload-tool -vvv --update --force
 
-RUN apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
+# Python configuration
 ENV PYTHONUNBUFFERED=1
 ENV DEVELOPMENT=1
+ENV APP_ROOT=/app
 
 WORKDIR /app
 
+# Copy dependency files first for better caching
 COPY pyproject.toml uv.lock ./
+
+# Install Python dependencies (including dev dependencies)
 RUN uv sync --frozen
 
+# Copy application code
 COPY . .
 
-CMD uv run gunicorn -w 3 -b 0.0.0.0:8000 -t 360 --reload app.main:app
+# Create data directory
+RUN mkdir -p /data
+
+# Expose HTTP port
+EXPOSE 8000
+
+# Development mode: run gunicorn with reload
+# Huey runs in immediate mode (HUEY_IMMEDIATE=true) so tasks execute synchronously
+CMD uv run gunicorn -w 2 -b 0.0.0.0:8000 -t 360 --reload --access-logfile - --error-logfile - app.main:app

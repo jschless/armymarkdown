@@ -1,86 +1,52 @@
-services:
-  redis:
-    image: redis:latest
-    restart: unless-stopped
-    networks:
-      - army_net
+# Local Development Docker Compose
+# Builds from local Dockerfile for development/testing
 
-  flask_app:
+services:
+  app:
     build:
       context: ../../
       dockerfile: infrastructure/docker/Dockerfile
     ports:
-      - "8443:8443"
       - "8000:8000"
     volumes:
-      - /etc/letsencrypt:/etc/letsencrypt
       - ../../resources:/app/resources
       - db-data:/data
+    env_file:
+      - ../../.env
     environment:
-      - FLASK_SECRET=${FLASK_SECRET}
-      - RECAPTCHA_PUBLIC_KEY=${RECAPTCHA_PUBLIC_KEY}
-      - RECAPTCHA_PRIVATE_KEY=${RECAPTCHA_PRIVATE_KEY}
-      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-    depends_on:
-      - redis
-      - sqlite_db
+      - HUEY_DB_PATH=/data/huey.db
+      - DEVELOPMENT=true
     restart: unless-stopped
     networks:
       - army_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
-  celery:
-    build:
-      context: ../../
-      dockerfile: infrastructure/docker/Dockerfile
-    volumes:
-      - ../../resources:/app/resources
-      - db-data:/data
-    container_name: cel01
-    command: uv run celery -A app.main.celery worker -l info --without-heartbeat --without-gossip
-    environment:
-      - FLASK_SECRET=${FLASK_SECRET}
-      - RECAPTCHA_PUBLIC_KEY=${RECAPTCHA_PUBLIC_KEY}
-      - RECAPTCHA_PRIVATE_KEY=${RECAPTCHA_PRIVATE_KEY}
-      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-    deploy:
-      resources:
-        limits:
-          memory: 750M  # Limit to 750MB, leave 250MB for system
-    depends_on:
-      - redis
-    restart: unless-stopped
-    networks:
-      - army_net
-
-  sqlite_db:
-    image: alpine:latest
-    command: sh -c "mkdir -p /data && touch /data/users.db && tail -f /dev/null"
-    volumes:
-      - db-data:/data
-    networks:
-      - army_net
-
-  proxy:
+  caddy:
     build:
       context: ../../
       dockerfile: infrastructure/proxy/Dockerfile
     ports:
       - "80:80"
       - "443:443"
-    depends_on:
-      - flask_app
     volumes:
-      - /etc/letsencrypt:/etc/letsencrypt
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      app:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - army_net
 
 volumes:
   db-data:
+  caddy-data:
+  caddy-config:
 
 networks:
   army_net:

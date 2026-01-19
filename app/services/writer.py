@@ -30,8 +30,25 @@ class MemoWriter:
         tex_dir = os.path.dirname(self.output_file)
         tex_filename = os.path.basename(self.output_file)
 
+        # Optimized LuaLaTeX command with performance flags
+        latex_cmd = [
+            "lualatex",
+            "--interaction=nonstopmode",  # Don't stop for errors
+            "--file-line-error",  # Better error reporting
+            "--no-shell-escape",  # Security: disable shell escape
+            "--halt-on-error",  # Stop on first error
+            "--synctex=0",  # Disable synctex for speed
+            "--no-mktex=tfm",  # Don't generate tfm fonts on the fly
+            f"--output-directory={tex_dir}",
+            tex_filename,
+        ]
+
         result = subprocess.run(  # nosec B607 B603
-            ["lualatex", tex_filename], capture_output=True, text=True, cwd=tex_dir
+            latex_cmd,
+            capture_output=True,
+            text=True,
+            cwd=tex_dir,
+            timeout=30,  # Add timeout to prevent hanging
         )
         print(
             f"[{time.strftime('%H:%M:%S')}] LaTeX compilation finished. Return code: {result.returncode}"

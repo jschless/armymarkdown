@@ -61,6 +61,11 @@
         <li><a href="/login" {% if request.endpoint == 'login' %}class="active"{% endif %}>Sign In</a></li>
         {% endif %}
         <li>
+          <button onclick="window.keyboardShortcuts?.showShortcutsHelp()" class="theme-toggle" aria-label="Show keyboard shortcuts" title="Keyboard shortcuts (Ctrl+/)">
+            <span class="theme-icon">⌨️</span>
+          </button>
+        </li>
+        <li>
           <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
             <span class="theme-icon">🌙</span>
           </button>
@@ -94,13 +99,15 @@
 
   <!-- Progress Modal (hidden by default) -->
   <div id="progress-modal" class="modern-progress" style="display: none;">
-    <h3 class="modern-progress-text">Creating your memo...</h3>
+    <h3 class="modern-progress-text" id="progress-title">Creating your memo...</h3>
     <div class="modern-progress-bar">
-      <div class="modern-progress-fill" id="progress-fill" style="width: 0%"></div>
+      <div class="modern-progress-fill indeterminate" id="progress-fill"></div>
     </div>
-    <div class="modern-progress-percentage" id="progress-percentage">0%</div>
-    <p class="text-sm" style="color: var(--color-gray-500); margin-top: var(--spacing-4);">
-      This may take a few seconds while we compile your LaTeX document.
+    <p class="text-sm" id="progress-status" style="color: var(--color-gray-600); margin-top: var(--spacing-4); font-weight: 500;">
+      Compiling LaTeX document (typically 5-10 seconds)
+    </p>
+    <p class="text-sm" style="color: var(--color-gray-400); margin-top: var(--spacing-2); font-size: 0.75rem;">
+      Your document is being processed on our servers
     </p>
   </div>
 

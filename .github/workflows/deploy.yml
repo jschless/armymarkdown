@@ -1,13 +1,16 @@
-name: Deploy to DigitalOcean
+name: Deploy to Production
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ main ]
+  workflow_run:
+    workflows: ["Build and Publish Docker Images"]
+    types:
+      - completed
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
 
     steps:
     - name: Deploy to DigitalOcean
@@ -17,18 +20,63 @@ jobs:
         username: ${{ secrets.DO_USERNAME }}
         key: ${{ secrets.DO_SSH_KEY }}
         script: |
-          cd /root/armymarkdown
-          git pull origin main
+          set -e  # Exit on any error
 
-          # Make deploy script executable if it exists
-          if [ -f "deploy.sh" ]; then
-            chmod +x deploy.sh
-            ./deploy.sh
-          else
-            # Fallback for first deployment
-            echo "🚀 Running initial deployment..."
-            docker compose -f infrastructure/compose/docker-compose.yaml down
-            docker compose -f infrastructure/compose/docker-compose.yaml up --build -d
-            docker image prune -f
-            echo "✅ Deployment complete!"
+          echo "🚀 Starting deployment..."
+          echo "📅 $(date)"
+
+          # Change to project directory
+          cd /root/armymarkdown
+
+          # Check .env file exists
+          if [ ! -f ".env" ]; then
+            echo "❌ Error: .env file not found!"
+            echo "   Please create /root/armymarkdown/.env with required secrets"
+            exit 1
           fi
+
+          # Update repository
+          echo "📥 Pulling latest code..."
+          git fetch origin main
+          git reset --hard origin/main
+
+          # Pull latest images
+          echo "📦 Pulling latest Docker images..."
+          docker compose -f infrastructure/compose/docker-compose-production.yaml pull
+
+          # Restart services
+          echo "🔄 Restarting services..."
+          docker compose -f infrastructure/compose/docker-compose-production.yaml up -d --remove-orphans
+
+          # Wait for health checks
+          echo "⏳ Waiting for services to be healthy..."
+          sleep 15
+
+          # Check health
+          for i in {1..6}; do
+            if curl -sf http://localhost:8000/health > /dev/null 2>&1; then
+              echo "✅ App is healthy!"
+              break
+            fi
+            echo "   Waiting for app to be ready... (attempt $i/6)"
+            sleep 10
+          done
+
+          # Verify deployment
+          echo ""
+          echo "📊 Service Status:"
+          docker compose -f infrastructure/compose/docker-compose-production.yaml ps
+
+          # Show health check result
+          echo ""
+          echo "🏥 Health Check:"
+          curl -s http://localhost:8000/health | python3 -m json.tool || echo "Health check unavailable"
+
+          # Clean up old images
+          echo ""
+          echo "🧹 Cleaning up old images..."
+          docker image prune -f
+
+          echo ""
+          echo "✨ Deployment complete!"
+          echo "🌐 Site: https://armymemomaker.com"

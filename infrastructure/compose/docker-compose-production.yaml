@@ -1,0 +1,72 @@
+# Simplified Production Docker Compose
+# 3 services:
+# - app: Flask + Gunicorn + Huey (single container)
+# - caddy: Reverse proxy with automatic SSL
+# - watchtower: Auto-updates containers when new images are pushed
+
+services:
+  app:
+    image: jschless/armymarkdown-app:latest
+    volumes:
+      - db-data:/data
+    env_file:
+      - ../../.env
+    environment:
+      - HUEY_DB_PATH=/data/huey.db
+    restart: unless-stopped
+    networks:
+      - army_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+      - "com.centurylinklabs.watchtower.scope=armymarkdown"
+
+  caddy:
+    image: jschless/armymarkdown-proxy:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - army_net
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+      - "com.centurylinklabs.watchtower.scope=armymarkdown"
+
+  watchtower:
+    image: containrrr/watchtower:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_POLL_INTERVAL=300
+      - WATCHTOWER_INCLUDE_STOPPED=true
+      - WATCHTOWER_REVIVE_STOPPED=false
+      - WATCHTOWER_SCOPE=armymarkdown
+    restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.scope=armymarkdown"
+
+volumes:
+  db-data:
+  caddy-data:
+  caddy-config:
+
+networks:
+  army_net:

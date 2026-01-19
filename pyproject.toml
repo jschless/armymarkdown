@@ -38,9 +38,8 @@ dependencies = [
     # Database and ORM
     "sqlalchemy>=2.0.0",
 
-    # Task queue and background processing
-    "celery>=5.4.0",
-    "redis>=5.1.0",
+    # Task queue and background processing (Huey with SQLite backend)
+    "huey>=2.5.0",
 
     # AWS integration
     "boto3>=1.35.0",
@@ -92,7 +91,6 @@ dev = [
     "flask-testing>=0.8.1",
 
     # Type stubs
-    "types-redis>=4.6.0",
     "types-requests>=2.32.0",
     "types-python-dateutil>=2.9.0",
 ]

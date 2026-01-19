@@ -58,3 +58,30 @@ class Document(db.Model):
     content = db.Column(db.String(5000))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+
+class ValidationResult(db.Model):
+    """Stores PDF validation results for AR 25-50 compliance checking."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    document_id = db.Column(db.Integer, db.ForeignKey("document.id"), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+
+    # PDF identification
+    pdf_hash = db.Column(db.String(64))  # SHA-256 hash of PDF content
+    pdf_filename = db.Column(db.String(256))
+
+    # Validation status
+    is_compliant = db.Column(db.Boolean, default=False)
+    compliance_score = db.Column(db.Float)  # 0.0 to 1.0
+
+    # Detailed results stored as JSON
+    issues = db.Column(db.JSON)  # List of issues found
+    pdf_metadata = db.Column(db.JSON)  # Extracted PDF metadata
+
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    # Relationships
+    user = db.relationship("User", backref=db.backref("validations", lazy=True))
+    document = db.relationship("Document", backref=db.backref("validations", lazy=True))

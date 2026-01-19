@@ -1,0 +1,30 @@
+{
+  "Rules": [
+    {
+      "ID": "DeleteOldCachedPDFs",
+      "Filter": {
+        "Prefix": "cached_"
+      },
+      "Status": "Enabled",
+      "Expiration": {
+        "Days": 30
+      }
+    },
+    {
+      "ID": "DeleteOldTempPDFs",
+      "Filter": {
+        "And": {
+          "Prefix": "",
+          "Tags": []
+        }
+      },
+      "Status": "Enabled",
+      "Expiration": {
+        "Days": 7
+      },
+      "NoncurrentVersionExpiration": {
+        "NoncurrentDays": 1
+      }
+    }
+  ]
+}

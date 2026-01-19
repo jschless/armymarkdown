@@ -32,6 +32,13 @@
       {% endfor %}
     </div>
 
+    <div class="modern-form-group" style="display: flex; align-items: center; gap: var(--spacing-2);">
+      {{ form.remember_me(id="remember_me") }}
+      <label for="remember_me" style="margin: 0; cursor: pointer; color: var(--color-gray-600); font-weight: normal;">
+        Remember me for 7 days
+      </label>
+    </div>
+
     <div class="modern-form-group">
       {{ form.submit(class="modern-btn modern-btn-primary", style="width: 100%;") }}
     </div>

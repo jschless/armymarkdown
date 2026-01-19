@@ -35,7 +35,7 @@ def login_route():
             )
             flash("Invalid username or password")
             return redirect(url_for("login"))
-        login_user(user)
+        login_user(user, remember=form.remember_me.data)
         next_page = request.args.get("next")
         if not next_page or urlsplit(next_page).netloc != "":
             next_page = url_for("index", example_file="tutorial.Amd")
@@ -198,7 +198,7 @@ def save_document(text):
         return "Document is already saved."
 
     num_documents = Document.query.filter_by(user_id=user_id).count()
-    removed_oldest = num_documents >= 10
+    removed_oldest = num_documents >= 100
     if removed_oldest:
         oldest_document = (
             Document.query.filter_by(user_id=user_id)
@@ -227,6 +227,72 @@ def save_document(text):
     except Exception:
         db.session.rollback()
         return "Document failed to save."
+
+
+def auto_save_document(text):
+    """Auto-save specific function that handles duplicates gracefully"""
+    if not current_user.is_authenticated:
+        return {"success": False, "error": "Not authenticated"}
+
+    user_id = current_user.id
+
+    # Check if document already exists with same content
+    existing_document = Document.query.filter_by(user_id=user_id, content=text).first()
+    if existing_document:
+        from flask import current_app
+
+        current_app.logger.info(
+            f"{current_user.username} auto-save: document already exists, no action needed"
+        )
+        return {
+            "success": True,
+            "message": "No changes to save",
+            "action": "skipped",
+            "reason": "identical_content",
+        }
+
+    # Check if we need to remove oldest document
+    num_documents = Document.query.filter_by(user_id=user_id).count()
+    removed_oldest = num_documents >= 100
+    if removed_oldest:
+        oldest_document = (
+            Document.query.filter_by(user_id=user_id)
+            .order_by(Document.id.asc())
+            .first()
+        )
+        db.session.delete(oldest_document)
+        db.session.commit()
+        from flask import current_app
+
+        current_app.logger.info(
+            f"{current_user.username} auto-save: deleting oldest document to make room"
+        )
+
+    try:
+        new_document = Document(content=text, user_id=user_id)
+        db.session.add(new_document)
+        db.session.commit()
+        from flask import current_app
+
+        current_app.logger.info(f"{current_user.username} auto-saved new document")
+
+        message = "Draft auto-saved"
+        if removed_oldest:
+            message += " (removed oldest)"
+
+        return {
+            "success": True,
+            "message": message,
+            "action": "saved",
+            "removed_oldest": removed_oldest,
+        }
+
+    except Exception as e:
+        db.session.rollback()
+        from flask import current_app
+
+        current_app.logger.error(f"Auto-save failed for {current_user.username}: {e}")
+        return {"success": False, "error": "Auto-save failed due to database error"}
 
 
 def get_user_by_username(username):

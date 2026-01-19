@@ -9,3 +9,245 @@ textarea.u-half-height {
 }
 
 /* Old progress bar and flash styles removed - now using modern equivalents */
+
+/* Auto-save status indicator */
+.auto-save-status {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--border-radius);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    transition: all 0.2s ease;
+    margin-left: var(--spacing-2);
+}
+
+.auto-save-status::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+/* Auto-save states */
+.auto-save-idle {
+    background-color: var(--color-gray-50);
+    border: 1px solid var(--color-gray-200);
+    color: var(--color-gray-600);
+}
+
+.auto-save-idle::before {
+    background-color: var(--color-gray-400);
+}
+
+.auto-save-saving {
+    background-color: var(--color-blue-50);
+    border: 1px solid var(--color-blue-200);
+    color: var(--color-blue-700);
+}
+
+.auto-save-saving::before {
+    background-color: var(--color-blue-500);
+    animation: pulse 1s infinite;
+}
+
+.auto-save-saved {
+    background-color: var(--color-green-50);
+    border: 1px solid var(--color-green-200);
+    color: var(--color-green-700);
+}
+
+.auto-save-saved::before {
+    background-color: var(--color-green-500);
+}
+
+.auto-save-error {
+    background-color: var(--color-red-50);
+    border: 1px solid var(--color-red-200);
+    color: var(--color-red-700);
+}
+
+.auto-save-error::before {
+    background-color: var(--color-red-500);
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Keyboard Shortcuts Help Overlay */
+.shortcuts-help-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.shortcuts-help-modal {
+    background: var(--color-white);
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.shortcuts-help-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-6);
+    border-bottom: 1px solid var(--color-gray-200);
+}
+
+.shortcuts-help-header h2 {
+    margin: 0;
+    color: var(--color-gray-900);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+}
+
+.shortcuts-help-close {
+    background: none;
+    border: none;
+    font-size: var(--font-size-2xl);
+    color: var(--color-gray-400);
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--border-radius);
+    transition: all 0.2s ease;
+}
+
+.shortcuts-help-close:hover {
+    background-color: var(--color-gray-100);
+    color: var(--color-gray-600);
+}
+
+.shortcuts-help-content {
+    padding: var(--spacing-6);
+}
+
+.shortcuts-help-section {
+    margin-bottom: var(--spacing-6);
+}
+
+.shortcuts-help-section:last-child {
+    margin-bottom: 0;
+}
+
+.shortcuts-help-section h3 {
+    margin: 0 0 var(--spacing-4) 0;
+    color: var(--color-gray-900);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-medium);
+}
+
+.shortcut-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-3) 0;
+    border-bottom: 1px solid var(--color-gray-100);
+}
+
+.shortcut-item:last-child {
+    border-bottom: none;
+}
+
+.shortcut-keys {
+    font-family: var(--font-family-mono);
+    background-color: var(--color-gray-100);
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-sm);
+    color: var(--color-gray-700);
+    font-weight: var(--font-weight-medium);
+}
+
+.shortcut-desc {
+    color: var(--color-gray-600);
+    font-size: var(--font-size-base);
+}
+
+.shortcuts-help-footer {
+    padding: var(--spacing-4) var(--spacing-6);
+    background-color: var(--color-gray-50);
+    border-top: 1px solid var(--color-gray-200);
+    border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
+}
+
+.shortcuts-help-footer p {
+    margin: 0;
+    color: var(--color-gray-500);
+    font-size: var(--font-size-sm);
+    text-align: center;
+}
+
+/* Shortcut Feedback Notification */
+.shortcut-feedback {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: var(--spacing-3) var(--spacing-4);
+    border-radius: var(--border-radius);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    z-index: 9999;
+    display: none;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    animation: slideInRight 0.3s ease-out;
+}
+
+.shortcut-feedback-info {
+    background-color: var(--color-blue-50);
+    border: 1px solid var(--color-blue-200);
+    color: var(--color-blue-700);
+}
+
+.shortcut-feedback-success {
+    background-color: var(--color-green-50);
+    border: 1px solid var(--color-green-200);
+    color: var(--color-green-700);
+}
+
+.shortcut-feedback-warning {
+    background-color: var(--color-yellow-50);
+    border: 1px solid var(--color-yellow-200);
+    color: var(--color-yellow-700);
+}
+
+.shortcut-feedback-error {
+    background-color: var(--color-red-50);
+    border: 1px solid var(--color-red-200);
+    color: var(--color-red-700);
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}

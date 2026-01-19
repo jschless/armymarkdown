@@ -1,10 +1,11 @@
+from datetime import timedelta
+from functools import lru_cache
 import logging
 import os
-import random
+import time
 
 import boto3
 from botocore.exceptions import ClientError
-from celery import Celery
 from dotenv import load_dotenv
 from flask import (
     Flask,
@@ -21,7 +22,7 @@ from flask_talisman import Talisman
 from app.auth import login
 from app.forms import UserProfileForm
 from app.models import memo_model
-from app.services import writer
+from app.tasks import create_memo, huey
 from db.db import init_db
 from db.schema import Document, UserProfile
 
@@ -65,15 +66,12 @@ login.login_manager.init_app(app)
 # Register login routes
 login.register_login_routes(app)
 
-celery = Celery(
-    app.name,
-    broker=get_required_env_var("REDIS_URL"),
-    backend=get_required_env_var("REDIS_URL"),
-    broker_connection_retry_on_startup=True,
-)
-
-
+# Database configuration
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////data/users.db"
+
+# Session configuration for "Remember Me" functionality
+app.config["REMEMBER_COOKIE_DURATION"] = timedelta(days=7)
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=8)
 
 
 if os.environ.get("DEVELOPMENT") is not None:
@@ -102,6 +100,33 @@ def add_csp(response):
         "connect-src 'self';"  # Only allow AJAX/fetch calls to the same origin
     )
     return response
+
+
+@app.route("/health", methods=["GET"])
+def health_check():
+    """Health check endpoint for container monitoring"""
+    try:
+        # Test database connection
+        from sqlalchemy import text
+
+        from db.schema import db
+
+        db.session.execute(text("SELECT 1"))
+
+        # Check Huey is available
+        huey_status = "ok" if huey else "unavailable"
+
+        return jsonify(
+            {
+                "status": "healthy",
+                "timestamp": time.time(),
+                "services": {"database": "ok", "huey": huey_status},
+            }
+        ), 200
+    except Exception as e:
+        return jsonify(
+            {"status": "unhealthy", "timestamp": time.time(), "error": str(e)}
+        ), 503
 
 
 @app.route("/", methods=["GET"])
@@ -137,8 +162,9 @@ def index():
     )
 
 
-def get_example_files():
-    """Get list of example files with display names, including user history if logged in"""
+@lru_cache(maxsize=1)
+def _get_static_example_files():
+    """Cache the static example files list (loaded from disk once)."""
     examples_dir = "./resources/examples"
     files = [f for f in os.listdir(examples_dir) if f.endswith(".Amd")]
 
@@ -163,10 +189,16 @@ def get_example_files():
     files.sort(key=lambda x: (x != "tutorial.Amd", x))
 
     # Build examples list
-    examples = [
+    return [
         (f, display_names.get(f, f.replace(".Amd", "").replace("_", " ").title()))
         for f in files
     ]
+
+
+def get_example_files():
+    """Get list of example files with display names, including user history if logged in."""
+    # Start with cached static examples (copy to avoid modifying cached list)
+    examples = list(_get_static_example_files())
 
     # Add user history if logged in
     if current_user.is_authenticated:
@@ -178,7 +210,7 @@ def get_example_files():
             # Add a separator
             examples.append(("---", "--- Your Documents ---"))
 
-            # Add user documents (limit to recent 10 to avoid overwhelming the dropdown)
+            # Add user documents (show recent 10 in dropdown to avoid overwhelming the UI)
             for doc_id, subject, _content, created_at in user_documents[:10]:
                 # Truncate subject if too long
                 display_subject = subject[:50] + "..." if len(subject) > 50 else subject
@@ -268,6 +300,41 @@ def save_progress():
         return render_template("memo_form.html", **m.to_form())
 
 
+@app.route("/auto_save", methods=["POST"])
+@login_required
+def auto_save():
+    """Auto-save endpoint for background saves without page refresh"""
+    try:
+        if "SUBJECT" not in request.form:
+            # Text editor mode
+            text = request.form.get("memo_text", "")
+        else:
+            # Form mode - convert to AMD format
+            m = memo_model.MemoModel.from_form(request.form.to_dict())
+            if isinstance(m, str):
+                return jsonify(
+                    {"success": False, "error": f"Error creating memo: {m}"}
+                ), 400
+            text = m.to_amd()
+
+        if not text or text.strip() == "":
+            return jsonify({"success": False, "error": "No content to save"}), 400
+
+        # Use auto-save specific function that handles duplicates gracefully
+        result = login.auto_save_document(text)
+
+        if not result["success"]:
+            return jsonify(result), 400
+
+        # Add timestamp to successful response
+        result["timestamp"] = time.time()
+        return jsonify(result)
+
+    except Exception as e:
+        app.logger.error(f"Error auto-saving document: {e}")
+        return jsonify({"success": False, "error": "Auto-save failed"}), 500
+
+
 def check_memo(text):
     m = memo_model.MemoModel.from_text(text)
 
@@ -288,7 +355,7 @@ def process():
         if "SUBJECT" not in request.form:
             # came from the text page
             text = request.form.get("memo_text")
-            task = create_memo.delay(text)
+            task = create_memo(text)
         else:
             m = memo_model.MemoModel.from_form(request.form.to_dict())
             if isinstance(m, str):
@@ -296,7 +363,7 @@ def process():
                 flash(f"Error creating memo: {m}")
                 return redirect(url_for("index"))
             text = m.to_amd()
-            task = create_memo.delay("", request.form.to_dict())
+            task = create_memo("", request.form.to_dict())
 
         try:
             res = login.save_document(text)
@@ -306,9 +373,7 @@ def process():
             app.logger.error(f"Error saving document during processing: {e}")
             flash("Document could not be saved, but processing continues.")
 
-        # memo_errors = check_memo(text)
-        # if memo_errors is not None:
-        #     return memo_errors, 400
+        # Return task ID for status polling
         return (
             "Hi, we're waiting for your PDF to be created.",
             200,
@@ -333,57 +398,46 @@ def process():
             return redirect(url_for("index"))
 
 
-def process_task(task, result_func):
-    if task.state == "PENDING":
-        # job did not start yet
-        response = {"state": task.state, "status": "Pending..."}
-    elif task.state == "SUCCESS":
-        result = task.result
-        response = {
-            "state": task.state,
-            "result": result_func(result),
-            "presigned_url": get_aws_link(result_func(result)),
+# Store for tracking Huey task results
+_task_results = {}
+
+
+def process_huey_task(task_id, result_func):
+    """Process Huey task status and return appropriate response."""
+
+    # Get the task result from Huey
+    result = huey.result(task_id, preserve=True)
+
+    if result is None:
+        # Task is still pending or processing
+        return {"state": "PENDING", "status": "Creating your memo..."}
+
+    # Check if result is an exception
+    if isinstance(result, Exception):
+        app.logger.error(f"Task {task_id} failed: {result}")
+        return {
+            "state": "FAILURE",
+            "status": f"Task failed: {result!s}",
+            "error": str(result),
         }
-        task.forget()
-    elif task.state == "FAILURE":
-        # Task failed with an exception
-        response = {
-            "state": task.state,
-            "status": f"Task failed: {task.info!s}",
-            "error": str(task.info),
-        }
-        app.logger.error(f"Task {task.id} failed: {task.info}")
-    elif task.state == "RETRY":
-        # Task is being retried
-        response = {
-            "state": task.state,
-            "status": f"Task failed, retrying... ({task.info!s})",
-        }
-    elif task.state == "REVOKED":
-        # Task was revoked/cancelled
-        response = {
-            "state": task.state,
-            "status": "Task was cancelled due to timeout or system issue",
-        }
-    else:
-        # Other states (STARTED, PROGRESS, etc.)
-        response = {
-            "state": task.state,
-            "status": str(task.info)
-            if task.info
-            else f"Task is {task.state.lower()}...",
-        }
-    return response
+
+    # Task completed successfully
+    pdf_name = result_func(result)
+    return {
+        "state": "SUCCESS",
+        "result": pdf_name,
+        "presigned_url": get_aws_link(pdf_name),
+    }
 
 
 @app.route("/status/<task_id>", methods=["POST", "GET"])
 def taskstatus(task_id):
-    task = create_memo.AsyncResult(task_id)
-    return jsonify(process_task(task, lambda res: res[:-4] + ".pdf"))
+    """Get the status of a memo creation task."""
+    return jsonify(process_huey_task(task_id, lambda res: res[:-4] + ".pdf"))
 
 
 def get_aws_link(file_name):
-    # https://boto3.amazonaws.com/v1/documentation/api/latest/guide/s3-presigned-urls.html
+    """Generate a presigned URL for downloading a file from S3."""
     try:
         response = s3.generate_presigned_url(
             "get_object",
@@ -391,79 +445,9 @@ def get_aws_link(file_name):
             ExpiresIn=3600,
         )
     except ClientError as e:
-        app.logger.error(f"Something Happened: {e}")
+        app.logger.error(f"S3 presigned URL error: {e}")
         return None
     return response
-
-
-def upload_file_to_s3(file, aws_path, acl="public-read"):
-    """
-    Docs: http://boto3.readthedocs.io/en/latest/guide/s3.html
-    """
-    ret_val = None
-    try:
-        s3.upload_file(
-            file,
-            "armymarkdown",
-            aws_path,
-            ExtraArgs={
-                "ContentType": "application/pdf",
-                "ContentDisposition": "inline",
-            },
-        )
-        ret_val = file
-    except Exception as e:
-        app.logger.error(f"Something Happened: {e}")
-        ret_val = e
-
-    # delete file after uploads
-    if os.path.exists(file):
-        os.remove(file)
-    return ret_val
-
-
-@celery.task(name="create_memo", bind=True)
-def create_memo(self, text, dictionary=None):
-    if dictionary and isinstance(dictionary, dict):
-        m = memo_model.MemoModel.from_form(dictionary)
-    else:
-        m = memo_model.MemoModel.from_text(text)
-
-    app.logger.debug(m.to_dict())
-    mw = writer.MemoWriter(m)
-
-    temp_name = (
-        m.subject.replace(" ", "_").lower()[:15]
-        + "".join(random.choices("0123456789", k=4))  # nosec B311
-        + ".tex"
-    )
-    file_path = os.path.join(app.root_path, temp_name)
-
-    mw.write(output_file=file_path)
-
-    mw.generate_memo()
-
-    if os.path.exists(file_path[:-4] + ".pdf"):
-        upload_file_to_s3(file_path[:-4] + ".pdf", temp_name[:-4] + ".pdf")
-    else:
-        raise Exception(f"PDF at path {file_path[:-4]}.pdf was not created")
-
-    # clean up temp files after upload to AWS
-    file_endings = [
-        ".aux",
-        ".fdb_latexmk",
-        ".fls",
-        ".log",
-        ".out",
-        ".tex",
-    ]
-
-    for ending in file_endings:
-        temp = temp_name[:-4] + ending
-        if os.path.exists(temp):
-            os.remove(temp)
-
-    return temp_name
 
 
 def substitute_example_fields_with_profile(file_path, user_id=None):
@@ -569,6 +553,75 @@ def profile():
             flash(f"Error updating profile: {e!s}", "error")
 
     return render_template("profile.html", form=form, profile=user_profile)
+
+
+@app.route("/validate", methods=["POST"])
+@login_required
+def validate_memo():
+    """
+    Validate memo content against AR 25-50 rules.
+
+    Accepts either AMD text format or form data.
+    Returns validation results including errors and warnings.
+    """
+    from app.services.validation import MemoValidator
+
+    try:
+        if "SUBJECT" not in request.form:
+            # Text editor mode
+            text = request.form.get("memo_text", "")
+            result = MemoValidator.validate_text_input(text)
+        else:
+            # Form mode - validate form fields directly
+            validator = MemoValidator(request.form.to_dict())
+            result = validator.validate_all()
+
+        return jsonify(
+            {
+                "is_valid": result.is_valid,
+                "errors": result.errors,
+                "warnings": result.warnings,
+            }
+        )
+
+    except Exception as e:
+        app.logger.error(f"Validation error: {e}")
+        return jsonify(
+            {
+                "is_valid": False,
+                "errors": [f"Validation failed: {e!s}"],
+                "warnings": [],
+            }
+        ), 500
+
+
+@app.route("/validate/rules", methods=["GET"])
+def get_validation_rules():
+    """
+    Get the list of validation rules applied to memos.
+
+    Returns the AR 25-50 rules configuration.
+    """
+    from app.services.validation.rules import get_all_rules, get_rule_config
+
+    rules = get_all_rules()
+    config = get_rule_config()
+
+    return jsonify(
+        {
+            "rules": [
+                {
+                    "id": rule.id,
+                    "name": rule.name,
+                    "description": rule.description,
+                    "severity": rule.severity.value,
+                    "ar_reference": rule.ar_reference,
+                }
+                for rule in rules
+            ],
+            "config": config,
+        }
+    )
 
 
 if os.environ.get("DEVELOPMENT") is None:

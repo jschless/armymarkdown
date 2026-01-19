@@ -705,6 +705,24 @@ textarea.u-full-height {
   box-shadow: 0 1px 3px rgba(255, 107, 53, 0.3);
 }
 
+/* Indeterminate progress fill - continuous sliding animation */
+.modern-progress-fill.indeterminate {
+  width: 30% !important;
+  animation: indeterminate-slide 1.5s ease-in-out infinite;
+}
+
+@keyframes indeterminate-slide {
+  0% {
+    margin-left: 0%;
+  }
+  50% {
+    margin-left: 70%;
+  }
+  100% {
+    margin-left: 0%;
+  }
+}
+
 /* Animated shimmer effect on the progress fill */
 .modern-progress-fill::after {
   content: '';
