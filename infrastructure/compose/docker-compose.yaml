@@ -1,13 +1,16 @@
-# Local Development Docker Compose
-# Builds from local Dockerfile for development/testing
+# Local Testing Docker Compose
+# Tests production Docker image with Caddy (no SSL)
+# Use this to verify everything works before deploying
+#
+# Run: docker compose -f infrastructure/compose/docker-compose.yaml up --build
+# Test: curl http://localhost:8080/health
+#       open http://localhost:8080
 
 services:
   app:
     build:
       context: ../../
       dockerfile: infrastructure/docker/Dockerfile
-    ports:
-      - "8000:8000"
     volumes:
       - ../../resources:/app/resources
       - db-data:/data
@@ -15,27 +18,23 @@ services:
       - ../../.env
     environment:
       - HUEY_DB_PATH=/data/huey.db
-      - DEVELOPMENT=true
+      # No DEVELOPMENT=true, so Talisman is active (like production)
     restart: unless-stopped
     networks:
       - army_net
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
+      interval: 10s
+      timeout: 5s
       retries: 3
       start_period: 40s
 
   caddy:
-    build:
-      context: ../../
-      dockerfile: infrastructure/proxy/Dockerfile
+    image: caddy:2-alpine
     ports:
-      - "80:80"
-      - "443:443"
+      - "8080:80"
     volumes:
-      - caddy-data:/data
-      - caddy-config:/config
+      - ../proxy/Caddyfile.local:/etc/caddy/Caddyfile:ro
     depends_on:
       app:
         condition: service_healthy
@@ -45,8 +44,6 @@ services:
 
 volumes:
   db-data:
-  caddy-data:
-  caddy-config:
 
 networks:
   army_net:

@@ -1,6 +1,14 @@
-# Local Development Docker Compose (without Caddy)
-# Use this for quick local testing without SSL
-# Run: docker compose -f docker-compose-dev.yaml up --build
+# Fast Local Development (hot reload, no Caddy)
+# Use this for quick iteration while coding
+#
+# Run: docker compose -f infrastructure/compose/docker-compose-dev.yaml up --build
+# Test: open http://localhost:8000
+#
+# Features:
+# - Hot reload (mounts app/, templates/, static/)
+# - Skips CAPTCHA (DISABLE_CAPTCHA=true)
+# - Immediate task execution (no background queue)
+# - No Talisman security headers (DEVELOPMENT=true)
 
 services:
   app:

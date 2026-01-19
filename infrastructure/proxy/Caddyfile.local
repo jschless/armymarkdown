@@ -1,0 +1,25 @@
+# Local development Caddyfile - no SSL, just reverse proxy
+# Used for testing the full stack locally before deploying
+
+:80 {
+    reverse_proxy app:8000 {
+        health_uri /health
+        health_interval 10s
+        health_timeout 5s
+    }
+
+    # Same security headers as production (minus HSTS)
+    header {
+        X-Frame-Options "DENY"
+        X-Content-Type-Options "nosniff"
+        X-XSS-Protection "1; mode=block"
+        -Server
+    }
+
+    encode gzip zstd
+
+    log {
+        output stdout
+        format console
+    }
+}
