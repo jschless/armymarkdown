@@ -1,16 +1,16 @@
 name: Deploy to Production
 
+# Manual trigger only - Watchtower handles automatic image updates
+# Use this workflow when:
+#   - You changed docker-compose-production.yaml
+#   - You need immediate deployment (don't want to wait 5 min for Watchtower)
+#   - You need to debug deployment issues
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows: ["Build and Publish Docker Images"]
-    types:
-      - completed
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
 
     steps:
     - name: Deploy to DigitalOcean
