@@ -72,6 +72,7 @@ jobs:
 
     - name: Update Docker Hub description
       if: github.event_name != 'pull_request' && matrix.name == 'app'
+      continue-on-error: true  # Optional step - requires Read & Write token permissions
       uses: peter-evans/dockerhub-description@v4
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
