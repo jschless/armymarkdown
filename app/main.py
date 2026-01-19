@@ -625,7 +625,9 @@ def get_validation_rules():
 
 
 if os.environ.get("DEVELOPMENT") is None:
-    Talisman(app, content_security_policy=None)
+    # Caddy handles SSL termination, so disable force_https
+    # Keep other security headers (XSS, content-type, etc.)
+    Talisman(app, content_security_policy=None, force_https=False)
 
 
 def main():
