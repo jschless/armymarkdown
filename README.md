@@ -30,12 +30,13 @@
 - **CAPTCHA protection** - Spam prevention (configurable for testing environments)
 
 ### ⚡ **Performance & Modern Tooling**
-- **Asynchronous processing** - Background PDF generation with Celery workers
+- **Asynchronous processing** - Background PDF generation with Huey task queue
 - **Fast dependency management** - uv package manager with lockfile support
 - **Optimized LaTeX** - Single-pass compilation for faster document creation
 - **Modern Python packaging** - pyproject.toml with standardized build system
 - **AWS S3 integration** - Reliable file storage and delivery
 - **Docker containerization** - Consistent deployment across environments
+- **Auto-deploy** - Watchtower monitors Docker Hub for automatic updates
 
 ## 🚀 Quick Start
 
@@ -59,7 +60,6 @@
    ```bash
    # Create environment file with required settings
    export FLASK_SECRET="your-development-secret-key"
-   export REDIS_URL="redis://redis:6379/0"
    export DISABLE_CAPTCHA="true"  # For development
    export DEVELOPMENT="true"
    ```
@@ -89,21 +89,17 @@
 2. **Set up environment variables**
    ```bash
    export FLASK_SECRET="dev-secret-key"
-   export REDIS_URL="redis://localhost:6379/15"
    export DISABLE_CAPTCHA="true"
    export DEVELOPMENT="true"
    ```
 
 3. **Run the application**
    ```bash
-   # Start Redis (if not using Docker)
-   make redis
-
    # Start the Flask app
    make run
 
-   # Start Celery worker (in another terminal)
-   make celery
+   # (Optional) Start Huey task consumer in another terminal
+   make huey
    ```
 
 ### Production Deployment
@@ -111,7 +107,6 @@
 1. **Configure environment variables on your server**
    ```bash
    export FLASK_SECRET="your-secret-key"
-   export REDIS_URL="redis://redis:6379/0"
    export RECAPTCHA_PUBLIC_KEY="your-public-key"
    export RECAPTCHA_PRIVATE_KEY="your-private-key"
    export AWS_ACCESS_KEY_ID="your-aws-key"
@@ -175,28 +170,26 @@ SUBJECT=Template for Army Markdown
 - **Backend**: Python Flask with Gunicorn WSGI server
 - **Package Management**: uv for fast, reliable dependency resolution
 - **Build System**: Modern Python packaging with pyproject.toml
-- **Task Queue**: Celery with Redis for asynchronous PDF generation
+- **Task Queue**: Huey with SQLite for asynchronous PDF generation
 - **Database**: SQLite for user accounts and document storage
 - **PDF Generation**: LuaLaTeX with custom Army memo class
 - **Frontend**: Modern CSS with vanilla JavaScript
 - **Containerization**: Docker with multi-stage builds
-- **Reverse Proxy**: Nginx with SSL termination
+- **Reverse Proxy**: Caddy with automatic SSL
 
 ### System Components
 
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Nginx Proxy   │────│   Flask App     │────│   Celery Worker │
-│   (Port 80/443) │    │   (Port 8000)   │    │   (Background)  │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                        │                        │
-         │                        │                        │
-         └────────────────────────┼────────────────────────┘
-                                  │
-                    ┌─────────────────┐    ┌─────────────────┐
-                    │   Redis Queue   │    │   SQLite DB     │
-                    │   (Port 6379)   │    │   (Volume)      │
-                    └─────────────────┘    └─────────────────┘
+┌─────────────────┐    ┌─────────────────────────────────────┐
+│   Caddy Proxy   │────│   Flask App + Huey Task Consumer   │
+│   (Port 80/443) │    │   (Port 8000)                      │
+│   (Auto SSL)    │    │                                     │
+└─────────────────┘    └─────────────────────────────────────┘
+                                        │
+                       ┌────────────────┴────────────────┐
+                       │          SQLite Database        │
+                       │   (Users, Documents, Tasks)     │
+                       └─────────────────────────────────┘
 ```
 
 ## 🔧 Configuration
@@ -206,7 +199,6 @@ SUBJECT=Template for Army Markdown
 | Variable | Description | Required | Default |
 |----------|-------------|----------|---------|
 | `FLASK_SECRET` | Flask session secret key | ✅ | - |
-| `REDIS_URL` | Redis connection URL | ✅ | - |
 | `RECAPTCHA_PUBLIC_KEY` | reCAPTCHA site key | ✅ | - |
 | `RECAPTCHA_PRIVATE_KEY` | reCAPTCHA secret key | ✅ | - |
 | `AWS_ACCESS_KEY_ID` | AWS S3 access key | ✅ | - |
@@ -265,7 +257,6 @@ The tests require these environment variables:
 
 ```bash
 export FLASK_SECRET="test-secret-key-for-ci"
-export REDIS_URL="redis://localhost:6379/15"
 export RECAPTCHA_PUBLIC_KEY="test-public-key"
 export RECAPTCHA_PRIVATE_KEY="test-private-key"
 export AWS_ACCESS_KEY_ID="test-access-key"
@@ -386,7 +377,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [army-memorandum-class](https://github.com/glallen01/army-memorandum-class) - LaTeX class for Army memos
 - [LaTeX Project](https://www.latex-project.org/) - Document preparation system
 - [Flask](https://flask.palletsprojects.com/) - Web framework
-- [Celery](https://docs.celeryproject.org/) - Distributed task queue
+- [Huey](https://huey.readthedocs.io/) - Lightweight task queue
 
 ## 📞 Support
 

@@ -66,14 +66,12 @@ docker push jschless/armymarkdown-app:latest
 ## Services
 
 ### Core Services
-- **flask_app**: Main application container
-- **celery**: Background task processor
-- **redis**: Task queue and caching
-- **proxy**: Nginx reverse proxy with SSL
+- **flask_app**: Main application container with Huey task consumer
+- **proxy**: Caddy reverse proxy with automatic SSL
 
 ### Infrastructure
 - **watchtower**: Automatic update monitoring
-- **sqlite_db**: Database container
+- **sqlite**: SQLite database (persistent volume)
 
 ## Monitoring
 

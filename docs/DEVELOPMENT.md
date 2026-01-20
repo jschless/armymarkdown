@@ -9,7 +9,6 @@ This document contains comprehensive information for developers working on the A
 - Python 3.11+
 - [uv](https://github.com/astral-sh/uv) for fast Python package management
 - Docker and Docker Compose (recommended for development)
-- Redis (for Celery task queue)
 - LaTeX distribution (for PDF generation, included in Docker)
 
 ### Docker Development (Recommended)
@@ -58,8 +57,7 @@ The project includes a comprehensive Makefile with common development tasks:
 ```bash
 # Development
 make run          # Start Flask development server
-make celery       # Start Celery worker
-make redis        # Start Redis server
+make huey         # Start Huey task consumer
 
 # Docker
 make docker-dev        # Start development environment
@@ -194,9 +192,6 @@ Copy `.env.example` to `.env` and configure:
 # Flask Configuration
 FLASK_SECRET=your-very-secure-flask-secret-key-here
 
-# Redis Configuration (for Celery)
-REDIS_URL=redis://localhost:6379/0
-
 # reCAPTCHA Configuration
 RECAPTCHA_PUBLIC_KEY=your-recaptcha-public-key
 RECAPTCHA_PRIVATE_KEY=your-recaptcha-private-key
@@ -230,9 +225,8 @@ make run
 # Run with Docker
 make docker-dev
 
-# Start individual services
-make celery  # Celery worker
-make redis   # Redis server
+# Start background task consumer (optional, in separate terminal)
+make huey
 ```
 
 ### Database Operations
@@ -309,11 +303,7 @@ def test_full_workflow():
    - Verify file paths in logs
    - Check timeout settings
 
-2. **Redis connection errors**
-   - Ensure Redis is running: `redis-server`
-   - Check REDIS_URL in environment
-
-3. **Import errors**
+2. **Import errors**
    - Verify PYTHONPATH is set correctly
    - Check virtual environment activation
 
@@ -366,7 +356,6 @@ Use clear, descriptive commit messages:
 
 Production deployment requires:
 - Environment variables properly configured
-- Redis server running
 - LaTeX installation available
 - Proper file permissions for uploads
 

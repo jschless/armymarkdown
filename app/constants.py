@@ -17,7 +17,8 @@ LATEX_TEMP_EXTENSIONS = [
 ]
 
 # Database constants
-MAX_DOCUMENTS_PER_USER = 10
+# SQLite can easily handle much more - even 10k users x 100 docs x 5KB = 5GB (max is 140TB)
+MAX_DOCUMENTS_PER_USER = 100
 MAX_DOCUMENT_CONTENT_LENGTH = 5000
 
 # S3 and file upload constants

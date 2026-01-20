@@ -189,10 +189,7 @@ body {
   gap: var(--spacing-3);
 }
 
-.modern-nav .logo::before {
-  content: "🪖";
-  font-size: var(--font-size-3xl);
-}
+/* Logo - no icon, just text */
 
 .modern-nav-links {
   display: flex;
@@ -265,13 +262,18 @@ body {
   transform: scale(1.1);
 }
 
-.theme-icon {
+.theme-icon,
+.shortcuts-icon {
   font-size: var(--font-size-lg);
   transition: transform var(--transition-normal);
 }
 
 .theme-toggle:hover .theme-icon {
   transform: rotate(15deg);
+}
+
+.theme-toggle:hover .shortcuts-icon {
+  transform: scale(1.1);
 }
 
 [data-theme="dark"] .theme-toggle:hover {
@@ -616,21 +618,20 @@ textarea.u-full-height {
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 9999;
-  background: linear-gradient(135deg, var(--color-white) 0%, #fefefe 100%);
+  background: #ffffff;
   border-radius: var(--radius-2xl);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 107, 53, 0.05);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.1);
   padding: var(--spacing-8);
   min-width: 450px;
   max-width: 90vw;
   text-align: center;
-  border: 1px solid rgba(255, 107, 53, 0.1);
-  backdrop-filter: blur(10px);
+  border: 2px solid var(--color-primary);
 }
 
 .modern-progress-text {
-  color: var(--color-gray-900);
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
+  color: #1a1a1a;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
   margin-bottom: var(--spacing-6);
   display: flex;
   align-items: center;
@@ -786,10 +787,11 @@ textarea.u-full-height {
 
 /* Status text styling */
 .modern-progress .text-sm {
-  color: var(--color-gray-600);
+  color: #4a4a4a;
   font-size: var(--font-size-sm);
   margin-top: var(--spacing-4);
   line-height: var(--line-height-relaxed);
+  font-weight: var(--font-weight-medium);
 }
 
 

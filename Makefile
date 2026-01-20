@@ -24,8 +24,7 @@ help:
 	@echo ""
 	@echo "Development:"
 	@echo "  make run          Start Flask development server"
-	@echo "  make celery       Start Celery worker"
-	@echo "  make redis        Start Redis server (if installed locally)"
+	@echo "  make huey         Start Huey task consumer"
 	@echo ""
 	@echo "Docker:"
 	@echo "  make docker-dev       Start development environment with Docker (Ctrl+C to stop)"
@@ -52,8 +51,8 @@ setup: install-dev
 	@echo "Development environment ready!"
 	@echo "Don't forget to:"
 	@echo "1. Edit .env with your actual configuration values"
-	@echo "2. Start Redis server: redis-server"
-	@echo "3. Run the app: make run"
+	@echo "2. Run the app: make run"
+	@echo "3. (Optional) Start Huey consumer in another terminal: make huey"
 
 # Code quality
 format:
@@ -102,16 +101,12 @@ test-all:
 # Development servers
 run:
 	@echo "Starting Flask development server..."
-	@echo "Make sure Redis is running and .env is configured!"
+	@echo "Make sure .env is configured!"
 	FLASK_APP=app.main uv run flask run --debug
 
-celery:
-	@echo "Starting Celery worker..."
-	uv run celery -A app.main.celery worker --loglevel=info
-
-redis:
-	@echo "Starting Redis server..."
-	redis-server
+huey:
+	@echo "Starting Huey task consumer..."
+	uv run huey_consumer.py app.tasks.huey -k process -w 2
 
 # Docker commands
 docker-dev:
@@ -166,5 +161,5 @@ quickstart:
 	@echo ""
 	@echo "✅ Setup complete! Next steps:"
 	@echo "   - Edit .env with your configuration"
-	@echo "   - Start Redis: make redis (in another terminal)"
 	@echo "   - Run the app: make run"
+	@echo "   - (Optional) Start Huey: make huey (in another terminal)"

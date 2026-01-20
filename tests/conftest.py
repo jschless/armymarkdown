@@ -467,3 +467,27 @@ def special_characters_samples():
         "unicode_chars": "Café résumé naïve 中文 español",
         "symbols": "~tilde ^caret \\backslash @ copyright © trademark ™",
     }
+
+
+# Test cleanup hooks
+def pytest_sessionfinish(session, exitstatus):
+    """Clean up generated test artifacts after test session completes."""
+    import contextlib
+
+    test_dir = os.path.dirname(os.path.abspath(__file__))
+    extensions_to_clean = [".aux", ".log", ".out", ".fls", ".fdb_latexmk"]
+
+    for filename in os.listdir(test_dir):
+        filepath = os.path.join(test_dir, filename)
+        # Clean up LaTeX auxiliary files
+        if any(filename.endswith(ext) for ext in extensions_to_clean):
+            with contextlib.suppress(OSError):
+                os.remove(filepath)
+        # Clean up generated .tex files (but not expected_*.tex files)
+        if filename.endswith(".tex") and not filename.startswith("expected_"):
+            with contextlib.suppress(OSError):
+                os.remove(filepath)
+        # Clean up generated .pdf files (but not fixture PDFs if any)
+        if filename.endswith(".pdf") and filename.startswith("test_"):
+            with contextlib.suppress(OSError):
+                os.remove(filepath)

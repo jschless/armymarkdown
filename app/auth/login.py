@@ -9,6 +9,7 @@ from flask_login import (
     logout_user,
 )
 
+from app.constants import MAX_DOCUMENTS_PER_USER
 from app.forms import LoginForm, RegistrationForm
 from app.models import memo_model
 from db.schema import Document, User, db
@@ -198,7 +199,7 @@ def save_document(text):
         return "Document is already saved."
 
     num_documents = Document.query.filter_by(user_id=user_id).count()
-    removed_oldest = num_documents >= 100
+    removed_oldest = num_documents >= MAX_DOCUMENTS_PER_USER
     if removed_oldest:
         oldest_document = (
             Document.query.filter_by(user_id=user_id)
@@ -253,7 +254,7 @@ def auto_save_document(text):
 
     # Check if we need to remove oldest document
     num_documents = Document.query.filter_by(user_id=user_id).count()
-    removed_oldest = num_documents >= 100
+    removed_oldest = num_documents >= MAX_DOCUMENTS_PER_USER
     if removed_oldest:
         oldest_document = (
             Document.query.filter_by(user_id=user_id)

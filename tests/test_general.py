@@ -1,4 +1,5 @@
 import os
+import tempfile
 
 from app.models import memo_model
 from app.services import writer
@@ -40,17 +41,26 @@ def test_memo_model_creation():
 def test_latex_file():
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     template_path = os.path.join(project_root, "tests", "template.Amd")
-    output_path = os.path.join(project_root, "tests", "test_tex_output_basic.tex")
     answer_path = os.path.join(
         project_root, "tests", "answer_test_tex_output_basic.tex"
     )
 
     m = memo_model.MemoModel.from_file(template_path)
     mw = writer.MemoWriter(m)
-    mw.write(output_file=output_path)
 
-    with open(output_path) as f:
-        created_output = f.read()
-    with open(answer_path) as f:
-        answer_output = f.read()
-    assert created_output == answer_output
+    # Use a temp file for output to avoid polluting tests directory
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".tex", delete=False) as tmp:
+        output_path = tmp.name
+
+    try:
+        mw.write(output_file=output_path)
+
+        with open(output_path) as f:
+            created_output = f.read()
+        with open(answer_path) as f:
+            answer_output = f.read()
+        assert created_output == answer_output
+    finally:
+        # Clean up temp file
+        if os.path.exists(output_path):
+            os.remove(output_path)

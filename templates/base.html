@@ -62,12 +62,12 @@
         {% endif %}
         <li>
           <button onclick="window.keyboardShortcuts?.showShortcutsHelp()" class="theme-toggle" aria-label="Show keyboard shortcuts" title="Keyboard shortcuts (Ctrl+/)">
-            <span class="theme-icon">⌨️</span>
+            <span class="shortcuts-icon">ℹ️</span>
           </button>
         </li>
         <li>
           <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
-            <span class="theme-icon">🌙</span>
+            <span id="theme-icon" class="theme-icon">🌙</span>
           </button>
         </li>
       </ul>
@@ -103,10 +103,10 @@
     <div class="modern-progress-bar">
       <div class="modern-progress-fill indeterminate" id="progress-fill"></div>
     </div>
-    <p class="text-sm" id="progress-status" style="color: var(--color-gray-600); margin-top: var(--spacing-4); font-weight: 500;">
+    <p class="text-sm" id="progress-status" style="color: #4a4a4a; margin-top: var(--spacing-4); font-weight: 600;">
       Compiling LaTeX document (typically 5-10 seconds)
     </p>
-    <p class="text-sm" style="color: var(--color-gray-400); margin-top: var(--spacing-2); font-size: 0.75rem;">
+    <p class="text-sm" style="color: #666666; margin-top: var(--spacing-2); font-size: 0.85rem;">
       Your document is being processed on our servers
     </p>
   </div>
@@ -163,7 +163,7 @@
     // Dark mode functionality
     function initTheme() {
       const themeToggle = document.getElementById('theme-toggle');
-      const themeIcon = document.querySelector('.theme-icon');
+      const themeIcon = document.getElementById('theme-icon');
 
       // Check for saved theme preference or default to light mode
       const savedTheme = localStorage.getItem('theme') || 'light';

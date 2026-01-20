@@ -84,11 +84,16 @@ coverage.svg
 .pytest_cache/
 test_output_*.tex
 
+# Linting caches
+.mypy_cache/
+.ruff_cache/
+
 # Temporary files
 *#
 .ipynb_checkpoints/
 *.tmp
 *.bak
+*.bak[0-9]*
 
 # Build artifacts
 build/
