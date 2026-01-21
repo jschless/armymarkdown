@@ -595,6 +595,127 @@ def validate_memo():
         ), 500
 
 
+@app.route("/validate/pdf", methods=["POST"])
+@login_required
+def validate_pdf_upload():
+    """
+    Upload a PDF file for AR 25-50 compliance validation.
+
+    Accepts multipart form data with a 'file' field containing the PDF.
+    Returns a task ID that can be polled for results.
+    """
+    from app.tasks import validate_pdf_task
+
+    # Check if file was uploaded
+    if "file" not in request.files:
+        return jsonify({"error": "No file uploaded"}), 400
+
+    file = request.files["file"]
+
+    # Check if file was selected
+    if file.filename == "":
+        return jsonify({"error": "No file selected"}), 400
+
+    # Validate file extension
+    if not file.filename.lower().endswith(".pdf"):
+        return jsonify({"error": "File must be a PDF"}), 400
+
+    # Read file content
+    pdf_bytes = file.read()
+
+    # Check file size (10MB limit)
+    max_size = 10 * 1024 * 1024  # 10MB
+    if len(pdf_bytes) > max_size:
+        return jsonify({"error": "File too large (max 10MB)"}), 400
+
+    # Check minimum size (sanity check)
+    if len(pdf_bytes) < 100:
+        return jsonify({"error": "File appears to be empty or corrupted"}), 400
+
+    # Queue validation task
+    task = validate_pdf_task(pdf_bytes, current_user.id, file.filename)
+
+    return jsonify({"task_id": task.id, "filename": file.filename})
+
+
+@app.route("/validate/pdf/status/<task_id>", methods=["GET"])
+@login_required
+def validation_task_status(task_id):
+    """
+    Get the status of a PDF validation task.
+
+    Returns task status and results when complete.
+    """
+    result = huey.result(task_id, preserve=True)
+
+    if result is None:
+        return jsonify({"state": "PENDING", "status": "Analyzing document..."})
+
+    if isinstance(result, Exception):
+        app.logger.error(f"Validation task {task_id} failed: {result}")
+        return jsonify(
+            {
+                "state": "FAILURE",
+                "status": f"Validation failed: {result!s}",
+                "error": str(result),
+            }
+        )
+
+    return jsonify(
+        {
+            "state": "SUCCESS",
+            "result_id": result.get("result_id"),
+            "score": result.get("score"),
+            "is_compliant": result.get("is_compliant"),
+            "issue_count": len(result.get("issues", [])),
+        }
+    )
+
+
+@app.route("/validate/result/<int:result_id>")
+@login_required
+def validation_result(result_id):
+    """
+    Display validation results page for a specific validation.
+
+    Args:
+        result_id: ID of the ValidationResult to display
+    """
+    from db.schema import ValidationResult
+
+    result = ValidationResult.query.get_or_404(result_id)
+
+    # Ensure user can only view their own results
+    if result.user_id != current_user.id:
+        flash("Access denied to that validation result", "error")
+        return redirect(url_for("validate_page"))
+
+    return render_template("validation_result.html", result=result)
+
+
+@app.route("/validate/history")
+@login_required
+def validation_history():
+    """Display user's validation history."""
+    from db.schema import ValidationResult
+
+    results = (
+        ValidationResult.query.filter_by(user_id=current_user.id)
+        .order_by(ValidationResult.created_at.desc())
+        .limit(20)
+        .all()
+    )
+
+    return render_template("validation_history.html", results=results)
+
+
+@app.route("/validate")
+@login_required
+def validate_page():
+    """Display the PDF validation upload page."""
+    return render_template("validate.html")
+
+
 @app.route("/validate/rules", methods=["GET"])
 def get_validation_rules():
     """

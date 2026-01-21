@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Validation History - Army Memo Maker{% endblock %}
+
+{% block content %}
+<div class="modern-card fade-in" style="max-width: var(--max-width-5xl); margin: 0 auto;">
+  <div class="modern-card-header">
+    <h2 class="modern-card-title">Validation History</h2>
+    <p class="modern-card-description">
+      Your recent PDF validation results
+    </p>
+  </div>
+
+  {% if results %}
+  <div class="history-list">
+    {% for result in results %}
+    <a href="{{ url_for('validation_result', result_id=result.id) }}" class="history-item">
+      <div class="history-main">
+        <div class="history-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+          </svg>
+        </div>
+        <div class="history-info">
+          <span class="history-filename">{{ result.pdf_filename }}</span>
+          <span class="history-date">
+            {{ result.created_at.strftime('%d %B %Y at %H:%M') if result.created_at else 'N/A' }}
+          </span>
+        </div>
+      </div>
+      <div class="history-status">
+        <div class="history-score {% if result.is_compliant %}compliant{% else %}non-compliant{% endif %}">
+          {{ (result.compliance_score * 100)|int }}%
+        </div>
+        {% if result.is_compliant %}
+        <span class="status-badge status-success">Passed</span>
+        {% else %}
+        <span class="status-badge status-warning">{{ result.issues|length }} issue(s)</span>
+        {% endif %}
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="12" y1="18" x2="12" y2="12"></line>
+        <line x1="9" y1="15" x2="15" y2="15"></line>
+      </svg>
+    </div>
+    <h3>No validations yet</h3>
+    <p>Upload a PDF to check AR 25-50 compliance</p>
+    <a href="{{ url_for('validate_page') }}" class="modern-btn modern-btn-primary">
+      Validate a PDF
+    </a>
+  </div>
+  {% endif %}
+
+  {% if results %}
+  <div class="history-actions">
+    <a href="{{ url_for('validate_page') }}" class="modern-btn modern-btn-primary">
+      Validate Another PDF
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+<style>
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-4);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+  border: 1px solid transparent;
+}
+
+.history-item:hover {
+  background: var(--bg-primary);
+  border-color: var(--border-secondary);
+  transform: translateX(4px);
+}
+
+.history-main {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+}
+
+.history-icon {
+  color: var(--color-gray-400);
+}
+
+.history-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.history-filename {
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+}
+
+.history-date {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.history-status {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+}
+
+.history-score {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: var(--radius-md);
+}
+
+.history-score.compliant {
+  color: #059669;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.history-score.non-compliant {
+  color: #d97706;
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.status-badge {
+  display: inline-block;
+  padding: var(--spacing-1) var(--spacing-3);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.status-success {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
+
+.status-warning {
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+}
+
+.empty-state {
+  text-align: center;
+  padding: var(--spacing-12);
+}
+
+.empty-icon {
+  color: var(--color-gray-300);
+  margin-bottom: var(--spacing-4);
+}
+
+.empty-state h3 {
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-2);
+}
+
+.empty-state p {
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-6);
+}
+
+.history-actions {
+  padding-top: var(--spacing-6);
+  border-top: 1px solid var(--border-primary);
+  margin-top: var(--spacing-6);
+}
+
+@media (max-width: 640px) {
+  .history-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-3);
+  }
+
+  .history-status {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+</style>
+{% endblock %}

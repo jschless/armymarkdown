@@ -57,6 +57,9 @@ dependencies = [
 
     # Email validation
     "email-validator>=2.2.0",
+
+    # PDF parsing and validation
+    "pdfplumber>=0.11.0",
 ]
 
 [project.optional-dependencies]

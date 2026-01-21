@@ -1,0 +1,341 @@
+{% extends "base.html" %}
+
+{% block title %}Validation Results - Army Memo Maker{% endblock %}
+
+{% block content %}
+<div class="modern-card fade-in" style="max-width: var(--max-width-4xl); margin: 0 auto;">
+  <div class="modern-card-header">
+    <h2 class="modern-card-title">Validation Results</h2>
+    <p class="modern-card-description">
+      AR 25-50 compliance report for <strong>{{ result.pdf_filename }}</strong>
+    </p>
+  </div>
+
+  <!-- Compliance Score -->
+  <div class="compliance-overview">
+    <div class="score-circle {% if result.is_compliant %}compliant{% else %}non-compliant{% endif %}">
+      <span class="score-value">{{ (result.compliance_score * 100)|int }}%</span>
+      <span class="score-label">Compliant</span>
+    </div>
+    <div class="compliance-status">
+      {% if result.is_compliant %}
+      <span class="status-badge status-success">Passed</span>
+      <p>This document meets AR 25-50 formatting requirements.</p>
+      {% else %}
+      <span class="status-badge status-warning">Needs Review</span>
+      <p>This document has {{ result.issues|length }} issue(s) that may need attention.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Document Metadata -->
+  <div class="metadata-section">
+    <h3>Document Information</h3>
+    <div class="metadata-grid">
+      <div class="metadata-item">
+        <span class="metadata-label">Pages</span>
+        <span class="metadata-value">{{ result.pdf_metadata.get('page_count', 'N/A') }}</span>
+      </div>
+      <div class="metadata-item">
+        <span class="metadata-label">Fonts Detected</span>
+        <span class="metadata-value">{{ result.pdf_metadata.get('fonts_detected', 'N/A') }}</span>
+      </div>
+      <div class="metadata-item">
+        <span class="metadata-label">Validated</span>
+        <span class="metadata-value">{{ result.created_at.strftime('%d %B %Y at %H:%M') if result.created_at else 'N/A' }}</span>
+      </div>
+      {% if result.pdf_metadata.get('margins') %}
+      <div class="metadata-item">
+        <span class="metadata-label">Margins (inches)</span>
+        <span class="metadata-value">
+          L: {{ result.pdf_metadata.margins.get('left', 'N/A') }}" |
+          R: {{ result.pdf_metadata.margins.get('right', 'N/A') }}" |
+          T: {{ result.pdf_metadata.margins.get('top', 'N/A') }}" |
+          B: {{ result.pdf_metadata.margins.get('bottom', 'N/A') }}"
+        </span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Issues List -->
+  {% if result.issues %}
+  <div class="issues-section">
+    <h3>Validation Issues</h3>
+    <div class="issues-list">
+      {% for issue in result.issues %}
+      <div class="issue-item issue-{{ issue.severity }}">
+        <div class="issue-header">
+          <span class="issue-severity {{ issue.severity }}">
+            {% if issue.severity == 'error' %}
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="15" y1="9" x2="9" y2="15"></line>
+              <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+            Error
+            {% else %}
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            Warning
+            {% endif %}
+          </span>
+          <span class="issue-rule">{{ issue.rule_name }}</span>
+        </div>
+        <p class="issue-description">{{ issue.description }}</p>
+        {% if issue.details %}
+        <p class="issue-details">{{ issue.details }}</p>
+        {% endif %}
+        <span class="issue-reference">{{ issue.ar_reference }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  <div class="no-issues">
+    <div class="success-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+    </div>
+    <p>No issues found. This document appears to be fully compliant with AR 25-50.</p>
+  </div>
+  {% endif %}
+
+  <!-- Actions -->
+  <div class="result-actions">
+    <a href="{{ url_for('validate_page') }}" class="modern-btn modern-btn-primary">
+      Validate Another PDF
+    </a>
+    <a href="{{ url_for('validation_history') }}" class="modern-btn modern-btn-outline">
+      View History
+    </a>
+  </div>
+</div>
+
+<style>
+.compliance-overview {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-8);
+  padding: var(--spacing-6);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--spacing-6);
+}
+
+.score-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.score-circle.compliant {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+.score-circle.non-compliant {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+}
+
+.score-value {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+}
+
+.score-label {
+  font-size: var(--font-size-sm);
+  opacity: 0.9;
+}
+
+.compliance-status p {
+  color: var(--text-secondary);
+  margin: var(--spacing-2) 0 0;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: var(--spacing-1) var(--spacing-3);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.status-success {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
+
+.status-warning {
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+}
+
+.metadata-section {
+  margin-bottom: var(--spacing-6);
+}
+
+.metadata-section h3 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-4);
+  color: var(--text-primary);
+}
+
+.metadata-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-4);
+}
+
+.metadata-item {
+  padding: var(--spacing-3);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+}
+
+.metadata-label {
+  display: block;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--spacing-1);
+}
+
+.metadata-value {
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+}
+
+.issues-section {
+  margin-bottom: var(--spacing-6);
+}
+
+.issues-section h3 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-4);
+  color: var(--text-primary);
+}
+
+.issues-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.issue-item {
+  padding: var(--spacing-4);
+  border-radius: var(--radius-lg);
+  border-left: 4px solid;
+}
+
+.issue-item.issue-error {
+  background: rgba(239, 68, 68, 0.05);
+  border-left-color: var(--color-error);
+}
+
+.issue-item.issue-warning {
+  background: rgba(245, 158, 11, 0.05);
+  border-left-color: var(--color-warning);
+}
+
+.issue-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-2);
+}
+
+.issue-severity {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+}
+
+.issue-severity.error {
+  color: var(--color-error);
+}
+
+.issue-severity.warning {
+  color: var(--color-warning);
+}
+
+.issue-rule {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.issue-description {
+  margin: 0 0 var(--spacing-2);
+  color: var(--text-secondary);
+}
+
+.issue-details {
+  margin: 0 0 var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-3);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+}
+
+.issue-reference {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.no-issues {
+  text-align: center;
+  padding: var(--spacing-8);
+  color: #059669;
+}
+
+.success-icon {
+  margin-bottom: var(--spacing-4);
+}
+
+.success-icon svg {
+  stroke: #10b981;
+}
+
+.result-actions {
+  display: flex;
+  gap: var(--spacing-4);
+  padding-top: var(--spacing-6);
+  border-top: 1px solid var(--border-primary);
+}
+
+@media (max-width: 640px) {
+  .compliance-overview {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .result-actions {
+    flex-direction: column;
+  }
+
+  .result-actions .modern-btn {
+    width: 100%;
+  }
+}
+</style>
+{% endblock %}

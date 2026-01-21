@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+
+{% block title %}Validate Memo - Army Memo Maker{% endblock %}
+
+{% block content %}
+<div class="modern-card fade-in" style="max-width: var(--max-width-3xl); margin: 0 auto;">
+  <div class="modern-card-header">
+    <h2 class="modern-card-title">Validate Army Memo</h2>
+    <p class="modern-card-description">
+      Upload any Army memorandum PDF to check AR 25-50 compliance. Our validator checks font type,
+      font size, margins, date format, and required sections.
+    </p>
+  </div>
+
+  <div class="validation-upload-section">
+    <div class="upload-zone" id="pdf-dropzone">
+      <input type="file" accept=".pdf" id="pdf-input" style="display: none;">
+      <div class="upload-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="12" y1="18" x2="12" y2="12"></line>
+          <line x1="9" y1="15" x2="15" y2="15"></line>
+        </svg>
+      </div>
+      <p class="upload-text"><strong>Drag & drop your PDF here</strong></p>
+      <p class="upload-text">or click to browse</p>
+      <p class="upload-hint">Maximum file size: 10MB</p>
+    </div>
+
+    <div id="selected-file" class="selected-file" style="display: none;">
+      <div class="file-info">
+        <span class="file-icon">📄</span>
+        <span class="file-name" id="selected-filename"></span>
+        <span class="file-size" id="selected-filesize"></span>
+      </div>
+      <button type="button" class="modern-btn modern-btn-ghost modern-btn-sm" id="remove-file">Remove</button>
+    </div>
+
+    <div id="validation-progress" class="validation-progress" style="display: none;">
+      <div class="progress-content">
+        <div class="spinner"></div>
+        <p class="progress-text">Analyzing document...</p>
+        <p class="progress-detail">Checking AR 25-50 compliance</p>
+      </div>
+    </div>
+
+    <div id="validation-error" class="modern-alert modern-alert-error" style="display: none;">
+      <span id="error-message"></span>
+    </div>
+
+    <div class="upload-actions">
+      <button type="button" class="modern-btn modern-btn-primary modern-btn-lg" id="validate-btn" disabled>
+        Validate PDF
+      </button>
+    </div>
+  </div>
+
+  <div class="validation-info">
+    <h3>What We Check</h3>
+    <div class="rules-grid">
+      <div class="rule-item">
+        <span class="rule-icon">🔤</span>
+        <div class="rule-content">
+          <strong>Font Type</strong>
+          <p>Arial or Courier New</p>
+        </div>
+      </div>
+      <div class="rule-item">
+        <span class="rule-icon">📏</span>
+        <div class="rule-content">
+          <strong>Font Size</strong>
+          <p>12 point body text</p>
+        </div>
+      </div>
+      <div class="rule-item">
+        <span class="rule-icon">📐</span>
+        <div class="rule-content">
+          <strong>Margins</strong>
+          <p>1 inch all sides</p>
+        </div>
+      </div>
+      <div class="rule-item">
+        <span class="rule-icon">📅</span>
+        <div class="rule-content">
+          <strong>Date Format</strong>
+          <p>DD Month YYYY</p>
+        </div>
+      </div>
+      <div class="rule-item">
+        <span class="rule-icon">📋</span>
+        <div class="rule-content">
+          <strong>Subject Line</strong>
+          <p>Required element</p>
+        </div>
+      </div>
+      <div class="rule-item">
+        <span class="rule-icon">✍️</span>
+        <div class="rule-content">
+          <strong>Signature Block</strong>
+          <p>Name, rank, title</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if current_user.is_authenticated %}
+<div class="modern-card fade-in" style="max-width: var(--max-width-3xl); margin: var(--spacing-6) auto 0;">
+  <h3>Recent Validations</h3>
+  <p class="text-secondary"><a href="{{ url_for('validation_history') }}">View full history</a></p>
+</div>
+{% endif %}
+
+<style>
+.validation-upload-section {
+  margin: var(--spacing-6) 0;
+}
+
+.upload-zone {
+  border: 2px dashed var(--border-secondary);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-10);
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  background: var(--bg-secondary);
+}
+
+.upload-zone:hover,
+.upload-zone.drag-over {
+  border-color: var(--color-primary);
+  background: rgba(255, 107, 53, 0.05);
+}
+
+.upload-zone.drag-over {
+  transform: scale(1.01);
+}
+
+.upload-icon {
+  color: var(--color-gray-400);
+  margin-bottom: var(--spacing-4);
+}
+
+.upload-text {
+  color: var(--text-secondary);
+  margin: var(--spacing-2) 0;
+}
+
+.upload-text strong {
+  color: var(--text-primary);
+  font-size: var(--font-size-lg);
+}
+
+.upload-hint {
+  color: var(--color-gray-400);
+  font-size: var(--font-size-sm);
+  margin-top: var(--spacing-4);
+}
+
+.selected-file {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-4);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  margin-top: var(--spacing-4);
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.file-icon {
+  font-size: var(--font-size-xl);
+}
+
+.file-name {
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+}
+
+.file-size {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.validation-progress {
+  padding: var(--spacing-8);
+  text-align: center;
+}
+
+.progress-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-4);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--color-gray-200);
+  border-top: 3px solid var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.progress-text {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.progress-detail {
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.upload-actions {
+  margin-top: var(--spacing-6);
+  text-align: center;
+}
+
+.validation-info {
+  margin-top: var(--spacing-8);
+  padding-top: var(--spacing-6);
+  border-top: 1px solid var(--border-primary);
+}
+
+.validation-info h3 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-4);
+  color: var(--text-primary);
+}
+
+.rules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-4);
+}
+
+.rule-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+}
+
+.rule-icon {
+  font-size: var(--font-size-xl);
+}
+
+.rule-content strong {
+  display: block;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+}
+
+.rule-content p {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.text-secondary a {
+  color: var(--color-primary);
+}
+</style>
+
+<script src="{{ url_for('static', filename='pdf-validation.js') }}"></script>
+{% endblock %}
