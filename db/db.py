@@ -70,11 +70,13 @@ def init_db(app):
                     app.logger.info(f"User table columns: {user_columns}")
 
                     if len(user_columns) > 0 and "google_id" not in user_columns:
-                        app.logger.info("Adding Google OAuth columns to user table...")
+                        app.logger.warning(
+                            "Adding Google OAuth columns to user table..."
+                        )
+                        # SQLite doesn't support UNIQUE constraint in ALTER TABLE,
+                        # so add column first, then create unique index
                         db.session.execute(
-                            text(
-                                "ALTER TABLE user ADD COLUMN google_id VARCHAR(128) UNIQUE"
-                            )
+                            text("ALTER TABLE user ADD COLUMN google_id VARCHAR(128)")
                         )
                         db.session.execute(
                             text(
@@ -86,13 +88,17 @@ def init_db(app):
                                 "ALTER TABLE user ADD COLUMN auth_provider VARCHAR(32) DEFAULT 'local'"
                             )
                         )
+                        # Create unique index for google_id
+                        db.session.execute(
+                            text(
+                                "CREATE UNIQUE INDEX IF NOT EXISTS ix_user_google_id ON user(google_id)"
+                            )
+                        )
                         db.session.commit()
-                        app.logger.info("Successfully added Google OAuth columns")
+                        app.logger.warning("Successfully added Google OAuth columns")
 
                 except Exception as e:
-                    app.logger.info(
-                        f"Could not check existing schema (probably no tables exist yet): {e!s}"
-                    )
+                    app.logger.error(f"Could not check/migrate existing schema: {e!s}")
 
                 # Create tables with error handling
                 try:
