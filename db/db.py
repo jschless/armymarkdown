@@ -62,6 +62,33 @@ def init_db(app):
                         db.drop_all()
                         app.logger.info("Dropped existing tables")
 
+                    # Check if Google OAuth columns exist in user table
+                    user_pragma = db.session.execute(
+                        text("PRAGMA table_info(user);")
+                    ).fetchall()
+                    user_columns = [column[1] for column in user_pragma]
+                    app.logger.info(f"User table columns: {user_columns}")
+
+                    if len(user_columns) > 0 and "google_id" not in user_columns:
+                        app.logger.info("Adding Google OAuth columns to user table...")
+                        db.session.execute(
+                            text(
+                                "ALTER TABLE user ADD COLUMN google_id VARCHAR(128) UNIQUE"
+                            )
+                        )
+                        db.session.execute(
+                            text(
+                                "ALTER TABLE user ADD COLUMN google_email VARCHAR(128)"
+                            )
+                        )
+                        db.session.execute(
+                            text(
+                                "ALTER TABLE user ADD COLUMN auth_provider VARCHAR(32) DEFAULT 'local'"
+                            )
+                        )
+                        db.session.commit()
+                        app.logger.info("Successfully added Google OAuth columns")
+
                 except Exception as e:
                     app.logger.info(
                         f"Could not check existing schema (probably no tables exist yet): {e!s}"
