@@ -28,14 +28,37 @@ def login_route():
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
-        if user is None or not user.check_password(form.password.data):
+
+        # Check if user exists
+        if user is None:
             from flask import current_app
 
             current_app.logger.info(
-                f"{form.username.data} logged in with wrong username or password"
+                f"{form.username.data} tried to log in with non-existent username"
             )
             flash("Invalid username or password")
             return redirect(url_for("login"))
+
+        # Check if user is OAuth-only (no password set)
+        if not user.can_use_password():
+            from flask import current_app
+
+            current_app.logger.info(
+                f"{form.username.data} (OAuth-only) tried password login"
+            )
+            flash("This account uses Google sign-in. Please use 'Sign in with Google'.")
+            return redirect(url_for("login"))
+
+        # Check password
+        if not user.check_password(form.password.data):
+            from flask import current_app
+
+            current_app.logger.info(
+                f"{form.username.data} logged in with wrong password"
+            )
+            flash("Invalid username or password")
+            return redirect(url_for("login"))
+
         login_user(user, remember=form.remember_me.data)
         next_page = request.args.get("next")
         if not next_page or urlsplit(next_page).netloc != "":

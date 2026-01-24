@@ -16,6 +16,9 @@ ORGANIZATION_CITY_STATE_ZIP = Fort Liberty, NC 28310
 # Your office symbol should follow your unit's standard format
 OFFICE_SYMBOL = ATZB-CD-E
 
+# The date the memo is signed (format: DD Month YYYY)
+DATE = 15 January 2024
+
 # Author information - this is who signs the memo
 AUTHOR = Sarah M. Johnson
 RANK = CPT

@@ -60,6 +60,9 @@ dependencies = [
 
     # PDF parsing and validation
     "pdfplumber>=0.11.0",
+
+    # OAuth authentication
+    "authlib>=1.3.0",
 ]
 
 [project.optional-dependencies]

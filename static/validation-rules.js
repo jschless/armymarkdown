@@ -670,6 +670,18 @@ window.MemoValidationRules = (function () {
                 hasWarnings: Object.values(fieldIssues).some(i => i.severity === 'warning') ||
                      bodyIssues.some(i => i.severity === 'warning')
             };
+        },
+
+        /**
+     * Validate spelling in text
+     * @param {string} text - The text to spellcheck
+     * @returns {Array<{word: string, suggestions: string[]}>} - Array of misspellings
+     */
+        validateSpelling: function (text) {
+            if (!window.Spellcheck || !window.Spellcheck.isReady()) {
+                return []; // Spellcheck not ready yet
+            }
+            return window.Spellcheck.checkText(text);
         }
     };
 })();

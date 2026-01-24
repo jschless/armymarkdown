@@ -201,6 +201,10 @@
     // Progress functions moved to tasks.js
   </script>
 
+  <!-- Spellcheck -->
+  <script src="{{ url_for('static', filename='lib/typo.js') }}"></script>
+  <script src="{{ url_for('static', filename='spellcheck.js') }}"></script>
+
   {% block scripts %}{% endblock %}
 </body>
 </html>

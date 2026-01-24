@@ -64,6 +64,10 @@
           <span class="status-text">Checking...</span>
         </div>
         <ul class="validation-issues" id="field-issues"></ul>
+        <div class="spelling-section" id="spelling-section" style="display: none;">
+          <h4 class="spelling-section-title">Spelling</h4>
+          <ul class="spelling-issues" id="spelling-issues"></ul>
+        </div>
       </div>
     `;
 
@@ -100,30 +104,54 @@
         const fields = Rules.parseAmdText(text);
         const fieldIssues = Rules.validateAll(fields);
 
-        updateValidationPanel(fieldIssues, fields);
+        // Get text to spellcheck (subject + body)
+        const subjectText = fields['SUBJECT'] || '';
+        const bodyText = fields._BODY_TEXT || '';
+        const textToCheck = subjectText + ' ' + bodyText;
+
+        // Validate spelling
+        const spellingErrors = Rules.validateSpelling(textToCheck);
+
+        updateValidationPanel(fieldIssues, fields, spellingErrors);
     }
 
     // Update the validation panel with results
-    function updateValidationPanel(fieldIssues, fields) {
+    function updateValidationPanel(fieldIssues, fields, spellingErrors) {
         const statusIcon = validationPanel.querySelector('.status-icon');
         const statusText = validationPanel.querySelector('.status-text');
         const fieldIssuesList = validationPanel.querySelector('#field-issues');
+        const spellingSection = validationPanel.querySelector('#spelling-section');
+        const spellingIssuesList = validationPanel.querySelector('#spelling-issues');
 
         const fieldEntries = Object.entries(fieldIssues);
+        spellingErrors = spellingErrors || [];
 
         const totalErrors = fieldEntries.filter(([, i]) => i.severity === 'error').length;
         const totalWarnings = fieldEntries.filter(([, i]) => i.severity === 'warning').length;
+        const totalSpellingIssues = spellingErrors.length;
+
+        // Build status parts
+        const statusParts = [];
+        if (totalErrors > 0) {
+            statusParts.push(`${totalErrors} error${totalErrors > 1 ? 's' : ''}`);
+        }
+        if (totalWarnings > 0) {
+            statusParts.push(`${totalWarnings} warning${totalWarnings > 1 ? 's' : ''}`);
+        }
+        if (totalSpellingIssues > 0) {
+            statusParts.push(`${totalSpellingIssues} spelling issue${totalSpellingIssues > 1 ? 's' : ''}`);
+        }
 
         // Update status
         if (totalErrors > 0) {
             statusIcon.textContent = '✗';
             statusIcon.className = 'status-icon status-error';
-            statusText.textContent = `${totalErrors} error${totalErrors > 1 ? 's' : ''}${totalWarnings > 0 ? `, ${totalWarnings} warning${totalWarnings > 1 ? 's' : ''}` : ''}`;
+            statusText.textContent = statusParts.join(', ');
             validationPanel.className = 'text-validation-panel has-errors';
-        } else if (totalWarnings > 0) {
+        } else if (totalWarnings > 0 || totalSpellingIssues > 0) {
             statusIcon.textContent = '⚠';
             statusIcon.className = 'status-icon status-warning';
-            statusText.textContent = `${totalWarnings} warning${totalWarnings > 1 ? 's' : ''}`;
+            statusText.textContent = statusParts.join(', ');
             validationPanel.className = 'text-validation-panel has-warnings';
         } else {
             statusIcon.textContent = '✓';
@@ -169,6 +197,61 @@
 
                 fieldIssuesList.appendChild(li);
             });
+        }
+
+        // Update spelling section
+        if (spellingErrors.length > 0) {
+            spellingSection.style.display = 'block';
+            spellingSection.querySelector('.spelling-section-title').textContent =
+                `Spelling (${spellingErrors.length} issue${spellingErrors.length > 1 ? 's' : ''})`;
+            spellingIssuesList.innerHTML = '';
+
+            spellingErrors.forEach(error => {
+                const li = document.createElement('li');
+                li.className = 'spelling-issue';
+                li.setAttribute('data-word', error.word);
+
+                const suggestionsText = error.suggestions.length
+                    ? `<span class="spelling-suggestions">\u2192 ${error.suggestions.join(', ')}</span>`
+                    : '';
+
+                li.innerHTML = `
+                    <span class="misspelled-word">${escapeHtml(error.word)}</span>
+                    ${suggestionsText}
+                `;
+
+                // Click to find word in editor
+                li.addEventListener('click', function () {
+                    highlightWordInEditor(error.word);
+                });
+
+                spellingIssuesList.appendChild(li);
+            });
+        } else {
+            spellingSection.style.display = 'none';
+        }
+    }
+
+    // Highlight a word in the editor
+    function highlightWordInEditor(word) {
+        if (!editor) return;
+
+        const text = editor.value;
+        // Case-insensitive search for the word
+        const regex = new RegExp('\\b' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+        const match = text.match(regex);
+
+        if (match) {
+            const startIndex = text.search(regex);
+            const endIndex = startIndex + match[0].length;
+
+            editor.focus();
+            editor.setSelectionRange(startIndex, endIndex);
+
+            // Scroll to selection
+            const lineNumber = text.substring(0, startIndex).split('\n').length;
+            const lineHeight = parseInt(getComputedStyle(editor).lineHeight) || 20;
+            editor.scrollTop = (lineNumber - 3) * lineHeight;
         }
     }
 

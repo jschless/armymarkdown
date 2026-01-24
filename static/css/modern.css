@@ -1515,3 +1515,104 @@ select.field-error:focus {
   letter-spacing: 0.05em;
   margin: 0 0 var(--spacing-2) 0;
 }
+
+/* Spelling Validation Section */
+.spelling-section {
+  margin-top: var(--spacing-4);
+  padding-top: var(--spacing-4);
+  border-top: 1px solid var(--border-primary);
+}
+
+.spelling-section-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-secondary);
+  margin: 0 0 var(--spacing-3) 0;
+}
+
+.spelling-issues {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.spelling-issue {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-3);
+  margin-bottom: var(--spacing-1);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  transition: background var(--transition-fast);
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.spelling-issue:hover {
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.spelling-issue .misspelled-word {
+  color: var(--color-error);
+  font-weight: var(--font-weight-medium);
+  text-decoration: wavy underline var(--color-error);
+  text-underline-offset: 3px;
+}
+
+.spelling-issue .spelling-suggestions {
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  margin-left: var(--spacing-1);
+}
+
+/* ========================================
+   OAuth / Google Sign-in Button
+   ======================================== */
+
+.google-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-3);
+  width: 100%;
+  padding: var(--spacing-3) var(--spacing-4);
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--radius-md);
+  background: var(--color-white);
+  color: var(--color-gray-700);
+  text-decoration: none;
+  font-weight: var(--font-weight-medium);
+  transition: all var(--transition-normal);
+}
+
+.google-btn:hover {
+  background: var(--color-gray-50);
+  border-color: var(--color-gray-400);
+  box-shadow: var(--shadow-sm);
+}
+
+.google-btn:active {
+  background: var(--color-gray-100);
+}
+
+.oauth-divider {
+  display: flex;
+  align-items: center;
+  margin: var(--spacing-6) 0;
+  color: var(--color-gray-500);
+}
+
+.oauth-divider span:first-child,
+.oauth-divider span:last-child {
+  flex: 1;
+  height: 1px;
+  background: var(--color-gray-200);
+}
+
+.oauth-divider span:nth-child(2) {
+  padding: 0 var(--spacing-4);
+  font-size: var(--font-size-sm);
+}

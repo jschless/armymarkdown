@@ -15,7 +15,17 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, nullable=False)
     email = db.Column(db.String(128), unique=True, nullable=False)
-    password_hash = db.Column(db.String(256), nullable=False)
+    password_hash = db.Column(
+        db.String(256), nullable=True
+    )  # Nullable for OAuth-only users
+
+    # Google OAuth fields
+    google_id = db.Column(db.String(128), unique=True, nullable=True, index=True)
+    google_email = db.Column(db.String(128), nullable=True)
+    auth_provider = db.Column(
+        db.String(32), default="local"
+    )  # 'local', 'google', 'both'
+
     documents = db.relationship("Document", backref="user", lazy=True)
     profile = db.relationship("UserProfile", backref="user", uselist=False, lazy=True)
 
@@ -23,7 +33,38 @@ class User(UserMixin, db.Model):
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
+        if not self.password_hash:
+            return False
         return check_password_hash(self.password_hash, password)
+
+    def can_use_password(self):
+        """Returns True if user has a password set."""
+        return self.password_hash is not None
+
+    def is_google_linked(self):
+        """Returns True if Google account is linked."""
+        return self.google_id is not None
+
+    def link_google_account(self, google_id, google_email):
+        """Link Google account to this user."""
+        self.google_id = google_id
+        self.google_email = google_email
+        if self.auth_provider == "local":
+            self.auth_provider = "both"
+        elif self.auth_provider is None:
+            self.auth_provider = "google"
+
+    def unlink_google_account(self):
+        """Unlink Google account from this user."""
+        self.google_id = None
+        self.google_email = None
+        if self.auth_provider == "both":
+            self.auth_provider = "local"
+
+    @classmethod
+    def find_by_google_id(cls, google_id):
+        """Find user by Google ID."""
+        return cls.query.filter_by(google_id=google_id).first()
 
 
 class UserProfile(db.Model):
