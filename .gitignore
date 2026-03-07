@@ -59,6 +59,7 @@ Thumbs.db
 *.log
 *.out
 *.pdf
+!resources/latex/DA_LOGO.pdf
 *.gz
 *.xdv
 *.fls
