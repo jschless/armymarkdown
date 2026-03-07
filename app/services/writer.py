@@ -30,15 +30,15 @@ class MemoWriter:
         tex_dir = os.path.dirname(self.output_file)
         tex_filename = os.path.basename(self.output_file)
 
-        # pdflatex command with performance flags (faster than lualatex)
+        # LuaLaTeX command with performance flags
         latex_cmd = [
-            "pdflatex",
-            "-interaction=nonstopmode",  # Don't stop for errors
-            "-file-line-error",  # Better error reporting
-            "-no-shell-escape",  # Security: disable shell escape
-            "-halt-on-error",  # Stop on first error
-            "-synctex=0",  # Disable synctex for speed
-            f"-output-directory={tex_dir}",
+            "lualatex",
+            "--interaction=nonstopmode",  # Don't stop for errors
+            "--file-line-error",  # Better error reporting
+            "--no-shell-escape",  # Security: disable shell escape
+            "--halt-on-error",  # Stop on first error
+            "--synctex=0",  # Disable synctex for speed
+            f"--output-directory={tex_dir}",
             tex_filename,
         ]
 
