@@ -16,11 +16,6 @@
 \frenchspacing
 
 \AtBeginDocument{%
-  \ifstrempty{\am@documentmark}{}{%
-%    \backgroundsetup{opacity=1, scale=1, angle=0,contents={\am@classmark{\am@documentmark}}}\BgThispage
-    \backgroundsetup{opacity=1, scale=1, angle=0,contents={\am@documentmark}}\BgThispage
-  }
-%  \am@putlogo%
   \dodheader%
   \vspace*{1\baselineskip}
 }
@@ -79,11 +74,13 @@
 % allow automatic quote expansion
 \RequirePackage{csquotes}
 \MakeOuterQuote{"}
-% Font selection - Lato per DoW Brand Guide (replaces Arial)
-% Lato is an open-source sans serif designed for legibility
-\RequirePackage[default]{lato}
-\RequirePackage[T1]{fontenc}
+% for font selection
+\RequirePackage{fontspec}
 \RequirePackage[english]{babel}
+% AR 25-50 recommends Arial as of 17 May 2013.  1-17b
+\setmainfont{Arial}
+\setsansfont{Arial}
+\defaultfontfeatures{Mapping=tex-text} % To support LaTeX ``" quotes.
 
 % used to change date format
 \RequirePackage{datetime}
@@ -93,10 +90,8 @@
 \RequirePackage{graphicx}
 % for future use of colors in classification markings
 \RequirePackage[dvipsnames]{xcolor}
-% required for graphics placement
-%\RequirePackage{tikz}
-% for overlay of classification markings without affecting layout
-\RequirePackage[pages=all,color=black]{background}
+% tikz and background packages removed for performance
+% (were only used for classification markings)
 % required to enable high-depth nested lists, and custom numbering
 \RequirePackage{enumitem}
 \setlist{topsep=0pt,itemsep=0pt,parsep=0pt}
@@ -160,9 +155,7 @@
 % reduce hyphens with a combination of \hypenpenalty and microtype
 \RequirePackage{microtype}
 
-% do I need this later? https://tex.stackexchange.com/a/64615
-\usepackage[colorlinks=true,urlcolor=blue,citecolor=blue,breaklinks=true]{hyperref}
-\urlstyle{same}
+% hyperref removed for performance (not needed for printed memos)
 
 \RequirePackage{ragged2e}
 \RaggedRight
