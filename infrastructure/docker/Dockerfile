@@ -14,13 +14,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Install additional LaTeX packages including Lato font
-RUN tlmgr init-usertree
-RUN tlmgr option repository ftp://tug.org/historic/systems/texlive/2021/tlnet-final
-RUN tlmgr install koma-script etoolbox xkeyval \
-    xcolor datetime fmtcount background csquotes \
-    pgf background enumitem setspace booktabs \
-    microtype pdftexcmds infwarerr everypage ragged2e \
-    lato fontaxes mweights
+RUN tlmgr init-usertree && \
+    tlmgr option repository https://ftp.math.utah.edu/pub/tex/historic/systems/texlive/2021/tlnet-final && \
+    tlmgr install koma-script etoolbox xkeyval \
+        xcolor datetime fmtcount background csquotes \
+        pgf enumitem setspace booktabs \
+        microtype pdftexcmds infwarerr everypage ragged2e \
+        lato fontaxes mweights tools
 
 # Install uv package manager
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
