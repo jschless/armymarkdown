@@ -79,13 +79,11 @@
 % allow automatic quote expansion
 \RequirePackage{csquotes}
 \MakeOuterQuote{"}
-% for font selection
-\RequirePackage{fontspec}
+% Font selection - Lato per DoW Brand Guide (replaces Arial)
+% Lato is an open-source sans serif designed for legibility
+\RequirePackage[default]{lato}
+\RequirePackage[T1]{fontenc}
 \RequirePackage[english]{babel}
-% AR 25-50 recommends Arial as of 17 May 2013.  1-17b
- \setmainfont{Arial}
- \setsansfont{Arial}
-\defaultfontfeatures{Mapping=tex-text} % To support LaTeX ``" quotes.
 
 % used to change date format
 \RequirePackage{datetime}
@@ -417,7 +415,7 @@
   \thispagestyle{plain}%
 \begin{picture}(0,0)
 \setlength{\unitlength}{1pc}
-\put(-2.8,2.8){\includegraphics[height=1in]{/app/resources/latex/DA_LOGO.png}}
+\put(-2.8,2.8){\includegraphics[height=1in]{/app/resources/latex/DA_LOGO.pdf}}
 \end{picture}
 \begin{picture}(0,0)
 \setstretch{0.7}\fontfamily\sfdefault\selectfont%

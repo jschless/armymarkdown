@@ -1,15 +1,12 @@
 FROM ubuntu:22.04
 
-# Accept MS fonts EULA
-RUN echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | debconf-set-selections
-
-# Install system dependencies
+# Install system dependencies (no MS fonts needed - using Lato)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3.11 python3.11-venv curl git \
-    fontconfig ttf-mscorefonts-installer \
+    fontconfig \
     texlive-base \
     texlive-latex-base \
-    texlive-luatex \
+    texlive-latex-recommended \
     latexmk \
     xz-utils \
     && rm -rf /var/lib/apt/lists/*
@@ -19,20 +16,14 @@ RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
     /root/.local/bin/uv --version
 ENV PATH="/root/.local/bin:$PATH"
 
-# Build font cache
-RUN fc-cache -f -v
-
-# Install additional LaTeX packages
-RUN tlmgr init-usertree
-RUN tlmgr option repository ftp://tug.org/historic/systems/texlive/2021/tlnet-final
-RUN tlmgr install koma-script etoolbox fontspec xkeyval \
-    xcolor datetime fmtcount background csquotes \
-    pgf background enumitem setspace booktabs \
-    microtype pdftexcmds infwarerr everypage ragged2e
-
-# Set font directory and build font cache for LuaLaTeX
-ENV OSFONTDIR=/usr/share/fonts
-RUN luaotfload-tool -vvv --update --force
+# Install additional LaTeX packages including Lato font
+RUN tlmgr init-usertree && \
+    tlmgr option repository https://ftp.math.utah.edu/pub/tex/historic/systems/texlive/2021/tlnet-final && \
+    tlmgr install koma-script etoolbox xkeyval \
+        xcolor datetime fmtcount background csquotes \
+        pgf enumitem setspace booktabs \
+        microtype pdftexcmds infwarerr everypage ragged2e \
+        lato fontaxes mweights tools
 
 # Python configuration
 ENV PYTHONUNBUFFERED=1
