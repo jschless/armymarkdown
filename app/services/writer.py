@@ -48,7 +48,7 @@ class MemoWriter:
             capture_output=True,
             text=True,
             cwd=tex_dir,
-            timeout=30,  # Add timeout to prevent hanging
+            timeout=90,  # Timeout for LaTeX compilation (increased from 30s)
         )
         print(
             f"[{time.strftime('%H:%M:%S')}] LaTeX compilation finished. Return code: {result.returncode}"
