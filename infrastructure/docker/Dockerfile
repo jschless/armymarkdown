@@ -2,6 +2,7 @@ FROM ubuntu:22.04
 
 # Accept MS fonts EULA for Arial
 RUN echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | debconf-set-selections
+ARG TARGETARCH
 ENV TYPST_VERSION=0.14.2
 
 # Install system dependencies
@@ -13,10 +14,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Install pinned Typst binary used by the standalone armymemo package
-RUN curl -L "https://github.com/typst/typst/releases/download/v${TYPST_VERSION}/typst-x86_64-unknown-linux-musl.tar.xz" -o /tmp/typst.tar.xz && \
+RUN arch="${TARGETARCH:-$(dpkg --print-architecture)}" && \
+    case "$arch" in \
+      amd64|x86_64) typst_target="x86_64-unknown-linux-musl" ;; \
+      arm64|aarch64) typst_target="aarch64-unknown-linux-musl" ;; \
+      *) echo "Unsupported TARGETARCH: $arch" >&2; exit 1 ;; \
+    esac && \
+    curl -L "https://github.com/typst/typst/releases/download/v${TYPST_VERSION}/typst-${typst_target}.tar.xz" -o /tmp/typst.tar.xz && \
     tar -xJf /tmp/typst.tar.xz -C /tmp && \
-    install -m 0755 /tmp/typst-x86_64-unknown-linux-musl/typst /usr/local/bin/typst && \
-    rm -rf /tmp/typst.tar.xz /tmp/typst-x86_64-unknown-linux-musl
+    install -m 0755 "/tmp/typst-${typst_target}/typst" /usr/local/bin/typst && \
+    rm -rf /tmp/typst.tar.xz "/tmp/typst-${typst_target}"
 
 # Pre-warm font cache for faster first compilation
 RUN fc-cache -fv && typst --version
