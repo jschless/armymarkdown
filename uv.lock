@@ -100,7 +100,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "armymemo", git = "https://github.com/jschless/armymemo.git?rev=5d41df18c0f231493d77fe5a2445c33937bc73fe#5d41df18c0f231493d77fe5a2445c33937bc73fe" },
+    { name = "armymemo", git = "https://github.com/jschless/armymemo.git?rev=d1717e84b3b21198fc74fd15cb5e2a67ee8798f7#d1717e84b3b21198fc74fd15cb5e2a67ee8798f7" },
     { name = "authlib", specifier = ">=1.3.0" },
     { name = "bandit", marker = "extra == 'dev'", specifier = ">=1.8.0" },
     { name = "boto3", specifier = ">=1.35.0" },
@@ -161,7 +161,7 @@ dev = [
 [[package]]
 name = "armymemo"
 version = "0.1.0"
-source = { git = "https://github.com/jschless/armymemo.git?rev=5d41df18c0f231493d77fe5a2445c33937bc73fe#5d41df18c0f231493d77fe5a2445c33937bc73fe" }
+source = { git = "https://github.com/jschless/armymemo.git?rev=d1717e84b3b21198fc74fd15cb5e2a67ee8798f7#d1717e84b3b21198fc74fd15cb5e2a67ee8798f7" }
 dependencies = [
     { name = "pdfplumber" },
     { name = "pyyaml" },
