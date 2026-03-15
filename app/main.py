@@ -164,7 +164,8 @@ def index():
             return redirect(url_for("index", example_file="tutorial.Amd"))
         memo_text = document.content
     else:
-        memo_text = load_example_text(example_file, current_user.id)
+        user_id = current_user.id if current_user.is_authenticated else None
+        memo_text = load_example_text(example_file, user_id)
 
     return render_template(
         "index.html",
@@ -241,7 +242,10 @@ def form():
         document_model = parse_memo_text(document.content)
     else:
         document_model = parse_memo_text(
-            load_example_text(example_file, current_user.id)
+            load_example_text(
+                example_file,
+                current_user.id if current_user.is_authenticated else None,
+            )
         )
     memo_dict = document_to_form_context(document_model)
     memo_dict["examples"] = get_example_files()
