@@ -9,7 +9,9 @@ import re
 import tempfile
 import time
 
-from armymemo import parse_text, render_typst_pdf
+from armymemo import parse_text, render_typst_pdf, review_document
+from armymemo.document import MemoDocument
+from armymemo.review import ReviewReport
 from huey import SqliteHuey
 
 # Configure logging
@@ -25,6 +27,13 @@ huey = SqliteHuey(
 
 @dataclass(frozen=True, slots=True)
 class RenderedMemo:
+    filename: str
+    pdf_bytes: bytes
+
+
+@dataclass(frozen=True, slots=True)
+class PreparedMemo:
+    document: MemoDocument
     filename: str
     pdf_bytes: bytes
 
@@ -45,21 +54,25 @@ def create_memo(text: str) -> RenderedMemo:
         Rendered memo filename and PDF bytes
     """
     start_time = time.time()
-    document = parse_text(text)
-
-    logger.debug("Generating memo subject=%s", document.subject)
-
-    filename = f"{_safe_filename(document.subject)[:64]}.pdf"
-
-    with tempfile.TemporaryDirectory(prefix="armymarkdown-memo-") as temp_dir_name:
-        pdf_file = Path(temp_dir_name) / filename
-        render_typst_pdf(document, pdf_file)
-        pdf_bytes = pdf_file.read_bytes()
-
+    prepared = _prepare_memo(text)
     generation_time = time.time() - start_time
     logger.info(f"PDF generation completed in {generation_time:.2f} seconds")
+    return RenderedMemo(filename=prepared.filename, pdf_bytes=prepared.pdf_bytes)
 
-    return RenderedMemo(filename=filename, pdf_bytes=pdf_bytes)
+
+def review_memo_content(text: str) -> ReviewReport:
+    """Render and review a memo using the shared armymemo rule set."""
+    start_time = time.time()
+    prepared = _prepare_memo(text)
+    report = review_document(prepared.document, pdf_source=prepared.pdf_bytes)
+    review_time = time.time() - start_time
+    logger.info(
+        "Memo review completed in %.2f seconds (passed=%s failed=%s)",
+        review_time,
+        report.passed,
+        report.failed_rules,
+    )
+    return report
 
 
 @huey.task(retries=1, retry_delay=5)
@@ -137,3 +150,17 @@ def validate_pdf_task(pdf_bytes: bytes, user_id: int, filename: str):
 def _safe_filename(subject: str) -> str:
     sanitized = re.sub(r"[^a-z0-9]+", "_", subject.lower()).strip("_")
     return sanitized or "memo"
+
+
+def _prepare_memo(text: str) -> PreparedMemo:
+    document = parse_text(text)
+    logger.debug("Preparing memo subject=%s", document.subject)
+
+    filename = f"{_safe_filename(document.subject)[:64]}.pdf"
+
+    with tempfile.TemporaryDirectory(prefix="armymarkdown-memo-") as temp_dir_name:
+        pdf_file = Path(temp_dir_name) / filename
+        render_typst_pdf(document, pdf_file)
+        pdf_bytes = pdf_file.read_bytes()
+
+    return PreparedMemo(document=document, filename=filename, pdf_bytes=pdf_bytes)

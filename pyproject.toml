@@ -43,7 +43,7 @@ dependencies = [
 
     # Web server
     "gunicorn>=23.0.0",
-    "armymemo @ git+https://github.com/jschless/armymemo.git@d1717e84b3b21198fc74fd15cb5e2a67ee8798f7",
+    "armymemo @ git+https://github.com/jschless/armymemo.git@5c0dcc45403d9bbb857c0a66fe831fa33300fb14",
 
     # Utilities
     "python-dotenv>=1.0.0",

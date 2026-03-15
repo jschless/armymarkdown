@@ -31,6 +31,11 @@ function buttonPress(endpoint) {
     const previewWindow = window.open('', '_blank');
 
     // Show modern progress modal with indeterminate progress
+    setProgressContent(
+        'Creating your memo...',
+        'Compiling Typst document',
+        'Your document is being processed on our servers'
+    );
     showProgress(true);
     showIndeterminateProgress();
 
@@ -73,6 +78,40 @@ function buttonPress(endpoint) {
             showProgress(false);
             showStatusMessage(error.message || 'Error submitting your memo. Please check your connection and try again.', 'error');
         });
+}
+
+async function reviewMemo(endpoint) {
+    const formData = new FormData(document.getElementById('memo'));
+
+    setProgressContent(
+        'Reviewing your memo...',
+        'Running AR 25-50 checks',
+        'We are rendering the memo and reviewing the resulting layout'
+    );
+    showProgress(true);
+    showIndeterminateProgress();
+
+    try {
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(await extractErrorMessage(response));
+        }
+
+        const report = await response.json();
+        showProgress(false);
+        renderReviewModal(report);
+    } catch (error) {
+        console.error('Error reviewing memo:', error);
+        showProgress(false);
+        showStatusMessage(error.message || 'Error reviewing your memo. Please try again.', 'error');
+    }
 }
 
 async function extractErrorMessage(response) {
@@ -120,9 +159,76 @@ function openPdfResult(pdfUrl, previewWindow, filename) {
     link.click();
 }
 
+function renderReviewModal(report) {
+    const modal = document.getElementById('review-modal');
+    const summary = document.getElementById('review-summary');
+    const findings = document.getElementById('review-findings');
+    if (!modal || !summary || !findings) {
+        showStatusMessage('Review completed, but the results dialog is unavailable on this page.', 'warning');
+        return;
+    }
+
+    const failedFindings = (report.findings || []).filter((finding) => finding.status === 'fail');
+    const severityCounts = report.failing_severity_counts || {};
+    const errorCount = severityCounts.error || 0;
+    const warningCount = severityCounts.warning || 0;
+
+    summary.innerHTML = `
+        <div class="review-summary-card ${report.passed ? 'review-summary-pass' : 'review-summary-fail'}">
+            <div class="review-summary-main">
+                <span class="review-summary-badge">${report.passed ? 'Passed' : 'Needs Review'}</span>
+                <div class="review-summary-copy">
+                    <strong>${report.passed ? 'This memo passed the rendered AR 25-50 review.' : 'This memo has rendered review findings that need attention.'}</strong>
+                    <p>${errorCount} error(s), ${warningCount} warning(s), ${report.passing_rules || 0} passing check(s).</p>
+                </div>
+            </div>
+        </div>
+    `;
+
+    if (failedFindings.length === 0) {
+        findings.innerHTML = `
+            <div class="review-empty-state">
+                <p>No failing findings were reported. The rendered memo matched the active review rules.</p>
+            </div>
+        `;
+    } else {
+        findings.innerHTML = failedFindings.map((finding) => `
+            <div class="review-finding review-finding-${escapeHtml(finding.severity || 'warning')}">
+                <div class="review-finding-header">
+                    <span class="review-finding-badge">${escapeHtml((finding.severity || 'warning').toUpperCase())}</span>
+                    <strong>${escapeHtml(finding.name || finding.rule_name || finding.rule_id)}</strong>
+                </div>
+                <p class="review-finding-message">${escapeHtml(finding.message || '')}</p>
+                ${finding.suggested_fix ? `<p class="review-finding-fix"><strong>Suggested fix:</strong> ${escapeHtml(finding.suggested_fix)}</p>` : ''}
+                ${finding.ar_reference ? `<p class="review-finding-reference">${escapeHtml(finding.ar_reference)}</p>` : ''}
+            </div>
+        `).join('');
+    }
+
+    modal.style.display = 'flex';
+}
+
+function closeReviewModal() {
+    const modal = document.getElementById('review-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function escapeHtml(value) {
+    return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll('\'', '&#39;');
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const exampleFile = window.location.pathname + window.location.search;
     const linkSelector = document.getElementById('linkSelector');
+    const reviewModal = document.getElementById('review-modal');
+    const reviewModalClose = document.getElementById('review-modal-close');
 
     for (let i = 0; i < linkSelector.options.length; i++) {
         const option = linkSelector.options[i];
@@ -130,6 +236,18 @@ document.addEventListener('DOMContentLoaded', function() {
             option.selected = true;
             break;
         }
+    }
+
+    if (reviewModalClose) {
+        reviewModalClose.addEventListener('click', closeReviewModal);
+    }
+
+    if (reviewModal) {
+        reviewModal.addEventListener('click', function(event) {
+            if (event.target === reviewModal) {
+                closeReviewModal();
+            }
+        });
     }
 });
 
@@ -167,6 +285,22 @@ function showProgress(show = true) {
             modal.style.display = 'none';
             document.body.style.overflow = '';
         }
+    }
+}
+
+function setProgressContent(title, status, detail) {
+    const titleElement = document.getElementById('progress-title');
+    const statusElement = document.getElementById('progress-status');
+    const detailElement = document.querySelector('#progress-modal .text-sm:last-of-type');
+
+    if (titleElement) {
+        titleElement.textContent = title;
+    }
+    if (statusElement) {
+        statusElement.textContent = status;
+    }
+    if (detailElement) {
+        detailElement.textContent = detail;
     }
 }
 
@@ -208,3 +342,5 @@ function showIndeterminateProgress() {
 window.updateProgress = function() {
     showIndeterminateProgress();
 };
+
+window.reviewMemo = reviewMemo;
