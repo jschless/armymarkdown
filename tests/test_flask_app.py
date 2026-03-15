@@ -116,6 +116,43 @@ class TestProcessing:
         assert response.status_code == 200
         mock_save.assert_called_once()
 
+    @patch("app.main.review_memo_content")
+    def test_review_memo_route_returns_json_report(
+        self, mock_review, client, sample_memo_text
+    ):
+        mock_review.return_value = Mock(
+            to_dict=Mock(
+                return_value={
+                    "passed": False,
+                    "failed_rules": 2,
+                    "passing_rules": 5,
+                    "failing_severity_counts": {"error": 1, "warning": 1, "info": 0},
+                    "findings": [
+                        {
+                            "rule_id": "memo.heading.date",
+                            "rule_name": "Date Alignment",
+                            "name": "Date Alignment",
+                            "severity": "error",
+                            "status": "fail",
+                            "message": "Date alignment failed.",
+                            "ar_reference": "AR 25-50, para 2-4",
+                            "suggested_fix": "Align the date to the right margin.",
+                            "evidence": {},
+                        }
+                    ],
+                }
+            )
+        )
+
+        response = client.post("/review/memo", data={"memo_text": sample_memo_text})
+
+        assert response.status_code == 200
+        assert response.is_json
+        payload = response.get_json()
+        assert payload["failed_rules"] == 2
+        assert payload["findings"][0]["name"] == "Date Alignment"
+        mock_review.assert_called_once()
+
 
 class TestAuthentication:
     """Test authentication-related functionality."""

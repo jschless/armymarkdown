@@ -10,11 +10,19 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     const startBgJobButton = document.getElementById('start-bg-job');
+    const reviewMemoButton = document.getElementById('review-memo');
 
     if (startBgJobButton) {
         startBgJobButton.addEventListener('click', function(event) {
             event.preventDefault();
             buttonPress('/process', updateProgress);
+        });
+    }
+
+    if (reviewMemoButton) {
+        reviewMemoButton.addEventListener('click', function(event) {
+            event.preventDefault();
+            window.reviewMemo('/review/memo');
         });
     }
 });

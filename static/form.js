@@ -271,11 +271,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     const memoForm = document.getElementById('memo');
+    const reviewMemoButton = document.getElementById('review-memo');
 
     if (memoForm) {
         memoForm.addEventListener('submit', function(e) {
             e.preventDefault();
             buttonPress('/process', updateProgress);
+        });
+    }
+
+    if (reviewMemoButton) {
+        reviewMemoButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.reviewMemo('/review/memo');
         });
     }
 });

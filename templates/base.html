@@ -80,7 +80,10 @@
     <!-- Status Messages -->
     <div id="alerts-container">
       <div id="status-alert" class="modern-alert modern-alert-info" style="display: none;">
-        <span id="status"></span>
+        <div class="status-message-group">
+          <span id="status"></span>
+          <div id="status-actions" class="status-actions" style="display: none;"></div>
+        </div>
       </div>
       {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
@@ -115,6 +118,19 @@
   <!-- Overlay for progress modal -->
   <div id="progress-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9998;"></div>
 
+  <div id="review-modal" class="modern-modal" style="display: none;">
+    <div class="modern-modal-content review-modal-content">
+      <div class="modern-modal-header">
+        <h3>AR 25-50 Review</h3>
+        <button id="review-modal-close" class="modern-modal-close" aria-label="Close review results">&times;</button>
+      </div>
+      <div class="modern-modal-body review-modal-body">
+        <div id="review-summary" class="review-summary"></div>
+        <div id="review-findings" class="review-findings"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- JavaScript -->
   <script>
     // Mobile navigation toggle and dark mode functionality
@@ -143,17 +159,45 @@
     });
 
     // Enhanced status message display - make it globally available
-    window.showStatusMessage = function(message, type = 'info') {
+    window.showStatusMessage = function(message, type = 'info', options = {}) {
       const statusAlert = document.getElementById('status-alert');
       const statusElement = document.getElementById('status');
+      const statusActions = document.getElementById('status-actions');
+      const actions = Array.isArray(options.actions) ? options.actions : [];
+      const autoHide = options.autoHide !== false && actions.length === 0;
 
       if (statusAlert && statusElement) {
         statusElement.textContent = message;
         statusAlert.className = `modern-alert modern-alert-${type} fade-in`;
         statusAlert.style.display = 'flex';
 
+        if (statusActions) {
+          statusActions.innerHTML = '';
+          if (actions.length > 0) {
+            actions.forEach((action) => {
+              const link = document.createElement('a');
+              link.className = 'modern-btn modern-btn-outline modern-btn-sm';
+              link.textContent = action.label || 'Open';
+              link.href = action.href || '#';
+              if (action.target) {
+                link.target = action.target;
+              }
+              if (action.rel) {
+                link.rel = action.rel;
+              }
+              if (action.download) {
+                link.download = action.download;
+              }
+              statusActions.appendChild(link);
+            });
+            statusActions.style.display = 'flex';
+          } else {
+            statusActions.style.display = 'none';
+          }
+        }
+
         // Auto-hide after 5 seconds for non-error messages
-        if (type !== 'error') {
+        if (type !== 'error' && autoHide) {
           setTimeout(() => {
             statusAlert.style.display = 'none';
           }, 5000);

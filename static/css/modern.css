@@ -806,6 +806,19 @@ textarea.u-full-height {
   gap: var(--spacing-3);
 }
 
+.status-message-group {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.status-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+}
+
 .modern-alert-success {
   background-color: rgba(16, 185, 129, 0.1);
   border-color: rgba(16, 185, 129, 0.2);
@@ -1173,6 +1186,118 @@ hr {
 
 .modern-modal-body {
   padding: var(--spacing-6);
+}
+
+.review-modal-content {
+  max-width: 760px;
+}
+
+.review-summary-card {
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-4);
+  margin-bottom: var(--spacing-5);
+  border: 1px solid var(--border-primary);
+  background: var(--bg-secondary);
+}
+
+.review-summary-pass {
+  border-color: rgba(16, 185, 129, 0.25);
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.review-summary-fail {
+  border-color: rgba(245, 158, 11, 0.25);
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.review-summary-main {
+  display: flex;
+  gap: var(--spacing-4);
+  align-items: flex-start;
+}
+
+.review-summary-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 110px;
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.review-summary-copy p {
+  margin: var(--spacing-2) 0 0;
+  color: var(--text-secondary);
+}
+
+.review-findings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.review-finding {
+  border-left: 4px solid;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-4);
+  background: var(--bg-secondary);
+}
+
+.review-finding-error {
+  border-left-color: var(--color-error);
+}
+
+.review-finding-warning {
+  border-left-color: var(--color-warning);
+}
+
+.review-finding-info {
+  border-left-color: var(--color-secondary);
+}
+
+.review-finding-header {
+  display: flex;
+  gap: var(--spacing-3);
+  align-items: center;
+  margin-bottom: var(--spacing-2);
+}
+
+.review-finding-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--radius-full);
+  background: var(--bg-primary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.review-finding-message,
+.review-finding-fix,
+.review-finding-reference {
+  margin: 0;
+}
+
+.review-finding-fix {
+  margin-top: var(--spacing-2);
+}
+
+.review-finding-reference {
+  margin-top: var(--spacing-2);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.review-empty-state {
+  padding: var(--spacing-4);
+  border-radius: var(--radius-lg);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
 }
 
 /* Upload Area */

@@ -1,7 +1,7 @@
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
-from app.tasks import RenderedMemo, create_memo
+from app.tasks import RenderedMemo, create_memo, review_memo_content
 
 
 def test_create_memo_renders_pdf_bytes(sample_memo_text):
@@ -40,3 +40,27 @@ SUBJECT = Memo / With Unsafe : Characters?
 
     assert rendered.filename == "memo_with_unsafe_characters.pdf"
     mock_render.assert_called_once()
+
+
+def test_review_memo_content_returns_structured_report(sample_memo_text):
+    fake_report = Mock()
+    fake_report.passed = False
+    fake_report.failed_rules = 2
+
+    def fake_render(document, output_path):
+        Path(output_path).write_bytes(b"%PDF-1.7 test pdf")
+        return Path(output_path)
+
+    with (
+        patch(
+            "app.tasks.parse_text", return_value=Mock(subject="Review Subject")
+        ) as mock_parse,
+        patch("app.tasks.render_typst_pdf", side_effect=fake_render) as mock_render,
+        patch("app.tasks.review_document", return_value=fake_report) as mock_review,
+    ):
+        report = review_memo_content(sample_memo_text)
+
+    assert report is fake_report
+    mock_parse.assert_called_once_with(sample_memo_text)
+    mock_render.assert_called_once()
+    mock_review.assert_called_once()

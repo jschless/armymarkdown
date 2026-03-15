@@ -33,7 +33,7 @@ from app.memo_adapter import (
     read_example_text,
     substitute_profile_fields,
 )
-from app.tasks import create_memo, huey
+from app.tasks import create_memo, huey, review_memo_content
 from db.db import init_db
 from db.schema import Document, UserProfile
 
@@ -305,21 +305,17 @@ def auto_save():
 @app.route("/process", methods=["POST"])
 def process():
     try:
-        if "SUBJECT" not in request.form:
-            # came from the text page
-            text = request.form.get("memo_text", "")
-        else:
-            try:
-                text = form_to_amd(request.form.to_dict())
-            except MemoFormError as exc:
-                if _is_ajax_request():
-                    return jsonify(
-                        {"success": False, "error": f"Error creating memo: {exc}"}
-                    ), 400
-                flash(f"Error creating memo: {exc}")
-                context = form_data_to_template_context(request.form.to_dict())
-                context["examples"] = get_example_files()
-                return render_template("memo_form.html", **context)
+        try:
+            text = _memo_text_from_request(request.form)
+        except MemoFormError as exc:
+            if _is_ajax_request():
+                return jsonify(
+                    {"success": False, "error": f"Error creating memo: {exc}"}
+                ), 400
+            flash(f"Error creating memo: {exc}")
+            context = form_data_to_template_context(request.form.to_dict())
+            context["examples"] = get_example_files()
+            return render_template("memo_form.html", **context)
 
         if not text or text.strip() == "":
             if _is_ajax_request():
@@ -370,6 +366,31 @@ def process():
             context = form_data_to_template_context(request.form.to_dict())
             context["examples"] = get_example_files()
             return render_template("memo_form.html", **context)
+
+
+@app.route("/review/memo", methods=["POST"])
+def review_memo_route():
+    try:
+        text = _memo_text_from_request(request.form)
+    except MemoFormError as exc:
+        return jsonify({"error": f"Error creating memo review: {exc}"}), 400
+
+    if not text or text.strip() == "":
+        return jsonify({"error": "No content to review"}), 400
+
+    try:
+        report = review_memo_content(text)
+        return jsonify(report.to_dict())
+    except Exception as e:
+        app.logger.error(f"Error reviewing memo: {e}")
+        return (
+            jsonify(
+                {
+                    "error": "Error reviewing memo. Please check your memo format and try again.",
+                }
+            ),
+            400,
+        )
 
 
 @app.route("/status/<task_id>", methods=["POST", "GET"])
@@ -425,6 +446,12 @@ def load_example_text(example_name, user_id=None):
 
 def _is_ajax_request() -> bool:
     return request.headers.get("X-Requested-With") == "XMLHttpRequest"
+
+
+def _memo_text_from_request(form_data) -> str:
+    if "SUBJECT" not in form_data:
+        return form_data.get("memo_text", "")
+    return form_to_amd(form_data.to_dict())
 
 
 def _build_pdf_response(filename: str, pdf_bytes: bytes):
