@@ -267,9 +267,8 @@ export DEVELOPMENT="true"
 - `GET /` - Main memo editor interface
 - `GET /form` - Form-based memo builder
 - `GET /history` - User's saved documents (requires authentication)
-- `POST /process` - Submit memo for PDF generation
+- `POST /process` - Generate and return a memo PDF directly
 - `POST /save_progress` - Save draft (requires authentication)
-- `GET /status/<task_id>` - Check PDF generation status
 
 ### Authentication
 
