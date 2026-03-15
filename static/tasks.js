@@ -28,7 +28,6 @@ function saveData() {
 
 function buttonPress(endpoint) {
     const formData = new FormData(document.getElementById('memo'));
-    const previewWindow = window.open('', '_blank');
 
     // Show modern progress modal with indeterminate progress
     setProgressContent(
@@ -65,18 +64,38 @@ function buttonPress(endpoint) {
             const pdfUrl = window.URL.createObjectURL(blob);
 
             showProgress(false);
-            openPdfResult(pdfUrl, previewWindow, filename);
-            showStatusMessage('🎉 Your memo has been created successfully! The PDF should open in a new tab.', 'success');
+            const opened = openPdfResult(pdfUrl, filename);
+            if (opened) {
+                displayStatusMessage('Your memo has been created successfully. The PDF opened in a new tab.', 'success');
+            } else {
+                displayStatusMessage(
+                    'Your memo is ready. Your browser blocked the automatic tab open.',
+                    'success',
+                    {
+                        autoHide: false,
+                        actions: [
+                            {
+                                label: 'Open PDF',
+                                href: pdfUrl,
+                                target: '_blank',
+                                rel: 'noopener noreferrer'
+                            },
+                            {
+                                label: 'Download PDF',
+                                href: pdfUrl,
+                                download: filename
+                            }
+                        ]
+                    }
+                );
+            }
 
             window.setTimeout(() => window.URL.revokeObjectURL(pdfUrl), 60000);
         })
         .catch(error => {
             console.error('Error submitting form:', error);
-            if (previewWindow && !previewWindow.closed) {
-                previewWindow.close();
-            }
             showProgress(false);
-            showStatusMessage(error.message || 'Error submitting your memo. Please check your connection and try again.', 'error');
+            displayStatusMessage(error.message || 'Error submitting your memo. Please check your connection and try again.', 'error');
         });
 }
 
@@ -110,7 +129,7 @@ async function reviewMemo(endpoint) {
     } catch (error) {
         console.error('Error reviewing memo:', error);
         showProgress(false);
-        showStatusMessage(error.message || 'Error reviewing your memo. Please try again.', 'error');
+        displayStatusMessage(error.message || 'Error reviewing your memo. Please try again.', 'error');
     }
 }
 
@@ -145,18 +164,17 @@ function getPdfFilename(response) {
     return response.headers.get('X-Memo-Filename') || 'memo.pdf';
 }
 
-function openPdfResult(pdfUrl, previewWindow, filename) {
-    if (previewWindow && !previewWindow.closed) {
-        previewWindow.location = pdfUrl;
-        previewWindow.document.title = filename;
-        return;
+function openPdfResult(pdfUrl, filename) {
+    const openedWindow = window.open(pdfUrl, '_blank', 'noopener,noreferrer');
+    if (openedWindow) {
+        try {
+            openedWindow.document.title = filename;
+        } catch (error) {
+            console.debug('Could not update opened PDF tab title:', error);
+        }
+        return true;
     }
-
-    const link = document.createElement('a');
-    link.href = pdfUrl;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    link.click();
+    return false;
 }
 
 function renderReviewModal(report) {
@@ -164,7 +182,7 @@ function renderReviewModal(report) {
     const summary = document.getElementById('review-summary');
     const findings = document.getElementById('review-findings');
     if (!modal || !summary || !findings) {
-        showStatusMessage('Review completed, but the results dialog is unavailable on this page.', 'warning');
+        displayStatusMessage('Review completed, but the results dialog is unavailable on this page.', 'warning');
         return;
     }
 
@@ -305,21 +323,9 @@ function setProgressContent(title, status, detail) {
 }
 
 // Function to show status messages
-function showStatusMessage(message, type = 'info') {
-    const statusAlert = document.getElementById('status-alert');
-    const statusElement = document.getElementById('status');
-
-    if (statusAlert && statusElement) {
-        statusElement.textContent = message;
-        statusAlert.className = `modern-alert modern-alert-${type} fade-in`;
-        statusAlert.style.display = 'flex';
-
-        // Auto-hide after 5 seconds for non-error messages
-        if (type !== 'error') {
-            setTimeout(() => {
-                statusAlert.style.display = 'none';
-            }, 5000);
-        }
+function displayStatusMessage(message, type = 'info', options = {}) {
+    if (window.showStatusMessage) {
+        window.showStatusMessage(message, type, options);
     }
 }
 

@@ -806,6 +806,19 @@ textarea.u-full-height {
   gap: var(--spacing-3);
 }
 
+.status-message-group {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.status-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+}
+
 .modern-alert-success {
   background-color: rgba(16, 185, 129, 0.1);
   border-color: rgba(16, 185, 129, 0.2);
