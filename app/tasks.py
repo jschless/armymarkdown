@@ -134,16 +134,6 @@ def validate_pdf_task(pdf_bytes: bytes, user_id: int, filename: str):
     }
 
 
-@huey.task()
-def cleanup_old_files():
-    """
-    Periodic task placeholder for compatibility with existing scheduler wiring.
-    """
-    cleaned = 0
-    logger.info(f"Cleaned up {cleaned} old temporary files")
-    return cleaned
-
-
 def _safe_filename(subject: str) -> str:
     sanitized = re.sub(r"[^a-z0-9]+", "_", subject.lower()).strip("_")
     return sanitized or "memo"

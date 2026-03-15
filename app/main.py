@@ -20,9 +20,6 @@ from flask_login import current_user, login_required
 from flask_talisman import Talisman
 
 from app.auth import login
-
-# Google OAuth disabled - uncomment to re-enable
-# from app.auth.oauth import init_oauth, oauth_bp
 from app.forms import UserProfileForm
 from app.memo_adapter import (
     MemoFormError,
@@ -74,19 +71,11 @@ app.config["DISABLE_CAPTCHA"] = (
     get_optional_env_var("DISABLE_CAPTCHA", "false").lower() == "true"
 )
 
-# Google OAuth configuration
-app.config["GOOGLE_CLIENT_ID"] = get_optional_env_var("GOOGLE_CLIENT_ID")
-app.config["GOOGLE_CLIENT_SECRET"] = get_optional_env_var("GOOGLE_CLIENT_SECRET")
-
 # Initialize login manager
 login.login_manager.init_app(app)
 
 # Register login routes
 login.register_login_routes(app)
-
-# Google OAuth disabled - uncomment to re-enable
-# init_oauth(app)
-# app.register_blueprint(oauth_bp)
 
 # Database configuration
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////data/users.db"
@@ -112,7 +101,7 @@ def add_csp(response):
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "  # Allow inline styles if necessary
         "frame-src https://www.google.com;"
         "img-src 'self'; "  # Only allow images from the same origin
-        "connect-src 'self' https://accounts.google.com;"  # Allow Google OAuth
+        "connect-src 'self';"
     )
     return response
 

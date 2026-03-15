@@ -127,6 +127,7 @@ class TestAuthentication:
         assert response.status_code == 200
         assert b"username" in response.data or b"email" in response.data
         assert b"password" in response.data
+        assert b"Sign in with Google" not in response.data
 
     def test_register_page_get(self, client):
         """Test GET request to register page."""
@@ -135,6 +136,7 @@ class TestAuthentication:
         assert response.status_code == 200
         assert b"username" in response.data or b"email" in response.data
         assert b"password" in response.data
+        assert b"Sign up with Google" not in response.data
 
     def test_logout(self, client):
         """Test logout functionality."""
@@ -243,6 +245,7 @@ class TestSecurityHeaders:
 
         # Should allow Google Fonts
         assert "https://fonts.googleapis.com" in csp or "fonts.googleapis.com" in csp
+        assert "https://accounts.google.com" not in csp
 
 
 class TestErrorHandling:
