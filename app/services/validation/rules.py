@@ -293,11 +293,6 @@ VALIDATION_RULES = [
 ]
 
 
-def get_rules_by_severity(severity: Severity) -> list[ValidationRule]:
-    """Get all rules with a specific severity level."""
-    return [rule for rule in VALIDATION_RULES if rule.severity == severity]
-
-
 def get_rule_by_id(rule_id: str) -> ValidationRule | None:
     """Get a specific rule by its ID."""
     for rule in VALIDATION_RULES:

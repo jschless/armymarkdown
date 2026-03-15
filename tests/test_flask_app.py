@@ -61,13 +61,14 @@ class TestProcessing:
         self, mock_save, mock_task, client, sample_memo_text
     ):
         """Test processing memo from text input."""
-        mock_task.return_value.id = "test-task-123"
+        mock_task.return_value = Mock(filename="test-memo.pdf", pdf_bytes=b"%PDF-1.7")
         mock_save.return_value = "Document saved"
 
         response = client.post("/process", data={"memo_text": sample_memo_text})
 
-        # Should redirect to status page or return JSON with task ID
-        assert response.status_code in [200, 302]
+        assert response.status_code == 200
+        assert response.content_type == "application/pdf"
+        assert "inline" in response.headers["Content-Disposition"]
         mock_task.assert_called_once()
         mock_save.assert_called_once()
 
@@ -77,12 +78,13 @@ class TestProcessing:
         self, mock_save, mock_task, client, sample_form_data
     ):
         """Test processing memo from form input."""
-        mock_task.return_value.id = "test-task-456"
+        mock_task.return_value = Mock(filename="form-memo.pdf", pdf_bytes=b"%PDF-1.7")
         mock_save.return_value = "Document saved"
 
         response = client.post("/process", data=sample_form_data)
 
-        assert response.status_code in [200, 302]
+        assert response.status_code == 200
+        assert response.content_type == "application/pdf"
         mock_task.assert_called_once()
         mock_save.assert_called_once()
 
@@ -125,6 +127,7 @@ class TestAuthentication:
         assert response.status_code == 200
         assert b"username" in response.data or b"email" in response.data
         assert b"password" in response.data
+        assert b"Sign in with Google" not in response.data
 
     def test_register_page_get(self, client):
         """Test GET request to register page."""
@@ -133,6 +136,7 @@ class TestAuthentication:
         assert response.status_code == 200
         assert b"username" in response.data or b"email" in response.data
         assert b"password" in response.data
+        assert b"Sign up with Google" not in response.data
 
     def test_logout(self, client):
         """Test logout functionality."""
@@ -241,6 +245,7 @@ class TestSecurityHeaders:
 
         # Should allow Google Fonts
         assert "https://fonts.googleapis.com" in csp or "fonts.googleapis.com" in csp
+        assert "https://accounts.google.com" not in csp
 
 
 class TestErrorHandling:
@@ -313,29 +318,22 @@ class TestFormValidation:
 
 
 class TestStatusAndTaskHandling:
-    """Test task status and background processing."""
+    """Test deprecated task status endpoint behavior."""
 
     def test_status_route_valid_task(self, client):
-        """Test status route with valid task ID."""
-        # This would typically test Celery task status
+        """Test status route reports synchronous memo generation."""
         response = client.get("/status/test-task-123")
 
-        # Should return JSON status or redirect
-        assert response.status_code in [200, 404]
-
-        if response.status_code == 200:
-            # Should be JSON response
-            assert (
-                response.content_type == "application/json"
-                or "json" in response.content_type
-            )
+        assert response.status_code == 410
+        assert "json" in response.content_type
+        payload = response.get_json()
+        assert payload["state"] == "FAILURE"
 
     def test_status_route_invalid_task(self, client):
-        """Test status route with invalid task ID."""
+        """Test status route is no longer supported for memo generation."""
         response = client.get("/status/invalid-task-id")
 
-        # Should handle gracefully
-        assert response.status_code in [200, 404]
+        assert response.status_code == 410
 
 
 class TestStaticFiles:

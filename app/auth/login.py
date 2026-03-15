@@ -39,14 +39,14 @@ def login_route():
             flash("Invalid username or password")
             return redirect(url_for("login"))
 
-        # Check if user is OAuth-only (no password set)
+        # Reject accounts without a usable password hash.
         if hasattr(user, "can_use_password") and not user.can_use_password():
             from flask import current_app
 
             current_app.logger.info(
-                f"{form.username.data} (OAuth-only) tried password login"
+                f"{form.username.data} (no password set) tried password login"
             )
-            flash("This account uses Google sign-in. Please use 'Sign in with Google'.")
+            flash("This account does not have password sign-in enabled.")
             return redirect(url_for("login"))
 
         # Check password

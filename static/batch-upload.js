@@ -267,7 +267,8 @@ class BatchUploader {
         const response = await fetch('/process', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Requested-With': 'XMLHttpRequest'
             },
             body: new URLSearchParams({
                 memo_text: content
@@ -275,74 +276,58 @@ class BatchUploader {
         });
 
         if (!response.ok) {
-            await response.text(); // Read error text but don't use it
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            throw new Error(await this.extractErrorMessage(response));
         }
 
-        // The /process endpoint returns a text message and puts task ID in Location header
-        const locationHeader = response.headers.get('Location');
-
-        if (!locationHeader) {
-            throw new Error('No Location header found in response');
+        const contentType = response.headers.get('Content-Type') || '';
+        if (!contentType.includes('application/pdf')) {
+            throw new Error('Unexpected response type from memo generation.');
         }
 
-        // Extract task ID from URL like "/status/task_id"
-        const taskIdMatch = locationHeader.match(/\/status\/(.+)$/);
-        if (!taskIdMatch) {
-            throw new Error('Could not extract task ID from Location header');
-        }
+        const blob = await response.blob();
+        const downloadName = this.getPdfFilename(response, filename);
+        const url = window.URL.createObjectURL(blob);
 
-        const taskId = taskIdMatch[1];
+        this.triggerDownload(url, downloadName);
 
-        // Wait for processing to complete
-        return await this.waitForCompletion(taskId);
+        return { url, downloadName };
     }
 
-    async waitForCompletion(taskId) {
-        const maxAttempts = 30; // 30 seconds max
-        let attempts = 0;
+    async extractErrorMessage(response) {
+        const contentType = response.headers.get('Content-Type') || '';
 
-        while (attempts < maxAttempts) {
-            const response = await fetch(`/status/${taskId}`, {
-                method: 'GET'
-            });
-
-            if (!response.ok) {
-                throw new Error(`Status check failed: ${response.status}`);
-            }
-
-            const responseText = await response.text();
-
-            let result;
-            try {
-                result = JSON.parse(responseText);
-            } catch {
-                throw new Error('Invalid status response format');
-            }
-
-            if (result.state === 'SUCCESS') {
-                // The PDF URL can be in presigned_url or result field
-                const pdfUrl = result.presigned_url || result.result;
-
-                if (!pdfUrl) {
-                    throw new Error('No PDF URL found in successful result');
-                }
-
-                return {
-                    url: pdfUrl
-                };
-            }
-
-            if (result.state === 'FAILURE') {
-                throw new Error(result.status || 'Processing failed');
-            }
-
-            // Wait 1 second before next check
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            attempts++;
+        if (contentType.includes('application/json')) {
+            const payload = await response.json();
+            return payload.error || payload.status || `HTTP ${response.status}`;
         }
 
-        throw new Error('Processing timeout');
+        const text = await response.text();
+        return text || `HTTP ${response.status}: ${response.statusText}`;
+    }
+
+    getPdfFilename(response, sourceFilename) {
+        const contentDisposition = response.headers.get('Content-Disposition') || '';
+        const utf8Match = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
+        if (utf8Match) {
+            return decodeURIComponent(utf8Match[1]);
+        }
+
+        const basicMatch = contentDisposition.match(/filename="?([^";]+)"?/i);
+        if (basicMatch) {
+            return basicMatch[1];
+        }
+
+        const stem = sourceFilename.replace(/\.[^.]+$/, '');
+        return response.headers.get('X-Memo-Filename') || `${stem}.pdf`;
+    }
+
+    triggerDownload(url, filename) {
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.click();
     }
 
     showResults(results) {
@@ -360,6 +345,9 @@ class BatchUploader {
                         ✅ <strong>${result.filename}</strong> - ${result.message}
                         <div style="margin-top: 4px;">
                             <a href="${result.url}" target="_blank" class="modern-btn modern-btn-sm modern-btn-outline">
+                                Open PDF
+                            </a>
+                            <a href="${result.url}" download="${result.downloadName}" class="modern-btn modern-btn-sm modern-btn-ghost">
                                 Download PDF
                             </a>
                         </div>

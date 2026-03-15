@@ -59,7 +59,9 @@ class TestCompleteUserWorkflow:
         self, mock_save, mock_task, client, sample_memo_text
     ):
         """Test complete memo creation workflow using text editor."""
-        mock_task.return_value.id = "test-task-123"
+        mock_task.return_value = Mock(
+            filename="workflow-text.pdf", pdf_bytes=b"%PDF-1.7"
+        )
         mock_save.return_value = "Document saved"
 
         # Step 1: Access main page
@@ -76,16 +78,9 @@ class TestCompleteUserWorkflow:
 
         # Step 3: Process memo for PDF generation
         process_response = client.post("/process", data={"memo_text": sample_memo_text})
-        assert process_response.status_code in [200, 302]
+        assert process_response.status_code == 200
+        assert process_response.content_type == "application/pdf"
         mock_task.assert_called_once()
-
-        # Step 4: Check status
-        if mock_task.return_value.id:
-            status_response = client.get(f"/status/{mock_task.return_value.id}")
-            assert status_response.status_code in [
-                200,
-                404,
-            ]  # 404 if task not found in test
 
     @patch("app.main.create_memo")
     @patch("app.auth.login.save_document")
@@ -93,7 +88,9 @@ class TestCompleteUserWorkflow:
         self, mock_save, mock_task, client, sample_form_data
     ):
         """Test complete memo creation workflow using form builder."""
-        mock_task.return_value.id = "test-task-456"
+        mock_task.return_value = Mock(
+            filename="workflow-form.pdf", pdf_bytes=b"%PDF-1.7"
+        )
         mock_save.return_value = "Document saved"
 
         # Step 1: Access form page
@@ -108,7 +105,8 @@ class TestCompleteUserWorkflow:
 
         # Step 3: Process form submission
         process_response = client.post("/process", data=sample_form_data)
-        assert process_response.status_code in [200, 302]
+        assert process_response.status_code == 200
+        assert process_response.content_type == "application/pdf"
         mock_task.assert_called_once()
 
     def test_authenticated_document_management_workflow(self, client):
@@ -337,7 +335,10 @@ SUBJECT=Large Test Memo
 
         with (
             patch("app.auth.login.save_document", return_value="Large document saved"),
-            patch("app.main.create_memo", return_value=Mock(id="large-task-123")),
+            patch(
+                "app.main.create_memo",
+                return_value=Mock(filename="large-task.pdf", pdf_bytes=b"%PDF-1.7"),
+            ),
         ):
             # Should handle large content without timeout
             save_response = client.post(
@@ -348,7 +349,7 @@ SUBJECT=Large Test Memo
             process_response = client.post(
                 "/process", data={"memo_text": large_content}
             )
-            assert process_response.status_code in [200, 302]
+            assert process_response.status_code == 200
 
     def test_concurrent_user_simulation(self, client):
         """Test handling multiple simultaneous requests."""
@@ -361,7 +362,10 @@ SUBJECT=Large Test Memo
 
         with (
             patch("app.auth.login.save_document", return_value="Saved"),
-            patch("app.main.create_memo", return_value=Mock(id="concurrent-task")),
+            patch(
+                "app.main.create_memo",
+                return_value=Mock(filename="concurrent.pdf", pdf_bytes=b"%PDF-1.7"),
+            ),
         ):
             # Simulate multiple requests quickly
             responses = []
@@ -470,6 +474,6 @@ class TestEndToEndFeatureTests:
             400,
         ]  # Should handle gracefully
 
-        # Test status with invalid task ID
+        # Test deprecated memo-generation status endpoint
         invalid_status = client.get("/status/invalid-task-id")
-        assert invalid_status.status_code in [200, 404]  # Should handle gracefully
+        assert invalid_status.status_code == 410
