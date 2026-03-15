@@ -1,7 +1,7 @@
 """
 Input validation for Army memorandums.
 
-Validates memo content before LaTeX compilation to catch errors early
+Validates memo content before PDF compilation to catch errors early
 and provide helpful feedback to users.
 """
 
@@ -221,18 +221,6 @@ class MemoValidator:
         if not body:
             self.errors.append("Memo body content is required")
             return
-
-        # Check for problematic LaTeX characters that might cause issues
-        problematic_chars = ["$", "%", "&", "#", "_", "{", "}", "~", "^", "\\"]
-        found_chars = [
-            c for c in problematic_chars if c in body and f"\\{c}" not in body
-        ]
-
-        if found_chars:
-            self.warnings.append(
-                f"Body contains special LaTeX characters ({', '.join(found_chars)}) "
-                "that may need escaping"
-            )
 
         # Check minimum content length
         if len(body) < 50:

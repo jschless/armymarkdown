@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["armymarkdown*"]
+include = ["app*", "db*"]
 exclude = ["tests*", "docs*", "examples*"]
 
 [project]
@@ -24,7 +24,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
 ]
-keywords = ["army", "memo", "markdown", "latex", "military"]
+keywords = ["army", "memo", "markdown", "typst", "military"]
 requires-python = ">=3.11"
 dependencies = [
     # Core Flask application dependencies
@@ -46,12 +46,11 @@ dependencies = [
 
     # Web server
     "gunicorn>=23.0.0",
+    "armymemo @ git+https://github.com/jschless/armymemo.git@5d41df18c0f231493d77fe5a2445c33937bc73fe",
 
     # Utilities
     "python-dotenv>=1.0.0",
     "language-tool-python>=2.8.0",
-    "pandas>=2.2.0",
-    "tabulate>=0.9.0",
     "python-dateutil>=2.9.0",
     "requests>=2.32.0",
 
@@ -247,14 +246,14 @@ addopts = [
     "--cov-report=xml",
 ]
 testpaths = ["tests"]
+markers = [
+    "integration: tests that compile memo PDFs and compare renderers",
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "e2e: marks tests as end-to-end tests",
+]
 filterwarnings = [
     "ignore::DeprecationWarning",
     "ignore::PendingDeprecationWarning",
-]
-markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-    "integration: marks tests as integration tests",
-    "e2e: marks tests as end-to-end tests",
 ]
 
 # Bandit security linting configuration

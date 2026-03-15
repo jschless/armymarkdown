@@ -33,7 +33,7 @@ class TestCompleteUserWorkflow:
                     "username": "testuser",
                     "email": "test@example.com",
                     "password": "SecurePass123",
-                    "confirm_password": "SecurePass123",
+                    "password2": "SecurePass123",
                 },
                 follow_redirects=True,
             )
@@ -53,7 +53,7 @@ class TestCompleteUserWorkflow:
             history_response = client.get("/history")
             assert history_response.status_code == 200
 
-    @patch("app.main.create_memo.delay")
+    @patch("app.main.create_memo")
     @patch("app.auth.login.save_document")
     def test_memo_creation_workflow_text_editor(
         self, mock_save, mock_task, client, sample_memo_text
@@ -87,7 +87,7 @@ class TestCompleteUserWorkflow:
                 404,
             ]  # 404 if task not found in test
 
-    @patch("app.main.create_memo.delay")
+    @patch("app.main.create_memo")
     @patch("app.auth.login.save_document")
     def test_memo_creation_workflow_form_builder(
         self, mock_save, mock_task, client, sample_form_data
@@ -166,10 +166,10 @@ class TestErrorRecoveryWorkflows:
                     or b"memo_text" in save_response.data
                 )
 
-    @patch("app.main.create_memo.delay")
-    def test_celery_task_failure_handling(self, mock_task, client, sample_memo_text):
-        """Test handling when Celery task fails."""
-        mock_task.side_effect = Exception("Celery connection failed")
+    @patch("app.main.create_memo")
+    def test_task_failure_handling(self, mock_task, client, sample_memo_text):
+        """Test handling when memo generation task submission fails."""
+        mock_task.side_effect = Exception("Huey dispatch failed")
 
         process_response = client.post("/process", data={"memo_text": sample_memo_text})
 
@@ -337,7 +337,7 @@ SUBJECT=Large Test Memo
 
         with (
             patch("app.auth.login.save_document", return_value="Large document saved"),
-            patch("app.main.create_memo.delay", return_value=Mock(id="large-task-123")),
+            patch("app.main.create_memo", return_value=Mock(id="large-task-123")),
         ):
             # Should handle large content without timeout
             save_response = client.post(
@@ -361,9 +361,7 @@ SUBJECT=Large Test Memo
 
         with (
             patch("app.auth.login.save_document", return_value="Saved"),
-            patch(
-                "app.main.create_memo.delay", return_value=Mock(id="concurrent-task")
-            ),
+            patch("app.main.create_memo", return_value=Mock(id="concurrent-task")),
         ):
             # Simulate multiple requests quickly
             responses = []

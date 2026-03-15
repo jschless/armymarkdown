@@ -1,22 +1,18 @@
-"""
-Huey task queue configuration and tasks.
-
-This module provides background task processing using Huey with SQLite backend,
-replacing the previous Celery + Redis setup for simpler deployment.
-"""
+"""Huey task queue configuration and memo/PDF background tasks."""
 
 import hashlib
 import logging
 import os
+from pathlib import Path
 import random
+import re
+import tempfile
 import time
 
+from armymemo import parse_text, render_typst_pdf
 import boto3
 from botocore.exceptions import ClientError
 from huey import SqliteHuey
-
-from app.models import memo_model
-from app.services import writer
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -59,7 +55,6 @@ def upload_file_to_s3(file_path, aws_path):
         The file path on success, or exception on failure
     """
     s3 = get_s3_client()
-    ret_val = None
     try:
         s3.upload_file(
             file_path,
@@ -70,50 +65,39 @@ def upload_file_to_s3(file_path, aws_path):
                 "ContentDisposition": "inline",
             },
         )
-        ret_val = file_path
     except Exception as e:
         logger.error(f"S3 upload error: {e}")
-        ret_val = e
+        raise
 
-    # Delete file after upload
-    if os.path.exists(file_path):
-        os.remove(file_path)
-    return ret_val
+    return file_path
 
 
 @huey.task(retries=2, retry_delay=5)
-def create_memo(text, dictionary=None):
+def create_memo(text):
     """
-    Create a PDF memo from text or form dictionary.
+    Create a PDF memo from AMD text.
 
     This task:
     1. Checks for cached PDF in S3
-    2. Generates LaTeX document
-    3. Compiles to PDF
+    2. Parses the memo with armymemo
+    3. Compiles a Typst PDF
     4. Uploads to S3
     5. Returns the filename
 
     Args:
         text: The AMD format text content
-        dictionary: Optional form dictionary (takes precedence over text)
 
     Returns:
-        The .tex filename (caller converts to .pdf for download link)
+        The uploaded PDF filename
     """
     start_time = time.time()
     s3 = get_s3_client()
-
-    # Parse input
-    if dictionary and isinstance(dictionary, dict):
-        m = memo_model.MemoModel.from_form(dictionary)
-        content_for_hash = str(sorted(dictionary.items()))
-    else:
-        m = memo_model.MemoModel.from_text(text)
-        content_for_hash = text
+    document = parse_text(text)
+    normalized_text = document.to_amd()
 
     # Generate content hash for caching
     content_hash = hashlib.md5(  # nosec B324
-        content_for_hash.encode("utf-8")
+        normalized_text.encode("utf-8")
     ).hexdigest()[:12]
 
     # Check for cached result in S3
@@ -121,40 +105,26 @@ def create_memo(text, dictionary=None):
     try:
         s3.head_object(Bucket="armymarkdown", Key=cached_filename)
         logger.info(f"Found cached PDF for hash {content_hash}")
-        return cached_filename.replace(".pdf", ".tex")
+        return cached_filename
     except ClientError:
         # File doesn't exist in cache, proceed with generation
         pass
 
-    logger.debug(f"Generating memo: {m.to_dict()}")
+    logger.debug("Generating memo subject=%s", document.subject)
 
-    # Create MemoWriter and generate files
-    mw = writer.MemoWriter(m)
-
-    # Generate unique temp filename
     temp_name = (
-        m.subject.replace(" ", "_").lower()[:15]
+        _safe_filename(document.subject)[:15]
         + "".join(random.choices("0123456789", k=4))  # nosec B311
-        + ".tex"
+        + ".pdf"
     )
 
-    # Use /app directory for temp files in container
-    app_root = os.environ.get("APP_ROOT", "/app")
-    file_path = os.path.join(app_root, temp_name)
+    with tempfile.TemporaryDirectory(prefix="armymarkdown-memo-") as temp_dir_name:
+        pdf_file = Path(temp_dir_name) / temp_name
+        render_typst_pdf(document, pdf_file)
 
-    # Write LaTeX file
-    mw.write(output_file=file_path)
-
-    # Compile PDF
-    mw.generate_memo()
-
-    # Upload generated PDF to cache
-    pdf_file = file_path.replace(".tex", ".pdf")
-    if os.path.exists(pdf_file):
         try:
-            # Upload to cache location
             s3.upload_file(
-                pdf_file,
+                str(pdf_file),
                 "armymarkdown",
                 cached_filename,
                 ExtraArgs={
@@ -162,22 +132,11 @@ def create_memo(text, dictionary=None):
                     "ContentDisposition": "inline",
                 },
             )
-            logger.info(f"Cached PDF with hash {content_hash}")
+            logger.info("Cached PDF with hash %s", content_hash)
         except Exception as e:
             logger.warning(f"Failed to cache PDF: {e}")
 
-    # Upload to regular location
-    if os.path.exists(pdf_file):
-        upload_file_to_s3(pdf_file, temp_name[:-4] + ".pdf")
-    else:
-        raise FileNotFoundError(f"PDF at path {pdf_file} was not created")
-
-    # Clean up temp files
-    file_endings = [".aux", ".fdb_latexmk", ".fls", ".log", ".out", ".tex"]
-    for ending in file_endings:
-        temp = file_path[:-4] + ending
-        if os.path.exists(temp):
-            os.remove(temp)
+        upload_file_to_s3(str(pdf_file), temp_name)
 
     generation_time = time.time() - start_time
     logger.info(f"PDF generation completed in {generation_time:.2f} seconds")
@@ -260,20 +219,13 @@ def validate_pdf_task(pdf_bytes: bytes, user_id: int, filename: str):
 @huey.task()
 def cleanup_old_files():
     """
-    Periodic task to clean up old temporary files.
-    Run this periodically to prevent disk space issues.
+    Periodic task placeholder for compatibility with existing scheduler wiring.
     """
-    app_root = os.environ.get("APP_ROOT", "/app")
     cleaned = 0
-    for filename in os.listdir(app_root):
-        if filename.endswith((".aux", ".log", ".out", ".fls", ".fdb_latexmk")):
-            file_path = os.path.join(app_root, filename)
-            # Only delete files older than 1 hour
-            if os.path.getmtime(file_path) < time.time() - 3600:
-                try:
-                    os.remove(file_path)
-                    cleaned += 1
-                except OSError:
-                    pass
     logger.info(f"Cleaned up {cleaned} old temporary files")
     return cleaned
+
+
+def _safe_filename(subject: str) -> str:
+    sanitized = re.sub(r"[^a-z0-9]+", "_", subject.lower()).strip("_")
+    return sanitized or "memo"

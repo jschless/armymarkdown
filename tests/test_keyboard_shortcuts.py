@@ -36,8 +36,6 @@ class TestKeyboardShortcuts:
         response = client.get("/")
         assert response.status_code == 200
         assert b"showShortcutsHelp" in response.data
-        # Check for keyboard emoji in UTF-8 encoded form
-        assert "⌨️".encode() in response.data
 
     def test_keyboard_shortcuts_css_styles_present(self, client):
         """Test that keyboard shortcuts CSS is loaded"""

@@ -257,8 +257,8 @@ class PDFValidator:
         margin_issues = []
 
         # Left margin should be approximately 1 inch (alignment matters)
-        # Note: Top margin is not checked because LaTeX/PDF rendering varies
-        # and the header positioning is handled by the template
+        # Note: Top margin is not checked because rendered header placement
+        # varies slightly across engines and is handled by the memo template
         left_margin = margins.get("left", 0)
         if abs(left_margin - required) > tolerance:
             margin_issues.append(f'left: {left_margin}" (should be {required}")')
@@ -838,11 +838,11 @@ class PDFValidator:
         Note: This check is informational only since:
         1. PDF text extraction doesn't reliably preserve spacing
         2. Modern typesetting standards often use single space
-        3. LaTeX automatically handles spacing
+        3. The rendering template handles spacing automatically
         """
         # Skip this check for now as PDF extraction doesn't reliably
         # preserve character-level spacing information.
-        # The LaTeX template handles this automatically.
+        # The memo template handles this automatically.
         pass
 
     def check_signature_block_placement(self) -> None:

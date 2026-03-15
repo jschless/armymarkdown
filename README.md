@@ -12,9 +12,9 @@
 ## ✨ Features
 
 ### 🎯 **Core Functionality**
-- **Professional memo generation** - LaTeX-powered formatting ensures AR 25-50 compliance
+- **Professional memo generation** - Typst-powered formatting through the shared `armymemo` library
 - **Dual input modes** - Choose between markdown-like syntax or guided form builder
-- **Real-time compilation** - PDFs generated on-demand with optimized LaTeX processing
+- **Real-time compilation** - PDFs generated on-demand with a fast Typst pipeline
 - **Document management** - Save, edit, and organize your memos with user accounts
 
 ### 🎨 **Modern Interface**
@@ -32,7 +32,8 @@
 ### ⚡ **Performance & Modern Tooling**
 - **Asynchronous processing** - Background PDF generation with Huey task queue
 - **Fast dependency management** - uv package manager with lockfile support
-- **Optimized LaTeX** - Single-pass compilation for faster document creation
+- **Shared rendering engine** - Web app imports the standalone `armymemo` package directly
+- **Reproducible benchmark path** - `make benchmark` exercises representative Typst renders
 - **Modern Python packaging** - pyproject.toml with standardized build system
 - **AWS S3 integration** - Reliable file storage and delivery
 - **Docker containerization** - Consistent deployment across environments
@@ -172,7 +173,7 @@ SUBJECT=Template for Army Markdown
 - **Build System**: Modern Python packaging with pyproject.toml
 - **Task Queue**: Huey with SQLite for asynchronous PDF generation
 - **Database**: SQLite for user accounts and document storage
-- **PDF Generation**: LuaLaTeX with custom Army memo class
+- **PDF Generation**: Typst via the standalone `armymemo` package
 - **Frontend**: Modern CSS with vanilla JavaScript
 - **Containerization**: Docker with multi-stage builds
 - **Reverse Proxy**: Caddy with automatic SSL
@@ -374,8 +375,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- [army-memorandum-class](https://github.com/glallen01/army-memorandum-class) - LaTeX class for Army memos
-- [LaTeX Project](https://www.latex-project.org/) - Document preparation system
+- [armymemo](https://github.com/jschless/armymemo) - Standalone Army memo rendering library
 - [Flask](https://flask.palletsprojects.com/) - Web framework
 - [Huey](https://huey.readthedocs.io/) - Lightweight task queue
 
