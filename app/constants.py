@@ -4,17 +4,6 @@
 MAX_SUBJECT_LENGTH_FOR_FILENAME = 15
 RANDOM_ID_LENGTH = 4
 PDF_EXTENSION = ".pdf"
-TEX_EXTENSION = ".tex"
-
-# LaTeX cleanup file extensions
-LATEX_TEMP_EXTENSIONS = [
-    ".aux",
-    ".fdb_latexmk",
-    ".fls",
-    ".log",
-    ".out",
-    ".tex",
-]
 
 # Database constants
 # SQLite can easily handle much more - even 10k users x 100 docs x 5KB = 5GB (max is 140TB)

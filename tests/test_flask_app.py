@@ -55,7 +55,7 @@ class TestRoutes:
 class TestProcessing:
     """Test memo processing functionality."""
 
-    @patch("app.main.create_memo.delay")
+    @patch("app.main.create_memo")
     @patch("app.auth.login.save_document")
     def test_process_route_text_input(
         self, mock_save, mock_task, client, sample_memo_text
@@ -71,7 +71,7 @@ class TestProcessing:
         mock_task.assert_called_once()
         mock_save.assert_called_once()
 
-    @patch("app.main.create_memo.delay")
+    @patch("app.main.create_memo")
     @patch("app.auth.login.save_document")
     def test_process_route_form_input(
         self, mock_save, mock_task, client, sample_form_data
@@ -184,7 +184,7 @@ class TestAuthentication:
                 "username": "newuser",
                 "email": "test@example.com",
                 "password": "newpass123",
-                "confirm_password": "newpass123",
+                "password2": "newpass123",
             },
         )
 
@@ -259,11 +259,11 @@ class TestErrorHandling:
 
         assert response.status_code == 405
 
-    @patch("app.models.memo_model.MemoModel.from_text")
-    def test_memo_processing_error_handling(self, mock_from_text, client):
+    @patch("app.main.create_memo")
+    def test_memo_processing_error_handling(self, mock_create_memo, client):
         """Test handling of memo processing errors."""
         # Make parsing fail
-        mock_from_text.side_effect = Exception("Parsing failed")
+        mock_create_memo.side_effect = Exception("Parsing failed")
 
         response = client.post("/process", data={"memo_text": "invalid memo content"})
 
@@ -293,8 +293,9 @@ class TestFormValidation:
             },
         )
 
-        # Should handle validation gracefully by redirecting with error message
-        assert response.status_code == 302
+        # Should handle validation gracefully by re-rendering the form with an error
+        assert response.status_code == 200
+        assert b"Error creating memo" in response.data
 
     def test_xss_prevention(self, client):
         """Test XSS prevention in form inputs."""

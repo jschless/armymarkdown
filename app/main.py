@@ -24,7 +24,18 @@ from app.auth import login
 # Google OAuth disabled - uncomment to re-enable
 # from app.auth.oauth import init_oauth, oauth_bp
 from app.forms import UserProfileForm
-from app.models import memo_model
+from app.memo_adapter import (
+    MemoFormError,
+    ProfileSubstitution,
+    document_to_form_context,
+    example_choices,
+    form_data_to_template_context,
+    form_to_amd,
+    packaged_example_names,
+    parse_memo_text,
+    read_example_text,
+    substitute_profile_fields,
+)
 from app.tasks import create_memo, huey
 from db.db import init_db
 from db.schema import Document, UserProfile
@@ -153,18 +164,7 @@ def index():
             return redirect(url_for("index", example_file="tutorial.Amd"))
         memo_text = document.content
     else:
-        # Load example file
-        file_path = os.path.join("./resources/examples", example_file)
-
-        # Apply profile substitution for text editor if user is logged in
-        if current_user.is_authenticated:
-            # Use the existing function but extract just the raw text
-            m = substitute_example_fields_with_profile(file_path, current_user.id)
-            memo_text = m.to_amd()
-        else:
-            # Not logged in, load normally
-            with open(file_path) as f:
-                memo_text = f.read()
+        memo_text = load_example_text(example_file, current_user.id)
 
     return render_template(
         "index.html",
@@ -175,35 +175,8 @@ def index():
 
 @lru_cache(maxsize=1)
 def _get_static_example_files():
-    """Cache the static example files list (loaded from disk once)."""
-    examples_dir = "./resources/examples"
-    files = [f for f in os.listdir(examples_dir) if f.endswith(".Amd")]
-
-    # Create display name mapping
-    display_names = {
-        "tutorial.Amd": "Tutorial - Complete Guide",
-        "long_memo.Amd": "Long Memorandum (Figure 2-2 from AR 25-50)",
-        "basic_mfr.Amd": "Memorandum for Record",
-        "basic_mfr_w_table.Amd": "Memorandum for Record with Table",
-        "memo_for.Amd": "Memorandum For",
-        "memo_multi_for.Amd": "Memorandum For Multiple",
-        "memo_thru.Amd": "Memorandum Thru",
-        "memo_extra_features.Amd": "Memorandum with Enclosures, Distros, Suspense Dates",
-        "lost_cac_card.Amd": "Lost CAC Card Report",
-        "additional_duty_appointment.Amd": "Additional Duty Appointment",
-        "cq_sop.Amd": "Charge of Quarters Standard Operating Procedures",
-        "leave_pass_policy.Amd": "Leave and Pass Policy",
-        "cif_turn_in.Amd": "CIF Turn-in and Clearing Procedures",
-    }
-
-    # Sort files to put tutorial first, then alphabetically
-    files.sort(key=lambda x: (x != "tutorial.Amd", x))
-
-    # Build examples list
-    return [
-        (f, display_names.get(f, f.replace(".Amd", "").replace("_", " ").title()))
-        for f in files
-    ]
+    """Cache the packaged example files list."""
+    return example_choices()
 
 
 def get_example_files():
@@ -248,7 +221,7 @@ def process_example_file(args):
     if example_file == "---":
         example_file = "tutorial.Amd"
 
-    if example_file not in os.listdir("./resources/examples"):
+    if example_file not in packaged_example_names():
         example_file = "tutorial.Amd"
 
     return example_file
@@ -265,17 +238,12 @@ def form():
         if document.user_id != current_user.id:
             flash("Access denied to that document")
             return redirect(url_for("form", example_file="tutorial.Amd"))
-        m = memo_model.MemoModel.from_text(document.content)
+        document_model = parse_memo_text(document.content)
     else:
-        # Load example file
-        file_path = os.path.join("./resources/examples", example_file)
-
-        # Load example with profile substitution if user is logged in
-        if current_user.is_authenticated:
-            m = substitute_example_fields_with_profile(file_path, current_user.id)
-        else:
-            m = memo_model.MemoModel.from_file(file_path)
-    memo_dict = m.to_form()
+        document_model = parse_memo_text(
+            load_example_text(example_file, current_user.id)
+        )
+    memo_dict = document_to_form_context(document_model)
     memo_dict["examples"] = get_example_files()
 
     return render_template("memo_form.html", **memo_dict)
@@ -295,12 +263,13 @@ def save_progress():
         return render_template("index.html", memo_text=text)
 
     else:
-        m = memo_model.MemoModel.from_form(request.form.to_dict())
-        if isinstance(m, str):
-            # MemoModel.from_form returned an error string
-            flash(f"Error creating memo: {m}")
-            return redirect(url_for("index"))
-        text = m.to_amd()
+        try:
+            text = form_to_amd(request.form.to_dict())
+        except MemoFormError as exc:
+            flash(f"Error creating memo: {exc}")
+            context = form_data_to_template_context(request.form.to_dict())
+            context["examples"] = get_example_files()
+            return render_template("memo_form.html", **context)
         try:
             res = login.save_document(text)
             if res:
@@ -308,7 +277,9 @@ def save_progress():
         except Exception as e:
             app.logger.error(f"Error saving document: {e}")
             flash("Error saving document. Please try again.")
-        return render_template("memo_form.html", **m.to_form())
+        context = document_to_form_context(parse_memo_text(text))
+        context["examples"] = get_example_files()
+        return render_template("memo_form.html", **context)
 
 
 @app.route("/auto_save", methods=["POST"])
@@ -320,13 +291,12 @@ def auto_save():
             # Text editor mode
             text = request.form.get("memo_text", "")
         else:
-            # Form mode - convert to AMD format
-            m = memo_model.MemoModel.from_form(request.form.to_dict())
-            if isinstance(m, str):
+            try:
+                text = form_to_amd(request.form.to_dict())
+            except MemoFormError as exc:
                 return jsonify(
-                    {"success": False, "error": f"Error creating memo: {m}"}
+                    {"success": False, "error": f"Error creating memo: {exc}"}
                 ), 400
-            text = m.to_amd()
 
         if not text or text.strip() == "":
             return jsonify({"success": False, "error": "No content to save"}), 400
@@ -346,20 +316,6 @@ def auto_save():
         return jsonify({"success": False, "error": "Auto-save failed"}), 500
 
 
-def check_memo(text):
-    m = memo_model.MemoModel.from_text(text)
-
-    if isinstance(m, str):
-        # rudimentary error handling
-        return m.strip()
-
-    errors = m.language_check()
-    if len(errors) > 0:
-        return "\n".join([f"Error with {k}: {v}" for k, v in errors])
-
-    return None
-
-
 @app.route("/process", methods=["POST"])
 def process():
     try:
@@ -368,13 +324,14 @@ def process():
             text = request.form.get("memo_text")
             task = create_memo(text)
         else:
-            m = memo_model.MemoModel.from_form(request.form.to_dict())
-            if isinstance(m, str):
-                # MemoModel.from_form returned an error string
-                flash(f"Error creating memo: {m}")
-                return redirect(url_for("index"))
-            text = m.to_amd()
-            task = create_memo("", request.form.to_dict())
+            try:
+                text = form_to_amd(request.form.to_dict())
+            except MemoFormError as exc:
+                flash(f"Error creating memo: {exc}")
+                context = form_data_to_template_context(request.form.to_dict())
+                context["examples"] = get_example_files()
+                return render_template("memo_form.html", **context)
+            task = create_memo(text)
 
         try:
             res = login.save_document(text)
@@ -399,14 +356,9 @@ def process():
                 "index.html", memo_text=request.form.get("memo_text", "")
             )
         else:
-            # Try to reconstruct the form data
-            try:
-                m = memo_model.MemoModel.from_form(request.form.to_dict())
-                if not isinstance(m, str):
-                    return render_template("memo_form.html", **m.to_form())
-            except Exception:  # nosec B110
-                pass
-            return redirect(url_for("index"))
+            context = form_data_to_template_context(request.form.to_dict())
+            context["examples"] = get_example_files()
+            return render_template("memo_form.html", **context)
 
 
 # Store for tracking Huey task results
@@ -444,7 +396,7 @@ def process_huey_task(task_id, result_func):
 @app.route("/status/<task_id>", methods=["POST", "GET"])
 def taskstatus(task_id):
     """Get the status of a memo creation task."""
-    return jsonify(process_huey_task(task_id, lambda res: res[:-4] + ".pdf"))
+    return jsonify(process_huey_task(task_id, lambda res: res))
 
 
 def get_aws_link(file_name):
@@ -461,77 +413,40 @@ def get_aws_link(file_name):
     return response
 
 
-def substitute_example_fields_with_profile(file_path, user_id=None):
-    """Load example file and substitute header fields with user profile values."""
+def load_example_text(example_name, user_id=None):
+    """Load packaged example text and apply profile substitutions when possible."""
+    example_text = read_example_text(example_name)
     if not user_id or not current_user.is_authenticated:
-        # Just load the file normally
-        return memo_model.MemoModel.from_file(file_path)
+        return example_text
 
     # Skip profile substitution during testing to avoid mock issues
     import sys
 
     if "pytest" in sys.modules or hasattr(sys, "_called_from_test"):
-        return memo_model.MemoModel.from_file(file_path)
+        return example_text
 
     user_profile = UserProfile.query.filter_by(user_id=user_id).first()
     if not user_profile:
-        # No profile, load normally
-        return memo_model.MemoModel.from_file(file_path)
+        return example_text
 
-    # Read the file content
-    with open(file_path) as f:
-        content = f.read()
+    substitutions: list[ProfileSubstitution] = []
+    profile_fields = {
+        "ORGANIZATION_NAME": user_profile.organization_name,
+        "ORGANIZATION_STREET_ADDRESS": user_profile.organization_street,
+        "ORGANIZATION_CITY_STATE_ZIP": user_profile.organization_city_state_zip,
+        "OFFICE_SYMBOL": user_profile.office_symbol,
+        "AUTHOR": user_profile.full_name,
+        "RANK": user_profile.rank,
+        "BRANCH": user_profile.branch,
+        "TITLE": user_profile.title,
+    }
+    for field_name, value in profile_fields.items():
+        if isinstance(value, str) and value:
+            substitutions.append(
+                ProfileSubstitution(field_name=field_name, value=value)
+            )
 
-    # Define field substitutions based on user profile
-    field_substitutions = {}
-
-    # Only use string values, skip any Mock objects or None values
-    if user_profile.organization_name and isinstance(
-        user_profile.organization_name, str
-    ):
-        field_substitutions["ORGANIZATION_NAME"] = user_profile.organization_name
-
-    if user_profile.organization_street and isinstance(
-        user_profile.organization_street, str
-    ):
-        field_substitutions["ORGANIZATION_STREET_ADDRESS"] = (
-            user_profile.organization_street
-        )
-
-    if user_profile.organization_city_state_zip and isinstance(
-        user_profile.organization_city_state_zip, str
-    ):
-        field_substitutions["ORGANIZATION_CITY_STATE_ZIP"] = (
-            user_profile.organization_city_state_zip
-        )
-
-    if user_profile.office_symbol and isinstance(user_profile.office_symbol, str):
-        field_substitutions["OFFICE_SYMBOL"] = user_profile.office_symbol
-
-    if user_profile.full_name and isinstance(user_profile.full_name, str):
-        field_substitutions["AUTHOR"] = user_profile.full_name
-
-    if user_profile.rank and isinstance(user_profile.rank, str):
-        field_substitutions["RANK"] = user_profile.rank
-
-    if user_profile.branch and isinstance(user_profile.branch, str):
-        field_substitutions["BRANCH"] = user_profile.branch
-
-    if user_profile.title and isinstance(user_profile.title, str):
-        field_substitutions["TITLE"] = user_profile.title
-
-    # Apply substitutions to field assignments
-    lines = content.split("\n")
-    for i, line in enumerate(lines):
-        if "=" in line and not line.strip().startswith("#"):
-            field_name, _ = line.split("=", 1)
-            field_name = field_name.strip()
-            if field_name in field_substitutions:
-                lines[i] = f"{field_name} = {field_substitutions[field_name]}"
-
-    # Join back and parse
-    modified_content = "\n".join(lines)
-    return memo_model.MemoModel.from_text(modified_content)
+    return substitute_profile_fields(example_text, substitutions)
 
 
 @app.route("/profile", methods=["GET", "POST"])

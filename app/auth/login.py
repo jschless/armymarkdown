@@ -11,7 +11,7 @@ from flask_login import (
 
 from app.constants import MAX_DOCUMENTS_PER_USER
 from app.forms import LoginForm, RegistrationForm
-from app.models import memo_model
+from app.memo_adapter import document_to_form_context, parse_memo_text
 from db.schema import Document, User, db
 
 login_manager = LoginManager()
@@ -27,7 +27,7 @@ def login_route():
         return redirect(url_for("index"))
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
+        user = get_user_by_username(form.username.data)
 
         # Check if user exists
         if user is None:
@@ -40,7 +40,7 @@ def login_route():
             return redirect(url_for("login"))
 
         # Check if user is OAuth-only (no password set)
-        if not user.can_use_password():
+        if hasattr(user, "can_use_password") and not user.can_use_password():
             from flask import current_app
 
             current_app.logger.info(
@@ -50,7 +50,7 @@ def login_route():
             return redirect(url_for("login"))
 
         # Check password
-        if not user.check_password(form.password.data):
+        if not authenticate_user(form.username.data, form.password.data):
             from flask import current_app
 
             current_app.logger.info(
@@ -85,30 +85,14 @@ def register_route():
         )
 
         try:
-            # Check if database connection is working
-            current_app.logger.info("Testing database connection...")
-            from sqlalchemy import text
-
-            test_query = db.session.execute(text("SELECT 1")).fetchone()
-            current_app.logger.info(f"Database connection test result: {test_query}")
-
-            # Check if user already exists
-            existing_user = User.query.filter_by(username=form.username.data).first()
-            current_app.logger.info(f"Existing user check result: {existing_user}")
-
-            user = User(username=form.username.data, email=form.email.data)
-            current_app.logger.info(f"Created User object: {user}")
-
-            user.set_password(form.password.data)
-            current_app.logger.info("Password set for user")
-
-            db.session.add(user)
-            current_app.logger.info("User added to session")
-
-            db.session.commit()
-            current_app.logger.info(
-                f"User {form.username.data} successfully committed to database"
+            success, message = create_user(
+                form.username.data,
+                form.email.data,
+                form.password.data,
             )
+            if not success:
+                flash(message)
+                return render_template("register.html", title="Register", form=form)
 
             flash("Congratulations, you are now a registered user!")
             current_app.logger.info(
@@ -192,8 +176,7 @@ def get_document_route(document_id):
 
     use_form_editor = request.args.get("form_editor")
     if use_form_editor == "True":
-        m = memo_model.MemoModel.from_text(document.content)
-        d = m.to_form()
+        d = document_to_form_context(parse_memo_text(document.content))
         from app.main import get_example_files
 
         d["examples"] = get_example_files()

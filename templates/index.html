@@ -7,7 +7,7 @@
   <h1>Army Memo Maker</h1>
   <p>
     Create professional military memorandums in accordance with AR 25-50.
-    Simple markdown-like syntax, LaTeX-powered formatting.
+    Simple markdown-like syntax, rendered with a fast Typst-based memo engine.
   </p>
 </div>
 {% endblock %}
@@ -24,7 +24,7 @@
   <div class="modern-card-header">
     <h2 class="modern-card-title">Memo Editor</h2>
     <p class="modern-card-description">
-      Type your memo content below using simple markdown-like syntax. Variables like <span class="variable">&#123;&#123;ORGANIZATION_NAME&#125;&#125;</span>, <span class="variable">&#123;&#123;AUTHOR&#125;&#125;</span>, and <span class="variable">&#123;&#123;DATE&#125;&#125;</span> will be automatically rendered by LaTeX into properly formatted memo headers and signatures.
+      Type your memo content below using simple markdown-like syntax. Variables like <span class="variable">&#123;&#123;ORGANIZATION_NAME&#125;&#125;</span>, <span class="variable">&#123;&#123;AUTHOR&#125;&#125;</span>, and <span class="variable">&#123;&#123;DATE&#125;&#125;</span> will be rendered into properly formatted memo headers and signatures through the shared <code>armymemo</code> Typst engine.
       The tutorial example shows you the syntax. Need help? Try the <a href="/form" style="color: var(--color-primary); text-decoration: none; font-weight: 500;">Form Builder</a>.
     </p>
   </div>

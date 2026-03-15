@@ -137,7 +137,7 @@ class TestFormValidation:
                 ("username", "newuser"),
                 ("email", "test@example.com"),
                 ("password", "SecurePass123"),
-                ("confirm_password", "SecurePass123"),
+                ("password2", "SecurePass123"),
                 ("csrf_token", "dummy_token"),
             ]
         )
@@ -202,7 +202,7 @@ class TestFormValidation:
                 ("username", "newuser"),
                 ("email", "invalid_email"),
                 ("password", "SecurePass123"),
-                ("confirm_password", "SecurePass123"),
+                ("password2", "SecurePass123"),
                 ("csrf_token", "dummy_token"),
             ]
         )
@@ -257,7 +257,7 @@ class TestFormSecurity:
                 "username": "testuser",
                 "email": "test@example.com",
                 "password": "password",
-                "confirm_password": "password",
+                "password2": "password",
             },
         )
 

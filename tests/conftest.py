@@ -12,7 +12,16 @@ from unittest.mock import MagicMock, Mock, patch
 from flask import Flask
 import pytest
 
-from app.models import memo_model
+# Set safe defaults before any test module imports app.main at collection time.
+os.environ.setdefault("FLASK_SECRET", "test-secret-key")
+os.environ.setdefault("AWS_ACCESS_KEY_ID", "test-access-key")
+os.environ.setdefault("AWS_SECRET_ACCESS_KEY", "test-secret-key")
+os.environ.setdefault("DISABLE_CAPTCHA", "true")
+os.environ.setdefault("DEVELOPMENT", "true")
+os.environ.setdefault(
+    "HUEY_DB_PATH", os.path.join(tempfile.gettempdir(), "armymarkdown-test-huey.db")
+)
+os.environ.setdefault("HUEY_IMMEDIATE", "true")
 
 
 # Mock the database and login modules before they get imported
@@ -20,7 +29,9 @@ def mock_database_modules():
     """Mock database-related modules that may not be available in test environment."""
     # Mock db.schema module
     mock_db_schema = MagicMock()
-    mock_db_schema.User = MagicMock()
+    mock_user_model = MagicMock()
+    mock_user_model.query.filter_by.return_value.first.return_value = None
+    mock_db_schema.User = mock_user_model
     mock_db_schema.Document = MagicMock()
     mock_db_schema.db = MagicMock()
     sys.modules["db.schema"] = mock_db_schema
@@ -35,7 +46,7 @@ def mock_database_modules():
     mock_flask_login.LoginManager = MagicMock
 
     # Mock login_user to actually set session and update user state
-    def mock_login_user(user):
+    def mock_login_user(user, *args, **kwargs):
         from flask import session
 
         mock_user.is_authenticated = True
@@ -139,40 +150,6 @@ def mock_database_modules():
     mock_flask_login.current_user = mock_user
 
     sys.modules["flask_login"] = mock_flask_login
-
-    # Mock Celery to prevent Redis connection attempts
-    mock_celery = MagicMock()
-    mock_celery_class = MagicMock()
-
-    def task_decorator(f=None, **kwargs):
-        """Mock Celery task decorator that adds delay and AsyncResult methods."""
-
-        def decorator(func):
-            # Add delay method that returns a mock result
-            def delay(*args, **kwargs):
-                result = Mock()
-                result.id = "test-task-id"
-                result.get = Mock(return_value="Mocked task result")
-                return result
-
-            # Add AsyncResult method for status checking
-            def async_result(task_id):
-                result = Mock()
-                result.id = task_id
-                result.state = "SUCCESS"
-                result.result = "Mocked task result"
-                result.get = Mock(return_value="Mocked task result")
-                return result
-
-            func.delay = delay
-            func.AsyncResult = async_result
-            return func
-
-        return decorator(f) if f else decorator
-
-    mock_celery_class.task = task_decorator
-    mock_celery.Celery = lambda *args, **kwargs: mock_celery_class
-    sys.modules["celery"] = mock_celery
 
 
 # Set up mocks before any imports
@@ -411,16 +388,6 @@ def mock_s3_client():
 
 
 @pytest.fixture
-def mock_celery_task():
-    """Mock Celery task for testing background operations."""
-    with patch("app.create_memo.delay") as mock_task:
-        mock_result = Mock()
-        mock_result.id = "test-task-id"
-        mock_task.return_value = mock_result
-        yield mock_task
-
-
-@pytest.fixture
 def test_database(temp_dir):
     """Create a test SQLite database."""
     db_path = os.path.join(temp_dir, "test.db")
@@ -459,7 +426,7 @@ def test_database(temp_dir):
 
 @pytest.fixture
 def special_characters_samples():
-    """Sample text with special characters for LaTeX escaping tests."""
+    """Sample text with special characters for parser/input tests."""
     return {
         "latex_special": "Text with & % $ # _ { } characters",
         "markdown_formatting": "**Bold text** and *italic text* and `code text`",
@@ -475,18 +442,8 @@ def pytest_sessionfinish(session, exitstatus):
     import contextlib
 
     test_dir = os.path.dirname(os.path.abspath(__file__))
-    extensions_to_clean = [".aux", ".log", ".out", ".fls", ".fdb_latexmk"]
-
     for filename in os.listdir(test_dir):
         filepath = os.path.join(test_dir, filename)
-        # Clean up LaTeX auxiliary files
-        if any(filename.endswith(ext) for ext in extensions_to_clean):
-            with contextlib.suppress(OSError):
-                os.remove(filepath)
-        # Clean up generated .tex files (but not expected_*.tex files)
-        if filename.endswith(".tex") and not filename.startswith("expected_"):
-            with contextlib.suppress(OSError):
-                os.remove(filepath)
         # Clean up generated .pdf files (but not fixture PDFs if any)
         if filename.endswith(".pdf") and filename.startswith("test_"):
             with contextlib.suppress(OSError):

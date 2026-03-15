@@ -21,6 +21,7 @@ help:
 	@echo "  make test         Run all tests"
 	@echo "  make test-cov     Run tests with coverage report"
 	@echo "  make test-fast    Run fast tests only (skip slow/integration)"
+	@echo "  make benchmark    Benchmark Typst memo rendering"
 	@echo ""
 	@echo "Development:"
 	@echo "  make run          Start Flask development server"
@@ -93,6 +94,10 @@ test-fast:
 test-verbose:
 	@echo "Running tests with verbose output..."
 	PYTHONPATH=. uv run pytest -v --ignore=tests/test_pdf_generation_e2e.py --ignore=tests/test_selenium_e2e.py --ignore=tests/test_ui_selenium.py
+
+benchmark:
+	@echo "Benchmarking Typst memo rendering..."
+	uv run python -m armymemo.cli benchmark basic_mfr.Amd memo_for.Amd long_memo.Amd --iterations 1
 
 test-all:
 	@echo "Running ALL tests (including selenium - requires selenium to be installed)..."

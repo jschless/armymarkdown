@@ -59,7 +59,7 @@
     </div>
     <div  class="three columns">
       <label for="DATE" class="u-full-width center">Date</label>
-      <input type="text" value="24 January 2006" id="DATE" name="DATE" class="u-full-width center">
+      <input type="text" value="{{ todays_date | default('24 January 2006') }}" id="DATE" name="DATE" class="u-full-width center">
     </div>
   </div>
 
@@ -71,10 +71,10 @@
     <div class="row" id="thru{{ zipped_thru|length - loop.index0 }}">
       <div class="six columns">
         <label class="u-full-width center" for="THRU_ORGANIZATION_NAME{{ zipped_thru|length - loop.index0 }}">THRU Organization Name</label>
-        <input type="text" id="THRU_ORGANIZATION_NAME {{  zipped_thru|length - loop.index0 }}" name="THRU_ORGANIZATION_NAME{{  zipped_thru|length - loop.index0}}" value="{{ name }}" class="u-full-width center">
+        <input type="text" id="THRU_ORGANIZATION_NAME{{ zipped_thru|length - loop.index0 }}" name="THRU_ORGANIZATION_NAME{{ zipped_thru|length - loop.index0 }}" value="{{ name }}" class="u-full-width center">
         <br>
         <label class="u-full-width center" for="THRU_ORGANIZATION_STREET_ADDRESS{{ zipped_thru|length - loop.index0 }}">THRU Street Address</label>
-        <input type="text" id="THRU_ORGANIZATION_STREET_ADDRESS{{ zipped_thru|length - loop.index0}}" name="THRU_ORGANIZATION_STREET_ADDRESS{{ zipped_thru|length - loop.index0 }}" value="{{ add }}" class="u-full-width center">
+        <input type="text" id="THRU_ORGANIZATION_STREET_ADDRESS{{ zipped_thru|length - loop.index0 }}" name="THRU_ORGANIZATION_STREET_ADDRESS{{ zipped_thru|length - loop.index0 }}" value="{{ add }}" class="u-full-width center">
         <br>
         <label class="u-full-width center" for="THRU_ORGANIZATION_CITY_STATE_ZIP{{  zipped_thru|length - loop.index0 }}">THRU City, State Zip</label>
         <input type="text" id="THRU_ORGANIZATION_CITY_STATE_ZIP{{ zipped_thru|length - loop.index0 }}" name="THRU_ORGANIZATION_CITY_STATE_ZIP{{ zipped_thru|length - loop.index0 }}" value="{{ city }}" class="u-full-width center">
@@ -222,7 +222,7 @@
         <div id="cf{{cfs|length - loop.index0}}">
           <label class="u-full-width center"  for="CF{{cfs|length - loop.index0}}">Copies Furnished</label>
           <input type="text" id="CF{{cfs|length - loop.index0}}" name="CF{{cfs|length - loop.index0}}" value="{{cf}}" class="u-full-width center">
-          <input class="u-full-width center" type="button" value="Remove Copies Furnished" onclick="deleteElement('cf{{cfs|length - loop.index0 }}')"
+          <input class="u-full-width center" type="button" value="Remove Copies Furnished" onclick="deleteElement('cf{{cfs|length - loop.index0 }}')">
           <hr>
         </div>
         {% endfor %}

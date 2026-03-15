@@ -1,35 +1,16 @@
 """Tests for auto-save functionality"""
 
 import json
-from unittest.mock import Mock, patch
-
-import pytest
-
-from app.main import app
-
-
-@pytest.fixture
-def client():
-    """Create a test client"""
-    app.config["TESTING"] = True
-    app.config["WTF_CSRF_ENABLED"] = False
-    app.config["DISABLE_CAPTCHA"] = True
-
-    with app.test_client() as client:
-        yield client
+from unittest.mock import patch
 
 
 class TestAutoSave:
     """Test auto-save functionality"""
 
-    @patch("flask_login.utils._get_user")
     @patch("app.auth.login.auto_save_document")
-    def test_auto_save_text_editor_mode(
-        self, mock_auto_save, mock_current_user, client
-    ):
+    def test_auto_save_text_editor_mode(self, mock_auto_save, client, auth_user):
         """Test auto-save for text editor mode"""
-        # Mock authenticated user
-        mock_current_user.return_value = Mock(is_authenticated=True, id=1)
+        auth_user.login(user_id=1)
         mock_auto_save.return_value = {
             "success": True,
             "message": "Draft auto-saved",
@@ -51,14 +32,10 @@ class TestAutoSave:
         assert data["action"] == "saved"
         assert "timestamp" in data
 
-    @patch("flask_login.utils._get_user")
     @patch("app.auth.login.auto_save_document")
-    def test_auto_save_duplicate_content(
-        self, mock_auto_save, mock_current_user, client
-    ):
+    def test_auto_save_duplicate_content(self, mock_auto_save, client, auth_user):
         """Test auto-save handles duplicate content gracefully"""
-        # Mock authenticated user
-        mock_current_user.return_value = Mock(is_authenticated=True, id=1)
+        auth_user.login(user_id=1)
         mock_auto_save.return_value = {
             "success": True,
             "message": "No changes to save",
@@ -81,12 +58,10 @@ class TestAutoSave:
         assert data["message"] == "No changes to save"
         assert "timestamp" in data
 
-    @patch("flask_login.utils._get_user")
     @patch("app.auth.login.auto_save_document")
-    def test_auto_save_form_mode(self, mock_auto_save, mock_current_user, client):
+    def test_auto_save_form_mode(self, mock_auto_save, client, auth_user):
         """Test auto-save for form mode"""
-        # Mock authenticated user
-        mock_current_user.return_value = Mock(is_authenticated=True, id=1)
+        auth_user.login(user_id=1)
         mock_auto_save.return_value = {
             "success": True,
             "message": "Draft auto-saved",
@@ -117,11 +92,9 @@ class TestAutoSave:
         assert data["action"] == "saved"
         assert "timestamp" in data
 
-    @patch("flask_login.utils._get_user")
-    def test_auto_save_empty_content(self, mock_current_user, client):
+    def test_auto_save_empty_content(self, client, auth_user):
         """Test auto-save with empty content"""
-        # Mock authenticated user
-        mock_current_user.return_value = Mock(is_authenticated=True, id=1)
+        auth_user.login(user_id=1)
 
         response = client.post(
             "/auto_save",
@@ -134,11 +107,9 @@ class TestAutoSave:
         assert data["success"] is False
         assert "No content to save" in data["error"]
 
-    @patch("flask_login.utils._get_user")
-    def test_auto_save_whitespace_only(self, mock_current_user, client):
+    def test_auto_save_whitespace_only(self, client, auth_user):
         """Test auto-save with whitespace-only content"""
-        # Mock authenticated user
-        mock_current_user.return_value = Mock(is_authenticated=True, id=1)
+        auth_user.login(user_id=1)
 
         response = client.post(
             "/auto_save",
@@ -162,11 +133,9 @@ class TestAutoSave:
         # Should redirect to login (302) or return unauthorized (401)
         assert response.status_code in [302, 401]
 
-    @patch("flask_login.utils._get_user")
-    def test_auto_save_invalid_form_data(self, mock_current_user, client):
+    def test_auto_save_invalid_form_data(self, client, auth_user):
         """Test auto-save with invalid form data"""
-        # Mock authenticated user
-        mock_current_user.return_value = Mock(is_authenticated=True, id=1)
+        auth_user.login(user_id=1)
 
         # Missing required form fields
         form_data = {
@@ -184,14 +153,10 @@ class TestAutoSave:
         assert data["success"] is False
         assert "Error creating memo" in data["error"]
 
-    @patch("flask_login.utils._get_user")
     @patch("app.auth.login.save_document")
-    def test_auto_save_returns_json(
-        self, mock_save_document, mock_current_user, client
-    ):
+    def test_auto_save_returns_json(self, mock_save_document, client, auth_user):
         """Test that auto-save returns proper JSON response"""
-        # Mock authenticated user
-        mock_current_user.return_value = Mock(is_authenticated=True, id=1)
+        auth_user.login(user_id=1)
         mock_save_document.return_value = None  # No error
 
         response = client.post(
