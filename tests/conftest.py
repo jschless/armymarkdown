@@ -14,8 +14,6 @@ import pytest
 
 # Set safe defaults before any test module imports app.main at collection time.
 os.environ.setdefault("FLASK_SECRET", "test-secret-key")
-os.environ.setdefault("AWS_ACCESS_KEY_ID", "test-access-key")
-os.environ.setdefault("AWS_SECRET_ACCESS_KEY", "test-secret-key")
 os.environ.setdefault("DISABLE_CAPTCHA", "true")
 os.environ.setdefault("DEVELOPMENT", "true")
 os.environ.setdefault(
@@ -165,8 +163,6 @@ def test_app():
         "REDIS_URL": "redis://localhost:6379/15",  # Use test database
         "RECAPTCHA_PUBLIC_KEY": "test-public-key",
         "RECAPTCHA_PRIVATE_KEY": "test-private-key",
-        "AWS_ACCESS_KEY_ID": "test-access-key",
-        "AWS_SECRET_ACCESS_KEY": "test-secret-key",
         "DISABLE_CAPTCHA": "true",
         "DEVELOPMENT": "true",
     }
@@ -376,15 +372,6 @@ SUBJECT=Test Subject
 
 - This memo is missing required fields.""",
     }
-
-
-@pytest.fixture
-def mock_s3_client():
-    """Mock S3 client for testing file operations."""
-    with patch("boto3.client") as mock_client:
-        mock_s3 = Mock()
-        mock_client.return_value = mock_s3
-        yield mock_s3
 
 
 @pytest.fixture

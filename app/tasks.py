@@ -1,17 +1,15 @@
-"""Huey task queue configuration and memo/PDF background tasks."""
+"""Huey task queue configuration and PDF background tasks."""
 
+from dataclasses import dataclass
 import hashlib
 import logging
 import os
 from pathlib import Path
-import random
 import re
 import tempfile
 import time
 
 from armymemo import parse_text, render_typst_pdf
-import boto3
-from botocore.exceptions import ClientError
 from huey import SqliteHuey
 
 # Configure logging
@@ -24,124 +22,44 @@ huey = SqliteHuey(
     immediate=os.environ.get("HUEY_IMMEDIATE", "false").lower() == "true",
 )
 
-# S3 client initialization (lazy loaded)
-_s3_client = None
+
+@dataclass(frozen=True, slots=True)
+class RenderedMemo:
+    filename: str
+    pdf_bytes: bytes
 
 
-def get_s3_client():
-    """Get or create S3 client with lazy initialization."""
-    global _s3_client
-    if _s3_client is None:
-        _s3_client = boto3.client(
-            "s3",
-            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
-            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
-            config=boto3.session.Config(
-                region_name="us-east-2", signature_version="s3v4"
-            ),
-        )
-    return _s3_client
-
-
-def upload_file_to_s3(file_path, aws_path):
-    """
-    Upload a file to S3.
-
-    Args:
-        file_path: Local path to the file
-        aws_path: Destination path in S3 bucket
-
-    Returns:
-        The file path on success, or exception on failure
-    """
-    s3 = get_s3_client()
-    try:
-        s3.upload_file(
-            file_path,
-            "armymarkdown",
-            aws_path,
-            ExtraArgs={
-                "ContentType": "application/pdf",
-                "ContentDisposition": "inline",
-            },
-        )
-    except Exception as e:
-        logger.error(f"S3 upload error: {e}")
-        raise
-
-    return file_path
-
-
-@huey.task(retries=2, retry_delay=5)
-def create_memo(text):
+def create_memo(text: str) -> RenderedMemo:
     """
     Create a PDF memo from AMD text.
 
-    This task:
-    1. Checks for cached PDF in S3
-    2. Parses the memo with armymemo
-    3. Compiles a Typst PDF
-    4. Uploads to S3
-    5. Returns the filename
+    This synchronous helper:
+    1. Parses the memo with armymemo
+    2. Compiles a Typst PDF
+    3. Returns the filename and PDF bytes directly to the caller
 
     Args:
         text: The AMD format text content
 
     Returns:
-        The uploaded PDF filename
+        Rendered memo filename and PDF bytes
     """
     start_time = time.time()
-    s3 = get_s3_client()
     document = parse_text(text)
-    normalized_text = document.to_amd()
-
-    # Generate content hash for caching
-    content_hash = hashlib.md5(  # nosec B324
-        normalized_text.encode("utf-8")
-    ).hexdigest()[:12]
-
-    # Check for cached result in S3
-    cached_filename = f"cached_{content_hash}.pdf"
-    try:
-        s3.head_object(Bucket="armymarkdown", Key=cached_filename)
-        logger.info(f"Found cached PDF for hash {content_hash}")
-        return cached_filename
-    except ClientError:
-        # File doesn't exist in cache, proceed with generation
-        pass
 
     logger.debug("Generating memo subject=%s", document.subject)
 
-    temp_name = (
-        _safe_filename(document.subject)[:15]
-        + "".join(random.choices("0123456789", k=4))  # nosec B311
-        + ".pdf"
-    )
+    filename = f"{_safe_filename(document.subject)[:64]}.pdf"
 
     with tempfile.TemporaryDirectory(prefix="armymarkdown-memo-") as temp_dir_name:
-        pdf_file = Path(temp_dir_name) / temp_name
+        pdf_file = Path(temp_dir_name) / filename
         render_typst_pdf(document, pdf_file)
-
-        try:
-            s3.upload_file(
-                str(pdf_file),
-                "armymarkdown",
-                cached_filename,
-                ExtraArgs={
-                    "ContentType": "application/pdf",
-                    "ContentDisposition": "inline",
-                },
-            )
-            logger.info("Cached PDF with hash %s", content_hash)
-        except Exception as e:
-            logger.warning(f"Failed to cache PDF: {e}")
-
-        upload_file_to_s3(str(pdf_file), temp_name)
+        pdf_bytes = pdf_file.read_bytes()
 
     generation_time = time.time() - start_time
     logger.info(f"PDF generation completed in {generation_time:.2f} seconds")
 
-    return temp_name
+    return RenderedMemo(filename=filename, pdf_bytes=pdf_bytes)
 
 
 @huey.task(retries=1, retry_delay=5)

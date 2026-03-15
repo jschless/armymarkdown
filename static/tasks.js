@@ -26,8 +26,9 @@ function saveData() {
         });
 }
 
-function buttonPress(endpoint, polling_function) {
+function buttonPress(endpoint) {
     const formData = new FormData(document.getElementById('memo'));
+    const previewWindow = window.open('', '_blank');
 
     // Show modern progress modal with indeterminate progress
     showProgress(true);
@@ -40,79 +41,83 @@ function buttonPress(endpoint, polling_function) {
             'X-Requested-With': 'XMLHttpRequest'
         }
     })
-        .then(response => {
-            if (response.ok) {
-                return response.headers.get('Location');
-            } else {
-                throw new Error('Network response was not ok');
+        .then(async response => {
+            if (!response.ok) {
+                throw new Error(await extractErrorMessage(response));
             }
+
+            const contentType = response.headers.get('Content-Type') || '';
+            if (!contentType.includes('application/pdf')) {
+                throw new Error('Unexpected response type from memo generation.');
+            }
+
+            return {
+                blob: await response.blob(),
+                filename: getPdfFilename(response)
+            };
         })
-        .then(status_url => {
-            polling_function(status_url, 0);
+        .then(({ blob, filename }) => {
+            const pdfUrl = window.URL.createObjectURL(blob);
+
+            showProgress(false);
+            openPdfResult(pdfUrl, previewWindow, filename);
+            showStatusMessage('🎉 Your memo has been created successfully! The PDF should open in a new tab.', 'success');
+
+            window.setTimeout(() => window.URL.revokeObjectURL(pdfUrl), 60000);
         })
         .catch(error => {
             console.error('Error submitting form:', error);
+            if (previewWindow && !previewWindow.closed) {
+                previewWindow.close();
+            }
             showProgress(false);
-            showStatusMessage('Error submitting your memo. Please check your connection and try again.', 'error');
+            showStatusMessage(error.message || 'Error submitting your memo. Please check your connection and try again.', 'error');
         });
 }
 
-function updateProgress(status_url, count) {
-    fetch(status_url)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data['state'] === 'SUCCESS') {
-            // Hide progress modal and show success
-                showProgress(false);
+async function extractErrorMessage(response) {
+    const contentType = response.headers.get('Content-Type') || '';
 
-                // Open PDF in new tab
-                if (data['presigned_url']) {
-                    window.open(data['presigned_url'], '_blank', 'noopener,noreferrer');
-                }
+    if (contentType.includes('application/json')) {
+        const payload = await response.json();
+        return payload.error || payload.status || `HTTP ${response.status}`;
+    }
 
-                // Show success message
-                showStatusMessage('🎉 Your memo has been created successfully! The PDF should open in a new tab.', 'success');
+    const text = await response.text();
+    if (text && text.trim().length > 0) {
+        return text;
+    }
 
-            } else if (data['state'] === 'FAILURE') {
-            // Hide progress modal
-                showProgress(false);
+    return `HTTP ${response.status}: ${response.statusText}`;
+}
 
-                const errorMessage = 'Error processing your memo. Please check your memo format and try again.';
+function getPdfFilename(response) {
+    const contentDisposition = response.headers.get('Content-Disposition') || '';
+    const utf8Match = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
+    if (utf8Match) {
+        return decodeURIComponent(utf8Match[1]);
+    }
 
-                // Show error message using modern alert system
-                showStatusMessage(errorMessage, 'error');
-            } else {
-            // Still processing - update progress
-                const POLLING_INTERVAL_MS = 1000;
-                const MAX_POLLING_ATTEMPTS = 80;
+    const basicMatch = contentDisposition.match(/filename="?([^";]+)"?/i);
+    if (basicMatch) {
+        return basicMatch[1];
+    }
 
-                count += 1;
+    return response.headers.get('X-Memo-Filename') || 'memo.pdf';
+}
 
-                // Keep showing indeterminate progress (no percentage updates needed)
+function openPdfResult(pdfUrl, previewWindow, filename) {
+    if (previewWindow && !previewWindow.closed) {
+        previewWindow.location = pdfUrl;
+        previewWindow.document.title = filename;
+        return;
+    }
 
-
-                // Continue polling or timeout
-                if (count < MAX_POLLING_ATTEMPTS) {
-                    setTimeout(function () {
-                        updateProgress(status_url, count);
-                    }, POLLING_INTERVAL_MS);
-                } else {
-                // Timeout after max attempts
-                    showProgress(false);
-                    showStatusMessage('Processing is taking longer than expected. Please try again or contact support if the issue persists.', 'warning');
-                }
-            }
-        })
-        .catch(error => {
-            console.error('Error polling task status:', error);
-            showProgress(false);
-            showStatusMessage('Connection error while checking status. Please refresh the page and try again.', 'error');
-        });
+    const link = document.createElement('a');
+    link.href = pdfUrl;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.click();
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -200,16 +205,6 @@ function showIndeterminateProgress() {
     }
 }
 
-// Store reference to our real updateProgress function
-const realUpdateProgress = updateProgress;
-
-// Override any legacy updateProgress function that might cause NaN%
-window.updateProgress = function(status_url, count) {
-    if (arguments.length === 2 && typeof status_url === 'string') {
-        // This is the new progress system - call our real function
-        realUpdateProgress(status_url, count);
-    } else {
-        // Legacy call with percentage - ignore it and maintain indeterminate progress
-        showIndeterminateProgress();
-    }
+window.updateProgress = function() {
+    showIndeterminateProgress();
 };

@@ -41,9 +41,6 @@ dependencies = [
     # Task queue and background processing (Huey with SQLite backend)
     "huey>=2.5.0",
 
-    # AWS integration
-    "boto3>=1.35.0",
-
     # Web server
     "gunicorn>=23.0.0",
     "armymemo @ git+https://github.com/jschless/armymemo.git@d1717e84b3b21198fc74fd15cb5e2a67ee8798f7",
@@ -90,7 +87,6 @@ dev = [
 
     # HTTP mocking
     "responses>=0.25.0",
-    "moto>=5.0.0",
 
     # Flask testing utilities
     "flask-testing>=0.8.1",
@@ -111,7 +107,6 @@ test = [
     "faker>=30.0.0",
     "freezegun>=1.5.0",
     "responses>=0.25.0",
-    "moto>=5.0.0",
     "flask-testing>=0.8.1",
 ]
 

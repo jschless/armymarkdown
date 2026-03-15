@@ -30,12 +30,12 @@
 - **CAPTCHA protection** - Spam prevention (configurable for testing environments)
 
 ### ⚡ **Performance & Modern Tooling**
-- **Asynchronous processing** - Background PDF generation with Huey task queue
+- **Direct PDF rendering** - Standard memo generation returns PDFs immediately from the app
 - **Fast dependency management** - uv package manager with lockfile support
 - **Shared rendering engine** - Web app imports the standalone `armymemo` package directly
 - **Reproducible benchmark path** - `make benchmark` exercises representative Typst renders
 - **Modern Python packaging** - pyproject.toml with standardized build system
-- **AWS S3 integration** - Reliable file storage and delivery
+- **Async validation pipeline** - Huey remains in place for validation and longer-running background jobs
 - **Docker containerization** - Consistent deployment across environments
 - **Auto-deploy** - Watchtower monitors Docker Hub for automatic updates
 
@@ -110,8 +110,6 @@
    export FLASK_SECRET="your-secret-key"
    export RECAPTCHA_PUBLIC_KEY="your-public-key"
    export RECAPTCHA_PRIVATE_KEY="your-private-key"
-   export AWS_ACCESS_KEY_ID="your-aws-key"
-   export AWS_SECRET_ACCESS_KEY="your-aws-secret"
    ```
 
 2. **Deploy with Docker Compose**
@@ -202,8 +200,6 @@ SUBJECT=Template for Army Markdown
 | `FLASK_SECRET` | Flask session secret key | ✅ | - |
 | `RECAPTCHA_PUBLIC_KEY` | reCAPTCHA site key | ✅ | - |
 | `RECAPTCHA_PRIVATE_KEY` | reCAPTCHA secret key | ✅ | - |
-| `AWS_ACCESS_KEY_ID` | AWS S3 access key | ✅ | - |
-| `AWS_SECRET_ACCESS_KEY` | AWS S3 secret key | ✅ | - |
 | `DISABLE_CAPTCHA` | Disable CAPTCHA for testing | ❌ | `false` |
 | `DEVELOPMENT` | Enable development mode | ❌ | `false` |
 
@@ -260,8 +256,6 @@ The tests require these environment variables:
 export FLASK_SECRET="test-secret-key-for-ci"
 export RECAPTCHA_PUBLIC_KEY="test-public-key"
 export RECAPTCHA_PRIVATE_KEY="test-private-key"
-export AWS_ACCESS_KEY_ID="test-access-key"
-export AWS_SECRET_ACCESS_KEY="test-secret-key"
 export DISABLE_CAPTCHA="true"
 export DEVELOPMENT="true"
 ```

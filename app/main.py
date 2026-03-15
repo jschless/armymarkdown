@@ -1,11 +1,10 @@
 from datetime import timedelta
 from functools import lru_cache
+from io import BytesIO
 import logging
 import os
 import time
 
-import boto3
-from botocore.exceptions import ClientError
 from dotenv import load_dotenv
 from flask import (
     Flask,
@@ -14,6 +13,7 @@ from flask import (
     redirect,
     render_template,
     request,
+    send_file,
     url_for,
 )
 from flask_login import current_user, login_required
@@ -101,13 +101,6 @@ if os.environ.get("DEVELOPMENT") is not None:
     app.logger.setLevel(logging.DEBUG)
 
 init_db(app)
-
-s3 = boto3.client(
-    "s3",
-    aws_access_key_id=get_required_env_var("AWS_ACCESS_KEY_ID"),
-    aws_secret_access_key=get_required_env_var("AWS_SECRET_ACCESS_KEY"),
-    config=boto3.session.Config(region_name="us-east-2", signature_version="s3v4"),
-)
 
 
 @app.after_request
@@ -325,17 +318,35 @@ def process():
     try:
         if "SUBJECT" not in request.form:
             # came from the text page
-            text = request.form.get("memo_text")
-            task = create_memo(text)
+            text = request.form.get("memo_text", "")
         else:
             try:
                 text = form_to_amd(request.form.to_dict())
             except MemoFormError as exc:
+                if _is_ajax_request():
+                    return jsonify(
+                        {"success": False, "error": f"Error creating memo: {exc}"}
+                    ), 400
                 flash(f"Error creating memo: {exc}")
                 context = form_data_to_template_context(request.form.to_dict())
                 context["examples"] = get_example_files()
                 return render_template("memo_form.html", **context)
-            task = create_memo(text)
+
+        if not text or text.strip() == "":
+            if _is_ajax_request():
+                return jsonify(
+                    {"success": False, "error": "No content to process"}
+                ), 400
+            flash("No content to process.")
+            if "SUBJECT" not in request.form:
+                return render_template(
+                    "index.html", memo_text=text, examples=get_example_files()
+                )
+            context = form_data_to_template_context(request.form.to_dict())
+            context["examples"] = get_example_files()
+            return render_template("memo_form.html", **context), 400
+
+        rendered_memo = create_memo(text)
 
         try:
             res = login.save_document(text)
@@ -345,19 +356,26 @@ def process():
             app.logger.error(f"Error saving document during processing: {e}")
             flash("Document could not be saved, but processing continues.")
 
-        # Return task ID for status polling
-        return (
-            "Hi, we're waiting for your PDF to be created.",
-            200,
-            {"Location": url_for("taskstatus", task_id=task.id)},
-        )
+        return _build_pdf_response(rendered_memo.filename, rendered_memo.pdf_bytes)
     except Exception as e:
         app.logger.error(f"Error processing memo: {e}")
+        if _is_ajax_request():
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "error": "Error processing memo. Please check your memo format and try again.",
+                    }
+                ),
+                400,
+            )
         flash("Error processing memo. Please try again.")
         # Return to appropriate page based on input type
         if "SUBJECT" not in request.form:
             return render_template(
-                "index.html", memo_text=request.form.get("memo_text", "")
+                "index.html",
+                memo_text=request.form.get("memo_text", ""),
+                examples=get_example_files(),
             )
         else:
             context = form_data_to_template_context(request.form.to_dict())
@@ -365,56 +383,19 @@ def process():
             return render_template("memo_form.html", **context)
 
 
-# Store for tracking Huey task results
-_task_results = {}
-
-
-def process_huey_task(task_id, result_func):
-    """Process Huey task status and return appropriate response."""
-
-    # Get the task result from Huey
-    result = huey.result(task_id, preserve=True)
-
-    if result is None:
-        # Task is still pending or processing
-        return {"state": "PENDING", "status": "Creating your memo..."}
-
-    # Check if result is an exception
-    if isinstance(result, Exception):
-        app.logger.error(f"Task {task_id} failed: {result}")
-        return {
-            "state": "FAILURE",
-            "status": f"Task failed: {result!s}",
-            "error": str(result),
-        }
-
-    # Task completed successfully
-    pdf_name = result_func(result)
-    return {
-        "state": "SUCCESS",
-        "result": pdf_name,
-        "presigned_url": get_aws_link(pdf_name),
-    }
-
-
 @app.route("/status/<task_id>", methods=["POST", "GET"])
 def taskstatus(task_id):
-    """Get the status of a memo creation task."""
-    return jsonify(process_huey_task(task_id, lambda res: res))
-
-
-def get_aws_link(file_name):
-    """Generate a presigned URL for downloading a file from S3."""
-    try:
-        response = s3.generate_presigned_url(
-            "get_object",
-            Params={"Bucket": "armymarkdown", "Key": file_name},
-            ExpiresIn=3600,
-        )
-    except ClientError as e:
-        app.logger.error(f"S3 presigned URL error: {e}")
-        return None
-    return response
+    """Memo generation is synchronous; task status polling is no longer supported."""
+    return (
+        jsonify(
+            {
+                "state": "FAILURE",
+                "status": "Memo generation now returns the PDF directly. Task polling is no longer supported.",
+                "task_id": task_id,
+            }
+        ),
+        410,
+    )
 
 
 def load_example_text(example_name, user_id=None):
@@ -451,6 +432,23 @@ def load_example_text(example_name, user_id=None):
             )
 
     return substitute_profile_fields(example_text, substitutions)
+
+
+def _is_ajax_request() -> bool:
+    return request.headers.get("X-Requested-With") == "XMLHttpRequest"
+
+
+def _build_pdf_response(filename: str, pdf_bytes: bytes):
+    response = send_file(
+        BytesIO(pdf_bytes),
+        mimetype="application/pdf",
+        as_attachment=False,
+        download_name=filename,
+    )
+    response.headers["Content-Disposition"] = f'inline; filename="{filename}"'
+    response.headers["X-Memo-Filename"] = filename
+    response.headers["Cache-Control"] = "no-store"
+    return response
 
 
 @app.route("/profile", methods=["GET", "POST"])
