@@ -39,6 +39,8 @@
         placeholder="Start typing your memo content here...">{{memo_text}}</textarea>
     </div>
 
+    {% include "live_review_panel.html" %}
+
     <div style="display: flex; gap: var(--spacing-4); flex-wrap: wrap; justify-content: flex-start; align-items: center;">
       <button type="submit" class="modern-btn modern-btn-primary modern-btn-lg" id="start-bg-job">
         Create Memo PDF
@@ -112,8 +114,7 @@
 <script src="{{ url_for('static', filename='tasks.js') }}"></script>
 <script src="{{ url_for('static', filename='index.js') }}"></script>
 <script src="{{ url_for('static', filename='batch-upload.js') }}"></script>
-<script src="{{ url_for('static', filename='validation-rules.js') }}"></script>
-<script src="{{ url_for('static', filename='text-editor-validation.js') }}"></script>
+<script src="{{ url_for('static', filename='live-review.js') }}"></script>
 <script src="{{ url_for('static', filename='auto-save.js') }}"></script>
 <script src="{{ url_for('static', filename='keyboard-shortcuts.js') }}"></script>
 {% endblock %}

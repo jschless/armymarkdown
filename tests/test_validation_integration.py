@@ -12,71 +12,14 @@ class TestValidationFlow:
 
     def test_validation_module_initialization(self):
         """Test that validation module initializes correctly."""
-        from app.services.validation import (
-            MemoValidator,
-            PDFParser,
-            PDFValidator,
-        )
+        from app.services.validation import PDFMetadata, PDFParser, PDFValidator
 
         # Create instances to verify no initialization errors
         parser = PDFParser()
         assert parser is not None
 
-        # MemoValidator needs data
-        validator = MemoValidator({})
+        validator = PDFValidator(PDFMetadata())
         assert validator is not None
-
-    def test_memo_validator_validates_text(self):
-        """Test MemoValidator can validate AMD format text."""
-        from app.services.validation import MemoValidator
-
-        valid_text = """ORGANIZATION_NAME=1st Test Battalion
-ORGANIZATION_STREET_ADDRESS=123 Test Street
-ORGANIZATION_CITY_STATE_ZIP=Fort Test, TX 12345
-OFFICE_SYMBOL=ABCD-EF
-DATE=15 January 2025
-AUTHOR=John A. Smith
-RANK=CPT
-BRANCH=EN
-
-SUBJECT=Test Memo
-
----
-- This is a test memo.
-- Point of contact is the undersigned.
-"""
-        result = MemoValidator.validate_text_input(valid_text)
-
-        # Should be valid or have only warnings
-        assert result is not None
-        assert hasattr(result, "is_valid")
-        assert hasattr(result, "errors")
-        assert hasattr(result, "warnings")
-
-    def test_memo_validator_detects_invalid_date(self):
-        """Test MemoValidator detects invalid date format."""
-        from app.services.validation import MemoValidator
-
-        invalid_text = """ORGANIZATION_NAME=1st Test Battalion
-ORGANIZATION_STREET_ADDRESS=123 Test Street
-ORGANIZATION_CITY_STATE_ZIP=Fort Test, TX 12345
-OFFICE_SYMBOL=ABCD-EF
-DATE=01/15/2025
-AUTHOR=John A. Smith
-RANK=CPT
-BRANCH=EN
-
-SUBJECT=Test Memo
-
----
-- This is a test memo.
-"""
-        result = MemoValidator.validate_text_input(invalid_text)
-
-        # Should have date format error
-        assert result is not None
-        date_errors = [e for e in result.errors if "Date" in e or "date" in e.lower()]
-        assert len(date_errors) > 0
 
     def test_pdf_validator_full_check(self):
         """Test PDFValidator runs all validation checks."""
