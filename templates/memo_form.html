@@ -138,6 +138,8 @@
 - Point of contact is the undersigned.' )}}</textarea>
   </div>
 
+  {% include "live_review_panel.html" %}
+
   <div class="row">
     <div class="three columns" id="authority">
       {% if authority is defined and authority is not none %}
@@ -247,8 +249,7 @@
 
 <script src="{{ url_for('static', filename='tasks.js') }}"></script>
 <script src="{{ url_for('static', filename='form.js') }}"></script>
-<script src="{{ url_for('static', filename='validation-rules.js') }}"></script>
-<script src="{{ url_for('static', filename='form-validation.js') }}"></script>
+<script src="{{ url_for('static', filename='live-review.js') }}"></script>
 <script src="{{ url_for('static', filename='auto-save.js') }}"></script>
 <script src="{{ url_for('static', filename='keyboard-shortcuts.js') }}"></script>
 {% endblock %}

@@ -11,7 +11,7 @@ import time
 
 from armymemo import parse_text, render_typst_pdf, review_document
 from armymemo.document import MemoDocument
-from armymemo.review import ReviewReport
+from armymemo.review import ReviewReport, default_document_review_rules
 from huey import SqliteHuey
 
 # Configure logging
@@ -68,6 +68,21 @@ def review_memo_content(text: str) -> ReviewReport:
     review_time = time.time() - start_time
     logger.info(
         "Memo review completed in %.2f seconds (passed=%s failed=%s)",
+        review_time,
+        report.passed,
+        report.failed_rules,
+    )
+    return report
+
+
+def review_memo_content_live(text: str) -> ReviewReport:
+    """Run the fast document-only armymemo review for realtime editor feedback."""
+    start_time = time.time()
+    document = parse_text(text)
+    report = review_document(document, rules=default_document_review_rules())
+    review_time = time.time() - start_time
+    logger.info(
+        "Live memo review completed in %.2f seconds (passed=%s failed=%s)",
         review_time,
         report.passed,
         report.failed_rules,

@@ -33,7 +33,7 @@ from app.memo_adapter import (
     read_example_text,
     substitute_profile_fields,
 )
-from app.tasks import create_memo, huey, review_memo_content
+from app.tasks import create_memo, huey, review_memo_content, review_memo_content_live
 from db.db import init_db
 from db.schema import Document, UserProfile
 
@@ -393,6 +393,33 @@ def review_memo_route():
         )
 
 
+@app.route("/review/memo/live", methods=["POST"])
+def review_memo_live_route():
+    try:
+        text = _memo_text_from_request(request.form)
+    except MemoFormError as exc:
+        return jsonify({"error": f"Error creating memo review: {exc}"}), 400
+
+    if not text or text.strip() == "":
+        return jsonify({"error": "No content to review"}), 400
+
+    try:
+        report = review_memo_content_live(text)
+        payload = report.to_dict()
+        payload["review_mode"] = "document"
+        return jsonify(payload)
+    except Exception as e:
+        app.logger.error(f"Error reviewing memo live: {e}")
+        return (
+            jsonify(
+                {
+                    "error": "Error reviewing memo. Please check your memo format and try again.",
+                }
+            ),
+            400,
+        )
+
+
 @app.route("/status/<task_id>", methods=["POST", "GET"])
 def taskstatus(task_id):
     """Memo generation is synchronous; task status polling is no longer supported."""
@@ -497,46 +524,6 @@ def profile():
             flash(f"Error updating profile: {e!s}", "error")
 
     return render_template("profile.html", form=form, profile=user_profile)
-
-
-@app.route("/validate", methods=["POST"])
-@login_required
-def validate_memo():
-    """
-    Validate memo content against AR 25-50 rules.
-
-    Accepts either AMD text format or form data.
-    Returns validation results including errors and warnings.
-    """
-    from app.services.validation import MemoValidator
-
-    try:
-        if "SUBJECT" not in request.form:
-            # Text editor mode
-            text = request.form.get("memo_text", "")
-            result = MemoValidator.validate_text_input(text)
-        else:
-            # Form mode - validate form fields directly
-            validator = MemoValidator(request.form.to_dict())
-            result = validator.validate_all()
-
-        return jsonify(
-            {
-                "is_valid": result.is_valid,
-                "errors": result.errors,
-                "warnings": result.warnings,
-            }
-        )
-
-    except Exception as e:
-        app.logger.error(f"Validation error: {e}")
-        return jsonify(
-            {
-                "is_valid": False,
-                "errors": [f"Validation failed: {e!s}"],
-                "warnings": [],
-            }
-        ), 500
 
 
 @app.route("/validate/pdf", methods=["POST"])

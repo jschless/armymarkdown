@@ -435,7 +435,6 @@ class TestValidationIntegration:
     def test_validation_module_exports(self):
         """Test all expected classes are exported from validation module."""
         from app.services.validation import (
-            MemoValidator,
             PDFMetadata,
             PDFParser,
             PDFValidationResult,
@@ -444,7 +443,6 @@ class TestValidationIntegration:
         )
 
         # All should be importable
-        assert MemoValidator is not None
         assert PDFParser is not None
         assert PDFMetadata is not None
         assert PDFValidator is not None

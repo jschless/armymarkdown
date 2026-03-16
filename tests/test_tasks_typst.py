@@ -1,7 +1,12 @@
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-from app.tasks import RenderedMemo, create_memo, review_memo_content
+from app.tasks import (
+    RenderedMemo,
+    create_memo,
+    review_memo_content,
+    review_memo_content_live,
+)
 
 
 def test_create_memo_renders_pdf_bytes(sample_memo_text):
@@ -64,3 +69,22 @@ def test_review_memo_content_returns_structured_report(sample_memo_text):
     mock_parse.assert_called_once_with(sample_memo_text)
     mock_render.assert_called_once()
     mock_review.assert_called_once()
+
+
+def test_review_memo_content_live_uses_document_only_rules(sample_memo_text):
+    fake_report = Mock()
+    fake_report.passed = True
+    fake_report.failed_rules = 0
+
+    with (
+        patch(
+            "app.tasks.parse_text", return_value=Mock(subject="Review Subject")
+        ) as mock_parse,
+        patch("app.tasks.review_document", return_value=fake_report) as mock_review,
+    ):
+        report = review_memo_content_live(sample_memo_text)
+
+    assert report is fake_report
+    mock_parse.assert_called_once_with(sample_memo_text)
+    mock_review.assert_called_once()
+    assert "rules" in mock_review.call_args.kwargs

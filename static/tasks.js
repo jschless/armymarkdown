@@ -186,44 +186,66 @@ function renderReviewModal(report) {
         return;
     }
 
+    renderReviewResults(summary, findings, report, {
+        mode: 'rendered',
+        emptyMessage: 'No failing findings were reported. The rendered memo matched the active review rules.'
+    });
+
+    modal.style.display = 'flex';
+}
+
+function renderReviewResults(summaryElement, findingsElement, report, options = {}) {
+    const mode = options.mode || 'rendered';
     const failedFindings = (report.findings || []).filter((finding) => finding.status === 'fail');
     const severityCounts = report.failing_severity_counts || {};
     const errorCount = severityCounts.error || 0;
     const warningCount = severityCounts.warning || 0;
+    const passingRules = report.passing_rules || 0;
+    const isRendered = mode === 'rendered';
+    const badgeText = report.passed ? 'Passed' : 'Needs Review';
+    const headline = report.passed
+        ? (isRendered
+            ? 'This memo passed the rendered AR 25-50 review.'
+            : 'This memo passed the live AR 25-50 review.')
+        : (isRendered
+            ? 'This memo has rendered review findings that need attention.'
+            : 'This memo has live review findings that need attention.');
+    const detail = isRendered
+        ? `${errorCount} error(s), ${warningCount} warning(s), ${passingRules} passing check(s).`
+        : `${errorCount} error(s), ${warningCount} warning(s), ${passingRules} passing check(s). Use Review Memo for rendered layout checks.`;
 
-    summary.innerHTML = `
+    summaryElement.innerHTML = `
         <div class="review-summary-card ${report.passed ? 'review-summary-pass' : 'review-summary-fail'}">
             <div class="review-summary-main">
-                <span class="review-summary-badge">${report.passed ? 'Passed' : 'Needs Review'}</span>
+                <span class="review-summary-badge">${badgeText}</span>
                 <div class="review-summary-copy">
-                    <strong>${report.passed ? 'This memo passed the rendered AR 25-50 review.' : 'This memo has rendered review findings that need attention.'}</strong>
-                    <p>${errorCount} error(s), ${warningCount} warning(s), ${report.passing_rules || 0} passing check(s).</p>
+                    <strong>${headline}</strong>
+                    <p>${detail}</p>
                 </div>
             </div>
         </div>
     `;
 
     if (failedFindings.length === 0) {
-        findings.innerHTML = `
+        findingsElement.innerHTML = `
             <div class="review-empty-state">
-                <p>No failing findings were reported. The rendered memo matched the active review rules.</p>
+                <p>${options.emptyMessage || 'No failing findings were reported.'}</p>
             </div>
         `;
-    } else {
-        findings.innerHTML = failedFindings.map((finding) => `
-            <div class="review-finding review-finding-${escapeHtml(finding.severity || 'warning')}">
-                <div class="review-finding-header">
-                    <span class="review-finding-badge">${escapeHtml((finding.severity || 'warning').toUpperCase())}</span>
-                    <strong>${escapeHtml(finding.name || finding.rule_name || finding.rule_id)}</strong>
-                </div>
-                <p class="review-finding-message">${escapeHtml(finding.message || '')}</p>
-                ${finding.suggested_fix ? `<p class="review-finding-fix"><strong>Suggested fix:</strong> ${escapeHtml(finding.suggested_fix)}</p>` : ''}
-                ${finding.ar_reference ? `<p class="review-finding-reference">${escapeHtml(finding.ar_reference)}</p>` : ''}
-            </div>
-        `).join('');
+        return;
     }
 
-    modal.style.display = 'flex';
+    findingsElement.innerHTML = failedFindings.map((finding) => `
+        <div class="review-finding review-finding-${escapeHtml(finding.severity || 'warning')}">
+            <div class="review-finding-header">
+                <span class="review-finding-badge">${escapeHtml((finding.severity || 'warning').toUpperCase())}</span>
+                <strong>${escapeHtml(finding.name || finding.rule_name || finding.rule_id)}</strong>
+            </div>
+            <p class="review-finding-message">${escapeHtml(finding.message || '')}</p>
+            ${finding.suggested_fix ? `<p class="review-finding-fix"><strong>Suggested fix:</strong> ${escapeHtml(finding.suggested_fix)}</p>` : ''}
+            ${finding.ar_reference ? `<p class="review-finding-reference">${escapeHtml(finding.ar_reference)}</p>` : ''}
+        </div>
+    `).join('');
 }
 
 function closeReviewModal() {
@@ -248,11 +270,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const reviewModal = document.getElementById('review-modal');
     const reviewModalClose = document.getElementById('review-modal-close');
 
-    for (let i = 0; i < linkSelector.options.length; i++) {
-        const option = linkSelector.options[i];
-        if (option.value === exampleFile) {
-            option.selected = true;
-            break;
+    if (linkSelector) {
+        for (let i = 0; i < linkSelector.options.length; i++) {
+            const option = linkSelector.options[i];
+            if (option.value === exampleFile) {
+                option.selected = true;
+                break;
+            }
         }
     }
 
@@ -350,3 +374,4 @@ window.updateProgress = function() {
 };
 
 window.reviewMemo = reviewMemo;
+window.renderReviewResults = renderReviewResults;

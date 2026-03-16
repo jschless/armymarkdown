@@ -19,6 +19,9 @@ class TestRoutes:
 
         assert response.status_code == 200
         assert b"memo_text" in response.data  # Should contain textarea
+        assert b"live-review-panel" in response.data
+        assert b"live-review.js" in response.data
+        assert b"validation-rules.js" not in response.data
         # Should load default tutorial example
 
     def test_index_route_with_example_file(self, client):
@@ -43,6 +46,8 @@ class TestRoutes:
         # Should contain form fields
         assert b"ORGANIZATION_NAME" in response.data
         assert b"SUBJECT" in response.data
+        assert b"live-review-panel" in response.data
+        assert b"form-validation.js" not in response.data
 
     def test_form_route_with_example(self, client):
         """Test form route with specific example."""
@@ -151,6 +156,45 @@ class TestProcessing:
         payload = response.get_json()
         assert payload["failed_rules"] == 2
         assert payload["findings"][0]["name"] == "Date Alignment"
+        mock_review.assert_called_once()
+
+    @patch("app.main.review_memo_content_live")
+    def test_review_memo_live_route_returns_json_report(
+        self, mock_review, client, sample_memo_text
+    ):
+        mock_review.return_value = Mock(
+            to_dict=Mock(
+                return_value={
+                    "passed": False,
+                    "failed_rules": 1,
+                    "passing_rules": 6,
+                    "failing_severity_counts": {"error": 1, "warning": 0, "info": 0},
+                    "findings": [
+                        {
+                            "rule_id": "document.date.format",
+                            "rule_name": "Date Format",
+                            "name": "Date Format",
+                            "severity": "error",
+                            "status": "fail",
+                            "message": "Date must use DD Month YYYY format.",
+                            "ar_reference": "AR 25-50, para 2-4",
+                            "suggested_fix": "Use DD Month YYYY format, for example 15 January 2025.",
+                            "evidence": {},
+                        }
+                    ],
+                }
+            )
+        )
+
+        response = client.post(
+            "/review/memo/live", data={"memo_text": sample_memo_text}
+        )
+
+        assert response.status_code == 200
+        assert response.is_json
+        payload = response.get_json()
+        assert payload["review_mode"] == "document"
+        assert payload["findings"][0]["name"] == "Date Format"
         mock_review.assert_called_once()
 
 
