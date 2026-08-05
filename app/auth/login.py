@@ -98,7 +98,7 @@ def register_route():
             current_app.logger.info(
                 f"{form.username.data} created an account successfully"
             )
-            return render_template("login.html", title="Sign In", form=form)
+            return redirect(url_for("login"))
 
         except Exception as e:
             current_app.logger.error(f"Error during registration: {e!s}")

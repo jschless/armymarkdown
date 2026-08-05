@@ -1,5 +1,7 @@
+from flask import current_app
 from flask_wtf import FlaskForm
 from flask_wtf.recaptcha import RecaptchaField
+from flask_wtf.recaptcha.validators import Recaptcha
 from wtforms import BooleanField, PasswordField, StringField, SubmitField
 from wtforms.validators import (
     DataRequired,
@@ -20,6 +22,17 @@ class LoginForm(FlaskForm):
     password = PasswordField("Password", validators=[DataRequired()])
     remember_me = BooleanField("Remember Me")
     submit = SubmitField("Sign In")
+
+
+class _OptionalRecaptcha(Recaptcha):
+    """Skip reCAPTCHA when it is disabled or unconfigured (dev/test)."""
+
+    def __call__(self, form, field):
+        if current_app.config.get("DISABLE_CAPTCHA") or not current_app.config.get(
+            "RECAPTCHA_PUBLIC_KEY"
+        ):
+            return True
+        return super().__call__(form, field)
 
 
 class RegistrationForm(FlaskForm):
@@ -45,19 +58,8 @@ class RegistrationForm(FlaskForm):
     password2 = PasswordField(
         "Repeat Password", validators=[DataRequired(), EqualTo("password")]
     )
-    recaptcha = RecaptchaField()
+    recaptcha = RecaptchaField(validators=[_OptionalRecaptcha()])
     submit = SubmitField("Register")
-
-    def validate_recaptcha(self, field):
-        # Only validate recaptcha if it's enabled and configured
-        from flask import current_app
-
-        if current_app.config.get("DISABLE_CAPTCHA") or not current_app.config.get(
-            "RECAPTCHA_PUBLIC_KEY"
-        ):
-            return True
-        # Let the default RecaptchaField validation handle it
-        return super().validate_recaptcha(field)
 
     def validate_username(self, username):
         user = User.query.filter_by(username=username.data).first()

@@ -261,9 +261,10 @@ class TestFormSecurity:
             },
         )
 
-        # In testing environment, CSRF might be disabled
-        # This test verifies the form handles missing CSRF appropriately
-        assert response.status_code in [200, 400, 403]
+        # In testing environment, CSRF might be disabled, in which case
+        # registration succeeds and redirects to the login page (302).
+        # This test verifies the form handles missing CSRF appropriately.
+        assert response.status_code in [200, 302, 400, 403]
 
     def test_input_sanitization(self, app_context):
         """Test that form inputs are properly sanitized."""
@@ -643,3 +644,44 @@ class TestFormEdgeCases:
             assert len(form.errors) > 0
             # Should have errors for required username and password fields
             assert "username" in form.errors or "password" in form.errors
+
+
+class TestRegistrationRecaptcha:
+    """Regression tests for the reCAPTCHA validator on RegistrationForm."""
+
+    def test_no_stray_inline_recaptcha_validator(self):
+        """RegistrationForm must not define a validate_recaptcha inline hook.
+
+        WTForms calls validate_<field> as an inline validator, so an
+        implementation that delegates via super() raises AttributeError
+        (FlaskForm defines no such method) and 500s every registration.
+        """
+        from app.forms import RegistrationForm
+
+        assert not hasattr(RegistrationForm, "validate_recaptcha")
+
+    def test_recaptcha_field_uses_optional_validator(self):
+        """The field carries the flag-aware validator, not the stock one."""
+        from app.forms import RegistrationForm, _OptionalRecaptcha
+
+        validators = RegistrationForm.recaptcha.kwargs["validators"]
+        assert any(isinstance(v, _OptionalRecaptcha) for v in validators)
+
+    def test_register_post_does_not_500_with_captcha_enforced(self, client, test_app):
+        """Posting to /register must not 500 when reCAPTCHA is enforced."""
+        test_app.config["DISABLE_CAPTCHA"] = False
+        test_app.config["RECAPTCHA_PUBLIC_KEY"] = "test-public-key"
+        test_app.config["RECAPTCHA_PRIVATE_KEY"] = "test-private-key"
+        try:
+            response = client.post(
+                "/register",
+                data={
+                    "username": "captchauser",
+                    "email": "captcha@example.com",
+                    "password": "Passw0rd",
+                    "password2": "Passw0rd",
+                },
+            )
+            assert response.status_code != 500
+        finally:
+            test_app.config["DISABLE_CAPTCHA"] = True
